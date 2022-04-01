@@ -38,7 +38,7 @@ color_map = {
 
 
 def rgb_to_hex(rgb):
-    return '#%02x%02x%02x' % rgb
+    return ('#%02x%02x%02x' % rgb).upper()
 
 
 def closest_color(target_rgb, rgb_colors_array_in):
