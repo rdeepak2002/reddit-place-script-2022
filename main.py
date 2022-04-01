@@ -9,6 +9,7 @@ from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 from PIL import ImageColor
 from PIL import Image
+import random
 
 # load env variables
 load_dotenv()
@@ -181,10 +182,10 @@ def task():
                         'username': username,
                         'password': password
                     }
-
+                    
                     r = requests.post("https://ssl.reddit.com/api/v1/access_token",
                                       data=data,
-                                      auth=HTTPBasicAuth(app_client_id, secret_key))
+                                      auth=HTTPBasicAuth(app_client_id, secret_key),headers={'User-agent': f'placebot{random.randint(1,100000)}'})
 
                     print("received response: ", r.text)
 
