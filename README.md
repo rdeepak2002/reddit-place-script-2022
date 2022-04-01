@@ -2,7 +2,7 @@
 
 ## About
 
-Script to draw pixels onto r/place (https://www.reddit.com/r/place/)
+Script to draw pixels from an image onto r/place (https://www.reddit.com/r/place/)
 
 ## Requirements
 
@@ -41,4 +41,4 @@ ENV_DRAW_X_START="x_position_start_integer"
 ENV_DRAW_Y_START="y_position_start_integer"
 ```
 
-Change image.jpg to specify what image to draw. Note: one pixel is placed every 5 minutes and only jpeg images are supported.
+Change image.jpg to specify what image to draw. Note: one pixel is drawn every 5 minutes and only jpeg images are supported.
