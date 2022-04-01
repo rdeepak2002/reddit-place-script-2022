@@ -2,7 +2,7 @@
 
 ## About
 
-Script to an image onto r/place (https://www.reddit.com/r/place/)
+Script to draw an image onto r/place (https://www.reddit.com/r/place/)
 
 ## Requirements
 
