@@ -105,8 +105,8 @@ current_timestamp = math.floor(time.time())
 last_time_placed_pixel = math.floor(time.time())
 access_token_expires_at_timestamp = math.floor(time.time())
 
-# note: reddit limits us to place 1 pixel every 5 minutes
-pixel_place_frequency = 300
+# note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to 5 minutes and 30 seconds per pixel
+pixel_place_frequency = 330
 
 
 # method to draw a pixel at an x, y coordinate in r/place with a specific color
