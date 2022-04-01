@@ -10,9 +10,21 @@ Script to draw pixels onto r/place (https://www.reddit.com/r/place/)
 
 ## How to Get App Client ID and App Secret Key
 
-- Visit https://www.reddit.com/prefs/apps
-- Click "create (another) app" button at very bottom
-- Select the "script" option and fill in the fields with anything
+You need to generate an app client id and app secret key in order to use this script.
+
+Steps:
+
+1. Visit https://www.reddit.com/prefs/apps
+2. Click "create (another) app" button at very bottom 
+3. Select the "script" option and fill in the fields with anything
+
+## Python Package Requirements
+
+Install requirements from 'requirements.txt' file.
+
+```shell
+pip3 install -r requirements.txt
+```
 
 ## Get Started
 
@@ -28,11 +40,3 @@ ENV_PLACE_SECRET_KEY="app_secret_key"
 ```
 
 Edit the variables at the top to specify what pixel to draw and where to draw it.
-
-## Python Package Requirements
-
-Install requirements from 'requirements.txt' file.
-
-```shell
-pip3 install -r requirements.txt
-```
