@@ -77,6 +77,8 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
+new_image.jpg
+
 # dotenv
 .env
 

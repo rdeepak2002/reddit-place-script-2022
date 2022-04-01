@@ -37,6 +37,8 @@ ENV_PLACE_USERNAME="developer_username"
 ENV_PLACE_PASSWORD="developer_password"
 ENV_PLACE_APP_CLIENT_ID="app_client_id"
 ENV_PLACE_SECRET_KEY="app_secret_key"
+ENV_DRAW_X_START="x_position_start_integer"
+ENV_DRAW_Y_START="y_position_start_integer"
 ```
 
-Edit the variables at the top to specify what pixel to draw and where to draw it.
+Change image.jpg to specify what image to draw. Note: one pixel is placed every 5 minutes. 
