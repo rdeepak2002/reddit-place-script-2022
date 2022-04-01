@@ -152,10 +152,20 @@ current_c = 0
 # whether image should keep drawing itself
 repeat_forever = True
 
+# string for time until next pixel is drawn
+update_str = ""
+
 # loop to keep refreshing tokens when necessary and to draw pixels when the time is right
 while True:
     while True:
         current_timestamp = math.floor(time.time())
+
+        # log next time until drawing
+        time_until_next_draw = last_time_placed_pixel + pixel_place_frequency - current_timestamp
+        new_update_str = str(time_until_next_draw) + " seconds until next pixel is drawn"
+        if update_str != new_update_str:
+            update_str = new_update_str
+            print(update_str)
 
         # refresh access token if necessary
         if access_token is None or current_timestamp >= expires_at_timestamp:
