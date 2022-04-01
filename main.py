@@ -149,62 +149,68 @@ def set_pixel(access_token_in, x, y, color_index_in=18, canvas_index=0):
 current_r = 0
 current_c = 0
 
+# whether image should keep drawing itself
+repeat_forever = True
 
 # loop to keep refreshing tokens when necessary and to draw pixels when the time is right
 while True:
-    current_timestamp = math.floor(time.time())
+    while True:
+        current_timestamp = math.floor(time.time())
 
-    # refresh access token if necessary
-    if access_token is None or current_timestamp >= expires_at_timestamp:
-        print("refreshing access token...")
+        # refresh access token if necessary
+        if access_token is None or current_timestamp >= expires_at_timestamp:
+            print("refreshing access token...")
 
-        data = {
-            'grant_type': 'password',
-            'username': username,
-            'password': password
-        }
+            data = {
+                'grant_type': 'password',
+                'username': username,
+                'password': password
+            }
 
-        r = requests.post("https://ssl.reddit.com/api/v1/access_token",
-                          data=data,
-                          auth=HTTPBasicAuth(app_client_id, secret_key))
+            r = requests.post("https://ssl.reddit.com/api/v1/access_token",
+                              data=data,
+                              auth=HTTPBasicAuth(app_client_id, secret_key))
 
-        print("received response: ", r.text)
+            print("received response: ", r.text)
 
-        response_data = r.json()
+            response_data = r.json()
 
-        access_token = response_data["access_token"]
-        access_token_type = response_data["token_type"]  # this is just "bearer"
-        access_token_expires_in_seconds = response_data["expires_in"]  # this is usually "3600"
-        access_token_scope = response_data["scope"]  # this is usually "*"
+            access_token = response_data["access_token"]
+            access_token_type = response_data["token_type"]  # this is just "bearer"
+            access_token_expires_in_seconds = response_data["expires_in"]  # this is usually "3600"
+            access_token_scope = response_data["scope"]  # this is usually "*"
 
-        # ts stores the time in seconds
-        expires_at_timestamp = current_timestamp + int(access_token_expires_in_seconds)
+            # ts stores the time in seconds
+            expires_at_timestamp = current_timestamp + int(access_token_expires_in_seconds)
 
-        print("received new access token: ", access_token)
+            print("received new access token: ", access_token)
 
-    # draw pixel onto screen
-    if access_token is not None and current_timestamp >= last_time_placed_pixel + pixel_place_frequency:
-        # get current pixel position from input image
-        r = current_r
-        c = current_c
+        # draw pixel onto screen
+        if access_token is not None and current_timestamp >= last_time_placed_pixel + pixel_place_frequency:
+            # get current pixel position from input image
+            r = current_r
+            c = current_c
 
-        # get converted color
-        new_rgb = closest_color(target_rgb, rgb_colors_array)
-        new_rgb_hex = rgb_to_hex(new_rgb)
-        pixel_color_index = color_map[new_rgb_hex]
+            # get converted color
+            new_rgb = closest_color(target_rgb, rgb_colors_array)
+            new_rgb_hex = rgb_to_hex(new_rgb)
+            pixel_color_index = color_map[new_rgb_hex]
 
-        # draw the pixel onto r/place
-        set_pixel(access_token, pixel_x_start + r, pixel_y_start + c, pixel_color_index)
-        last_time_placed_pixel = math.floor(time.time())
+            # draw the pixel onto r/place
+            set_pixel(access_token, pixel_x_start + r, pixel_y_start + c, pixel_color_index)
+            last_time_placed_pixel = math.floor(time.time())
 
-        current_r += 1
-        current_c += 1
+            current_r += 1
+            current_c += 1
 
-        # go back to first column when reached end of a row while drawing
-        if current_r >= image_width:
-            current_r = 0
+            # go back to first column when reached end of a row while drawing
+            if current_r >= image_width:
+                current_r = 0
 
-        # exit when all pixels drawn
-        if current_c >= image_height:
-            print("done drawing image to r/place")
-            exit(0)
+            # exit when all pixels drawn
+            if current_c >= image_height:
+                print("done drawing image to r/place")
+                break
+
+    if not repeat_forever:
+        break
