@@ -7,10 +7,30 @@ import time
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 
+# map of colors for pixels you can place
+color_map = {
+    "#FF4500": 2, # bright red
+    "#FFA800": 3, # orange
+    "#FFD635": 4, # yellow
+    "#00A36": 6, # darker green
+    "#7EED56": 8, # lighter green
+    "#2450A4": 12, # darkest blue
+    "#3690EA": 13, # medium normal blue
+    "#51E9F4": 14, # cyan
+    "#811E9F": 18, # darkest purple
+    "#B44AC0": 19, # normal purple
+    "#FF99AA": 23, # pink
+    "#9C6926": 25, # brown
+    "#000000": 27, # black
+    "#898D90": 29, # grey
+    "#D4D7D9": 30, # light grey
+    "#FFFFFF": 31, # white
+}
+
 # pixel drawing preferences
 pixel_x = 999
 pixel_y = 997
-pixel_color_index = 18
+pixel_color_index = color_map["#FFFFFF"]
 
 # load env variables
 load_dotenv()

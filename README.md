@@ -8,6 +8,12 @@ Script to draw pixels onto r/place (https://www.reddit.com/r/place/)
 
 - Python 3 (https://www.python.org/downloads/)
 
+## How to Get App Client ID and App Secret Key
+
+- Visit https://www.reddit.com/prefs/apps
+- Click "create (another) app" button at very bottom
+- Select the "script" option and fill in the fields with anything
+
 ## Get Started
 
 Create a file called '.env'
