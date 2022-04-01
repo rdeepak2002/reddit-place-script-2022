@@ -46,6 +46,8 @@ pix = None
 image_width = None
 image_height = None
 
+# place a pixel immediately
+first_run = True
 
 # function to convert rgb tuple to hexadecimal string
 def rgb_to_hex(rgb):
@@ -153,6 +155,9 @@ def task(credentials_index):
             global access_token
             global access_token_expires_at_timestamp
 
+            # boolean to place a pixel the moment the script is first run
+            global first_run
+
             # refresh auth tokens and / or draw a pixel
             while True:
                 # get the current time
@@ -206,7 +211,11 @@ def task(credentials_index):
                     print("__________________")
 
                 # draw pixel onto screen
-                if access_token is not None and current_timestamp >= last_time_placed_pixel + pixel_place_frequency:
+                if access_token is not None and (current_timestamp >= last_time_placed_pixel + pixel_place_frequency
+                                                 or first_run):
+                    # place pixel immediately
+                    first_run = False
+
                     # get target color
                     target_rgb = pix[current_r, current_c]
 
