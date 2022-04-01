@@ -111,7 +111,7 @@ pixel_place_frequency = 330
 
 # method to draw a pixel at an x, y coordinate in r/place with a specific color
 def set_pixel(access_token_in, x, y, color_index_in=18, canvas_index=0):
-    print("placing pixel")
+    print(f"placing pixel {x} {y}")
 
     url = "https://gql-realtime-2.reddit.com/query"
 
@@ -151,6 +151,7 @@ current_c = 0
 
 # whether image should keep drawing itself
 repeat_forever = True
+first = True
 
 # loop to keep refreshing tokens when necessary and to draw pixels when the time is right
 while True:
@@ -186,7 +187,9 @@ while True:
             print("received new access token: ", access_token)
 
         # draw pixel onto screen
-        if access_token is not None and current_timestamp >= last_time_placed_pixel + pixel_place_frequency:
+        if access_token is not None and (current_timestamp >= last_time_placed_pixel
+            + pixel_place_frequency or first):
+            first = False
             # get current pixel position from input image
             r = current_r
             c = current_c
@@ -212,5 +215,7 @@ while True:
                 print("done drawing image to r/place")
                 break
 
+        else:
+            time.sleep(5)
     if not repeat_forever:
         break
