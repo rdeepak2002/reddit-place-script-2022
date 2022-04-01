@@ -33,17 +33,19 @@ Create a file called '.env'
 Put in the following content:
 
 ```text
-ENV_PLACE_USERNAME="developer_username"
-ENV_PLACE_PASSWORD="developer_password"
-ENV_PLACE_APP_CLIENT_ID="app_client_id"
-ENV_PLACE_SECRET_KEY="app_secret_key"
+ENV_PLACE_USERNAME='["developer_username"]'
+ENV_PLACE_PASSWORD='["developer_password"]'
+ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
+ENV_PLACE_SECRET_KEY='["app_secret_key"]'
 ENV_DRAW_X_START="x_position_start_integer"
 ENV_DRAW_Y_START="y_position_start_integer"
-ENV_R_START="0"
-ENV_C_START="0"
+ENV_R_START='["0"]'
+ENV_C_START='["0"]'
 ```
 
-Change image.jpg to specify what image to draw. Note: one pixel is drawn every 5 minutes and only jpeg images are supported.
+Note: Multiple fields can be passed into the arrays to spawn a thread for each one.
+
+Change image.jpg to specify what image to draw. One pixel is drawn every 5 minutes and only jpeg images are supported.
 
 ## Run the Script
 

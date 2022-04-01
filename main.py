@@ -124,7 +124,7 @@ def load_image():
 
 
 # task to draw the input image
-def task():
+def task(credentials_index):
     # whether image should keep drawing itself
     repeat_forever = True
 
@@ -142,8 +142,8 @@ def task():
             pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
 
             # current pixel row and pixel column being drawn
-            current_r = int(os.getenv('ENV_R_START'))
-            current_c = int(os.getenv('ENV_C_START'))
+            current_r = int(json.loads(os.getenv('ENV_R_START'))[credentials_index])
+            current_c = int(json.loads(os.getenv('ENV_C_START'))[credentials_index])
 
             # string for time until next pixel is drawn
             update_str = ""
@@ -162,19 +162,23 @@ def task():
                 new_update_str = str(time_until_next_draw) + " seconds until next pixel is drawn"
                 if update_str != new_update_str:
                     update_str = new_update_str
+                    print("__________________")
+                    print("Thread #" + str(credentials_index))
                     print(update_str)
+                    print("__________________")
 
                 # refresh access token if necessary
                 if access_token is None or current_timestamp >= access_token_expires_at_timestamp:
                     print("__________________")
+                    print("Thread #" + str(credentials_index))
                     print("refreshing access token...")
 
                     # developer's reddit username and password
-                    username = os.getenv('ENV_PLACE_USERNAME')
-                    password = os.getenv('ENV_PLACE_PASSWORD')
+                    username = json.loads(os.getenv('ENV_PLACE_USERNAME'))[credentials_index]
+                    password = json.loads(os.getenv('ENV_PLACE_PASSWORD'))[credentials_index]
                     # note: use https://www.reddit.com/prefs/apps
-                    app_client_id = os.getenv('ENV_PLACE_APP_CLIENT_ID')
-                    secret_key = os.getenv('ENV_PLACE_SECRET_KEY')
+                    app_client_id = json.loads(os.getenv('ENV_PLACE_APP_CLIENT_ID'))[credentials_index]
+                    secret_key = json.loads(os.getenv('ENV_PLACE_SECRET_KEY'))[credentials_index]
 
                     data = {
                         'grant_type': 'password',
@@ -224,15 +228,17 @@ def task():
                     # exit when all pixels drawn
                     if current_c >= image_height:
                         print("__________________")
+                        print("Thread #" + str(credentials_index))
                         print("done drawing image to r/place")
                         print("__________________")
                         break
         except:
             print("__________________")
+            print("Thread #" + str(credentials_index))
             print("Error refreshing tokens or drawing pixel")
-            print("Trying again in 3 minutes...")
+            print("Trying again in 5 minutes...")
             print("__________________")
-            time.sleep(180)
+            time.sleep(5 * 60)
 
         if not repeat_forever:
             break
@@ -244,6 +250,10 @@ init_rgb_colors_array()
 # load the pixels for the input image
 load_image()
 
-# run the image drawing task
-thread1 = threading.Thread(target=task, args=())
-thread1.start()
+# get number of concurrent threads to start
+num_credentials = len(json.loads(os.getenv('ENV_PLACE_USERNAME')))
+
+for i in range(num_credentials):
+    # run the image drawing task
+    thread1 = threading.Thread(target=task, args=[i])
+    thread1.start()
