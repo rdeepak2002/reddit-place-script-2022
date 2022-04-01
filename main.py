@@ -67,8 +67,8 @@ print("image size: ", im.size)  # Get the width and hight of the image for itera
 image_width, image_height = im.size
 
 # test drawing image to file called new_image before drawing to r/place
-current_r = 0
-current_c = 0
+current_r = int(os.getenv('ENV_R_START'))
+current_c = int(os.getenv('ENV_C_START'))
 
 while True:
     r = current_r

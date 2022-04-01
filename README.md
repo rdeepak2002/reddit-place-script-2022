@@ -39,6 +39,8 @@ ENV_PLACE_APP_CLIENT_ID="app_client_id"
 ENV_PLACE_SECRET_KEY="app_secret_key"
 ENV_DRAW_X_START="x_position_start_integer"
 ENV_DRAW_Y_START="y_position_start_integer"
+ENV_R_START="0"
+ENV_C_START="0"
 ```
 
 Change image.jpg to specify what image to draw. Note: one pixel is drawn every 5 minutes and only jpeg images are supported.
