@@ -4,6 +4,7 @@ import math
 import requests
 import json
 import time
+import threading
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 from PIL import ImageColor
@@ -94,7 +95,7 @@ def set_pixel(access_token_in, x, y, color_index_in=18, canvas_index=0):
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
-    print(response.text)
+    print("received response: ", response.text)
 
 
 # method to define the color palette array
@@ -229,9 +230,9 @@ def task():
         except:
             print("__________________")
             print("Error refreshing tokens or drawing pixel")
-            print("Trying again in 30 seconds...")
+            print("Trying again in 3 minutes...")
             print("__________________")
-            time.sleep(30)
+            time.sleep(180)
 
         if not repeat_forever:
             break
@@ -244,4 +245,5 @@ init_rgb_colors_array()
 load_image()
 
 # run the image drawing task
-task()
+thread1 = threading.Thread(target=task, args=())
+thread1.start()
