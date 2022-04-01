@@ -242,6 +242,9 @@ def task(credentials_index):
                         print("done drawing image to r/place")
                         print("__________________")
                         break
+                
+                # sleep for a bit
+                time.sleep(1)
         except:
             print("__________________")
             print("Thread #" + str(credentials_index))
