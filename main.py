@@ -251,20 +251,8 @@ def load_image():
     global image_height
     global image_extension
 
-    # read and load the image to draw and get its dimensions
-    valid_image_extensions = [
-        ".png",
-        ".jpg",
-        ".jpeg",
-    ]  # List your valid image extensions here
-
-    image_path = None
-    for extension in valid_image_extensions:
-        path = os.path.join(os.path.abspath(os.getcwd()), "image" + extension)
-        if os.path.exists(path):
-            image_path = path
-            image_extension = extension
-            break
+    image_path = os.path.join(os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png")
+    image_extension = ".png"
 
     if image_path is None:
         sys.exit("No valid image path found!")
@@ -289,11 +277,11 @@ def task(credentials_index):
         # pixel_place_frequency = 330
         if os.getenv("ENV_UNVERIFIED_PLACE_FREQUENCY") is not None:
             if bool(os.getenv("ENV_UNVERIFIED_PLACE_FREQUENCY")):
-                pixel_place_frequency = 1230
+                pixel_place_frequency = 0
             else:
-                pixel_place_frequency = 330
+                pixel_place_frequency = 0
         else:
-            pixel_place_frequency = 330
+            pixel_place_frequency = 0
 
         next_pixel_placement_time = math.floor(time.time()) + pixel_place_frequency
 
@@ -497,8 +485,8 @@ if __name__ == "__main__":
 ENV_PLACE_PASSWORD='["developer_password"]'
 ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
 ENV_PLACE_SECRET_KEY='["app_secret_key"]'
-ENV_DRAW_X_START="x_position_start_integer"
-ENV_DRAW_Y_START="y_position_start_integer"
+ENV_DRAW_X_START=20
+ENV_DRAW_Y_START=679
 ENV_R_START='["0"]'
 ENV_C_START='["0"]\'"""
         )
