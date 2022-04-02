@@ -6,6 +6,7 @@ import json
 import time
 import threading
 import logging
+import colorama
 import argparse
 from io import BytesIO
 from websocket import create_connection
@@ -93,14 +94,18 @@ def set_pixel_and_check_ratelimit(
         waitTime = math.floor(
             response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
         )
-        logging.info("Failed placing pixel: rate limited")
+        logging.info(
+            f"{colorama.Fore.RED}Failed placing pixel: rate limited {colorama.Style.RESET_ALL}"
+        )
     else:
         waitTime = math.floor(
             response.json()["data"]["act"]["data"][0]["data"][
                 "nextAvailablePixelTimestamp"
             ]
         )
-        logging.info("Succeeded placing pixel")
+        logging.info(
+            f"{colorama.Fore.GREEN}Succeeded placing pixel {colorama.Style.RESET_ALL}"
+        )
 
     # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
     # Works perfect with one thread.
@@ -442,7 +447,7 @@ def task(credentials_index):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-
+    colorama.init()
     parser.add_argument(
         "-v",
         "--verbose",
