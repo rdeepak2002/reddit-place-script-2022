@@ -551,8 +551,8 @@ if __name__ == "__main__":
         help="Be verbose",
         action="store_const",
         dest="loglevel",
-        const=logger.DEBUG,
-        default=logger.INFO,
+        const=logging.DEBUG,
+        default=logging.INFO,
     )
     args = parser.parse_args()
 
