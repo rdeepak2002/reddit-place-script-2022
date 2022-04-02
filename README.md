@@ -31,6 +31,8 @@ Steps:
 2. Click "create (another) app" button at very bottom
 3. Select the "script" option and fill in the fields with anything
 
+<img width="383" alt="App ID Screenshot" src="https://user-images.githubusercontent.com/19873803/161398668-0705f122-51d3-4785-8bd9-d6700b586634.png">
+
 ## Python Package Requirements
 
 Install requirements from 'requirements.txt' file.
