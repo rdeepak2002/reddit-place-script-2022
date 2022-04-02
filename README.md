@@ -100,6 +100,10 @@ chmod +x start.sh startverbose.sh
 ./start.sh or ./startverbose.sh
 ```
 
+### You can get more logs (`DEBUG`) by running the script with `-d` flag
+
+`python3 main.py -d` or `python3 main.py --debug`
+
 ## Multiple Workers
 
 Just create multiple child arrays to "workers" in the .json
