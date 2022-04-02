@@ -193,11 +193,11 @@ def get_board(access_token_in):
     return boardimg
 
 
-def get_unset_pixel(boardimg, x, y):
+def get_unset_pixel(boardimg, x, y, credentials_index):
     pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
     pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
     pix2 = Image.open(boardimg).convert("RGB").load()
-    num_loops = 0
+
     while True:
         x += 1
 
@@ -206,12 +206,14 @@ def get_unset_pixel(boardimg, x, y):
             x = 0
 
         if y >= image_height:
-            if num_loops > 1:
-                target_rgb = pix[0, 0]
-                new_rgb = closest_color(target_rgb, rgb_colors_array)
-                return 0, 0, new_rgb
+            logging.info(
+                f"{colorama.Fore.GREEN}All pixels correct, waiting 10 seconds {colorama.Style.RESET_ALL}"
+            )
+            time.sleep(10)
+            boardimg = get_board(access_tokens[credentials_index])
+            pix2 = Image.open(boardimg).convert("RGB").load()
             y = 0
-            num_loops += 1
+            
         logging.debug(f"{x+pixel_x_start}, {y+pixel_y_start}")
         logging.debug(f"{x}, {y}, boardimg, {image_width}, {image_height}")
 
@@ -407,6 +409,7 @@ def task(credentials_index):
                     get_board(access_tokens[credentials_index]),
                     current_r,
                     current_c,
+                    credentials_index
                 )
 
                 # get converted color
