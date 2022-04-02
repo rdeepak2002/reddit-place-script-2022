@@ -112,7 +112,7 @@ class PlaceClient:
         self, access_token_in, x, y, color_index_in=18, canvas_index=0
     ):
         logging.info(
-            f"Attempting to place {self.color_id_to_name(color_index_in)} pixel at {x}, {y}"
+            f"Attempting to place {self.color_id_to_name(color_index_in)} pixel at {x + (1000 * canvas_index)}, {y}"
         )
 
         url = "https://gql-realtime-2.reddit.com/query"
@@ -299,7 +299,7 @@ class PlaceClient:
         return new_img
 
     def get_unset_pixel(self, boardimg, x, y):
-        pix2 = Image.open(boardimg).convert("RGB").load()
+        pix2 = boardimg.convert("RGB").load()
         num_loops = 0
         while True:
             x += 1
@@ -477,12 +477,24 @@ class PlaceClient:
                     new_rgb_hex = self.rgb_to_hex(new_rgb)
                     pixel_color_index = color_map[new_rgb_hex]
 
+                    print("\nAccount Placing: ", name, "\n")
+
+                    # draw the pixel onto r/place
+                    # There's a better way to do this
+                    canvas = 0
+                    self.pixel_x_start += current_r
+                    self.pixel_y_start += current_c
+                    while self.pixel_x_start > 999:
+                        self.pixel_x_start -= 1000
+                        canvas += 1
+
                     # draw the pixel onto r/place
                     next_pixel_placement_time = self.set_pixel_and_check_ratelimit(
                         self.access_tokens[index],
-                        self.pixel_x_start + current_r,
-                        self.pixel_y_start + current_c,
+                        self.pixel_x_start,
+                        self.pixel_y_start,
                         pixel_color_index,
+                        canvas
                     )
 
                     current_r += 1
