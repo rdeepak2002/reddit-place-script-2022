@@ -334,7 +334,7 @@ class PlaceClient:
                 current_timestamp = math.floor(time.time())
 
                 # log next time until drawing
-                time_until_next_draw = next_pixel_placement_time + pixel_place_frequency
+                time_until_next_draw = next_pixel_placement_time - pixel_place_frequency
 
                 new_update_str = (
                     f"{time_until_next_draw} seconds until next pixel is drawn"
