@@ -49,6 +49,10 @@ pip install -r requirements.txt
 pip3 install -r requirements.txt
 ```
 
+### MacOSX
+If you are using MacOSX and encounter an SSL_CERTIFICATE error. Please apply the fix detailed https://stackoverflow.com/questions/42098126/mac-osx-python-ssl-sslerror-ssl-certificate-verify-failed-certificate-verify  
+
+
 ## Get Started
 
 Move the file 'config_example.json' to config.json
