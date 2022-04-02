@@ -251,7 +251,9 @@ def load_image():
     global image_width
     global image_height
     # read and load the image to draw and get its dimensions
-    image_path = os.path.join(os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png")
+    image_path = os.path.join(
+        os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png"
+    )
     im = Image.open(image_path)
     pix = im.load()
     logging.info(f"Loaded image size: {im.size}")
