@@ -12,15 +12,21 @@ from dotenv import load_dotenv
 from PIL import ImageColor
 from PIL import Image
 import random
+import json
 
 # set verbose mode to increase output (messy)
 verbose_mode = False
 
-if os.path.exists("./.env"):
-    # load env variables
-    load_dotenv()
-else:
-    exit("No .env file found. Read the README")
+if not os.path.exists("config.json"):
+    exit("No config.json file found. Read the README")
+
+# Get json data
+f = open("config.json")
+json_data = json.load(f)
+f.close()
+
+pixel_x_start = json_data["image_start_coords"][0]
+pixel_y_start = json_data["image_start_coords"][1]
 
 # map of colors for pixels you can place
 color_map = {
@@ -105,7 +111,8 @@ def closest_color(target_rgb, rgb_colors_array_in):
 def set_pixel_and_check_ratelimit(
     access_token_in, x, y, color_index_in=18, canvas_index=0
 ):
-    print("placing " + color_id_to_name(color_index_in) + " pixel at " + str((x, y)))
+    print("placing " + color_id_to_name(color_index_in) +
+          " pixel at " + str((x, y)))
 
     url = "https://gql-realtime-2.reddit.com/query"
 
@@ -242,8 +249,6 @@ def get_board(access_token_in):
 
 
 def get_unset_pixel(boardimg, x, y):
-    pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
-    pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
     pix2 = Image.open(boardimg).convert("RGB").load()
     num_loops = 0
     while True:
@@ -318,7 +323,7 @@ def load_image():
 
 
 # task to draw the input image
-def task(credentials_index):
+def task(index, name, worker):
     # whether image should keep drawing itself
     repeat_forever = True
 
@@ -332,14 +337,10 @@ def task(credentials_index):
         # pixel_place_frequency = 330
         pixel_place_frequency = 330
 
-        # pixel drawing preferences
-        pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
-        pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
-
         try:
             # current pixel row and pixel column being drawn
-            current_r = int(json.loads(os.getenv("ENV_R_START"))[credentials_index])
-            current_c = int(json.loads(os.getenv("ENV_C_START"))[credentials_index])
+            current_x = worker["start_coords"][0]
+            current_y = worker["start_coords"][1]
         except IndexError:
             print(
                 "Array length error: are you sure you have an ENV_R_START and ENV_C_START item for every account?\n",
@@ -374,45 +375,38 @@ def task(credentials_index):
                 last_time_placed_pixel + pixel_place_frequency - current_timestamp
             )
             new_update_str = (
-                str(time_until_next_draw) + " seconds until next pixel is drawn"
+                str(time_until_next_draw) +
+                " seconds until next pixel is drawn"
             )
             if update_str != new_update_str and time_until_next_draw % 10 == 0:
                 update_str = new_update_str
                 print(
                     "-------Thread #"
-                    + str(credentials_index)
+                    + str(index)
                     + "-------\n"
                     + update_str
                 )
 
             # refresh access token if necessary
             if (
-                access_tokens[credentials_index] is None
+                access_tokens[index] is None
                 or current_timestamp
-                >= access_token_expires_at_timestamp[credentials_index]
+                >= access_token_expires_at_timestamp[index]
             ):
                 print(
                     "-------Thread #"
-                    + str(credentials_index)
+                    + str(index)
                     + "-------\n"
                     + "Refreshing access token..."
                 )
 
                 # developer's reddit username and password
                 try:
-                    username = json.loads(os.getenv("ENV_PLACE_USERNAME"))[
-                        credentials_index
-                    ]
-                    password = json.loads(os.getenv("ENV_PLACE_PASSWORD"))[
-                        credentials_index
-                    ]
+                    username = name
+                    password = worker["password"]
                     # note: use https://www.reddit.com/prefs/apps
-                    app_client_id = json.loads(os.getenv("ENV_PLACE_APP_CLIENT_ID"))[
-                        credentials_index
-                    ]
-                    secret_key = json.loads(os.getenv("ENV_PLACE_SECRET_KEY"))[
-                        credentials_index
-                    ]
+                    app_client_id = worker["client_id"]
+                    secret_key = worker["client_secret"]
                 except IndexError:
                     print(
                         "Array length error: are you sure your credentials have an equal amount of items?\n",
@@ -435,14 +429,15 @@ def task(credentials_index):
                     "https://ssl.reddit.com/api/v1/access_token",
                     data=data,
                     auth=HTTPBasicAuth(app_client_id, secret_key),
-                    headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
+                    headers={
+                        "User-agent": f"placebot{random.randint(1, 100000)}"},
                 )
 
                 if verbose_mode:
                     print("received response: ", r.text)
 
                 response_data = r.json()
-                access_tokens[credentials_index] = response_data["access_token"]
+                access_tokens[index] = response_data["access_token"]
                 # access_token_type = response_data["token_type"]  # this is just "bearer"
                 access_token_expires_in_seconds = response_data[
                     "expires_in"
@@ -451,18 +446,18 @@ def task(credentials_index):
 
                 # ts stores the time in seconds
                 access_token_expires_at_timestamp[
-                    credentials_index
+                    index
                 ] = current_timestamp + int(access_token_expires_in_seconds)
 
                 print(
                     "received new access token: ",
-                    access_tokens[credentials_index],
+                    access_tokens[index],
                 )
 
             # draw pixel onto screen
-            if access_tokens[credentials_index] is not None and (
+            if access_tokens[index] is not None and (
                 current_timestamp >= last_time_placed_pixel + pixel_place_frequency
-                or first_run_counter <= credentials_index
+                or first_run_counter <= index
             ):
 
                 # place pixel immediately
@@ -473,10 +468,10 @@ def task(credentials_index):
                 # target_rgb = pix[current_r, current_c]
 
                 # get current pixel position from input image and replacement color
-                current_r, current_c, new_rgb = get_unset_pixel(
-                    get_board(access_tokens[credentials_index]),
-                    current_r,
-                    current_c,
+                current_x, current_y, new_rgb = get_unset_pixel(
+                    get_board(access_tokens[index]),
+                    current_x,
+                    current_y,
                 )
 
                 # get converted color
@@ -485,24 +480,24 @@ def task(credentials_index):
 
                 # draw the pixel onto r/place
                 last_time_placed_pixel = set_pixel_and_check_ratelimit(
-                    access_tokens[credentials_index],
-                    pixel_x_start + current_r,
-                    pixel_y_start + current_c,
+                    access_tokens[index],
+                    pixel_x_start + current_x,
+                    pixel_y_start + current_y,
                     pixel_color_index,
                 )
 
-                current_r += 1
+                current_x += 1
 
                 # go back to first column when reached end of a row while drawing
-                if current_r >= image_width:
-                    current_r = 0
-                    current_c += 1
+                if current_x >= image_width:
+                    current_x = 0
+                    current_y += 1
 
                 # exit when all pixels drawn
-                if current_c >= image_height:
+                if current_y >= image_height:
                     print(
                         "--------Thread #"
-                        + str(credentials_index)
+                        + str(index)
                         + "--------\n"
                         + "done drawing image to r/place\n"
                     )
@@ -526,19 +521,19 @@ init_rgb_colors_array()
 load_image()
 
 # get number of concurrent threads to start
-num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
+# num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
 
 # define delay between starting new threads
-if os.getenv("ENV_THREAD_DELAY") != None:
-    delay_between_launches_seconds = int(os.getenv("ENV_THREAD_DELAY"))
+if json_data["thread_delay"] != None:
+    delay_between_launches_seconds = json_data["thread_delay"]
 else:
     delay_between_launches_seconds = 3
 
 # launch a thread for each account specified in .env
-for i in range(num_credentials):
+for index, worker in enumerate(json_data["workers"]):
     # run the image drawing task
     access_tokens.append(None)
     access_token_expires_at_timestamp.append(math.floor(time.time()))
-    thread1 = threading.Thread(target=task, args=[i])
+    thread1 = threading.Thread(target=task, args=[index, worker, json_data["workers"][worker]])
     thread1.start()
     time.sleep(delay_between_launches_seconds)
