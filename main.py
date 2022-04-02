@@ -284,8 +284,6 @@ def task(credentials_index):
     while True:
         # try:
         # global variables for script
-        last_time_placed_pixel = math.floor(time.time())
-
         # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
         # 5 minutes and 30 seconds per pixel
         # pixel_place_frequency = 330
@@ -296,6 +294,8 @@ def task(credentials_index):
                 pixel_place_frequency = 330
         else:
             pixel_place_frequency = 330
+
+        next_pixel_placement_time = math.floor(time.time()) + pixel_place_frequency
 
         # pixel drawing preferences
         pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
@@ -336,7 +336,7 @@ def task(credentials_index):
 
             # log next time until drawing
             time_until_next_draw = (
-                last_time_placed_pixel + pixel_place_frequency - current_timestamp
+                next_pixel_placement_time - current_timestamp
             )
             new_update_str = (
                 str(time_until_next_draw) + " seconds until next pixel is drawn"
@@ -412,7 +412,7 @@ def task(credentials_index):
 
             # draw pixel onto screen
             if access_tokens[credentials_index] is not None and (
-                current_timestamp >= last_time_placed_pixel + pixel_place_frequency
+                current_timestamp >= next_pixel_placement_time
                 or first_run_counter <= credentials_index
             ):
 
@@ -435,7 +435,7 @@ def task(credentials_index):
                 pixel_color_index = color_map[new_rgb_hex]
 
                 # draw the pixel onto r/place
-                last_time_placed_pixel = set_pixel_and_check_ratelimit(
+                next_pixel_placement_time = set_pixel_and_check_ratelimit(
                     access_tokens[credentials_index],
                     pixel_x_start + current_r,
                     pixel_y_start + current_c,
