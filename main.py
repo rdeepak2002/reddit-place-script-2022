@@ -133,127 +133,127 @@ def task(credentials_index):
     repeat_forever = True
 
     while True:
-        try:
-            # global variables for script
-            last_time_placed_pixel = math.floor(time.time())
+        # try:
+        # global variables for script
+        last_time_placed_pixel = math.floor(time.time())
 
-            # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
-            # 5 minutes and 30 seconds per pixel
-            pixel_place_frequency = 330
+        # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
+        # 5 minutes and 30 seconds per pixel
+        pixel_place_frequency = 330
 
-            # pixel drawing preferences
-            pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
-            pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
+        # pixel drawing preferences
+        pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
+        pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
 
-            # current pixel row and pixel column being drawn
-            current_r = int(json.loads(os.getenv('ENV_R_START'))[credentials_index])
-            current_c = int(json.loads(os.getenv('ENV_C_START'))[credentials_index])
+        # current pixel row and pixel column being drawn
+        current_r = int(json.loads(os.getenv('ENV_R_START'))[credentials_index])
+        current_c = int(json.loads(os.getenv('ENV_C_START'))[credentials_index])
 
-            # string for time until next pixel is drawn
-            update_str = ""
+        # string for time until next pixel is drawn
+        update_str = ""
 
-            # reference to globally shared variables such as auth token and image
-            global access_tokens
-            global access_token_expires_at_timestamp
+        # reference to globally shared variables such as auth token and image
+        global access_tokens
+        global access_token_expires_at_timestamp
 
-            # boolean to place a pixel the moment the script is first run
-            global first_run
+        # boolean to place a pixel the moment the script is first run
+        global first_run
 
-            # refresh auth tokens and / or draw a pixel
-            while True:
-                # get the current time
-                current_timestamp = math.floor(time.time())
+        # refresh auth tokens and / or draw a pixel
+        while True:
+            # get the current time
+            current_timestamp = math.floor(time.time())
 
-                # log next time until drawing
-                time_until_next_draw = last_time_placed_pixel + pixel_place_frequency - current_timestamp
-                new_update_str = str(time_until_next_draw) + " seconds until next pixel is drawn"
-                if update_str != new_update_str:
-                    update_str = new_update_str
+            # log next time until drawing
+            time_until_next_draw = last_time_placed_pixel + pixel_place_frequency - current_timestamp
+            new_update_str = str(time_until_next_draw) + " seconds until next pixel is drawn"
+            if update_str != new_update_str:
+                update_str = new_update_str
+                print("__________________")
+                print("Thread #" + str(credentials_index))
+                print(update_str)
+                print("__________________")
+
+            # refresh access token if necessary
+            if access_tokens[credentials_index] is None or current_timestamp >= access_token_expires_at_timestamp[
+                credentials_index]:
+                print("__________________")
+                print("Thread #" + str(credentials_index))
+                print("refreshing access token...")
+
+                # developer's reddit username and password
+                username = json.loads(os.getenv('ENV_PLACE_USERNAME'))[credentials_index]
+                password = json.loads(os.getenv('ENV_PLACE_PASSWORD'))[credentials_index]
+                # note: use https://www.reddit.com/prefs/apps
+                app_client_id = json.loads(os.getenv('ENV_PLACE_APP_CLIENT_ID'))[credentials_index]
+                secret_key = json.loads(os.getenv('ENV_PLACE_SECRET_KEY'))[credentials_index]
+
+                data = {
+                    'grant_type': 'password',
+                    'username': username,
+                    'password': password
+                }
+
+                r = requests.post("https://ssl.reddit.com/api/v1/access_token",
+                                  data=data,
+                                  auth=HTTPBasicAuth(app_client_id, secret_key),
+                                  headers={'User-agent': f'placebot{random.randint(1, 100000)}'})
+
+                print("received response: ", r.text)
+
+                response_data = r.json()
+                access_tokens[credentials_index] = response_data["access_token"]
+                # access_token_type = response_data["token_type"]  # this is just "bearer"
+                access_token_expires_in_seconds = response_data["expires_in"]  # this is usually "3600"
+                # access_token_scope = response_data["scope"]  # this is usually "*"
+
+                # ts stores the time in seconds
+                access_token_expires_at_timestamp[credentials_index] = current_timestamp \
+                                                                       + int(access_token_expires_in_seconds)
+
+                print("received new access token: ", access_tokens[credentials_index])
+                print("__________________")
+
+            # draw pixel onto screen
+            if access_tokens[credentials_index] is not None and (current_timestamp >= last_time_placed_pixel
+                                                                 + pixel_place_frequency or first_run):
+                # place pixel immediately
+                first_run = False
+
+                # get target color
+                target_rgb = pix[current_r, current_c]
+
+                # get converted color
+                new_rgb = closest_color(target_rgb, rgb_colors_array)
+                new_rgb_hex = rgb_to_hex(new_rgb)
+                pixel_color_index = color_map[new_rgb_hex]
+
+                # draw the pixel onto r/place
+                set_pixel(access_tokens[credentials_index], pixel_x_start + current_r,
+                          pixel_y_start + current_c, pixel_color_index)
+                last_time_placed_pixel = math.floor(time.time())
+
+                current_r += 1
+
+                # go back to first column when reached end of a row while drawing
+                if current_r >= image_width:
+                    current_r = 0
+                    current_c += 1
+
+                # exit when all pixels drawn
+                if current_c >= image_height:
                     print("__________________")
                     print("Thread #" + str(credentials_index))
-                    print(update_str)
+                    print("done drawing image to r/place")
                     print("__________________")
-
-                # refresh access token if necessary
-                if access_tokens[credentials_index] is None or current_timestamp >= access_token_expires_at_timestamp[
-                    credentials_index]:
-                    print("__________________")
-                    print("Thread #" + str(credentials_index))
-                    print("refreshing access token...")
-
-                    # developer's reddit username and password
-                    username = json.loads(os.getenv('ENV_PLACE_USERNAME'))[credentials_index]
-                    password = json.loads(os.getenv('ENV_PLACE_PASSWORD'))[credentials_index]
-                    # note: use https://www.reddit.com/prefs/apps
-                    app_client_id = json.loads(os.getenv('ENV_PLACE_APP_CLIENT_ID'))[credentials_index]
-                    secret_key = json.loads(os.getenv('ENV_PLACE_SECRET_KEY'))[credentials_index]
-
-                    data = {
-                        'grant_type': 'password',
-                        'username': username,
-                        'password': password
-                    }
-
-                    r = requests.post("https://ssl.reddit.com/api/v1/access_token",
-                                      data=data,
-                                      auth=HTTPBasicAuth(app_client_id, secret_key),
-                                      headers={'User-agent': f'placebot{random.randint(1, 100000)}'})
-
-                    print("received response: ", r.text)
-
-                    response_data = r.json()
-                    access_tokens[credentials_index] = response_data["access_token"]
-                    # access_token_type = response_data["token_type"]  # this is just "bearer"
-                    access_token_expires_in_seconds = response_data["expires_in"]  # this is usually "3600"
-                    # access_token_scope = response_data["scope"]  # this is usually "*"
-
-                    # ts stores the time in seconds
-                    access_token_expires_at_timestamp[credentials_index] = current_timestamp \
-                                                                           + int(access_token_expires_in_seconds)
-
-                    print("received new access token: ", access_tokens[credentials_index])
-                    print("__________________")
-
-                # draw pixel onto screen
-                if access_tokens[credentials_index] is not None and (current_timestamp >= last_time_placed_pixel
-                                                                     + pixel_place_frequency or first_run):
-                    # place pixel immediately
-                    first_run = False
-
-                    # get target color
-                    target_rgb = pix[current_r, current_c]
-
-                    # get converted color
-                    new_rgb = closest_color(target_rgb, rgb_colors_array)
-                    new_rgb_hex = rgb_to_hex(new_rgb)
-                    pixel_color_index = color_map[new_rgb_hex]
-
-                    # draw the pixel onto r/place
-                    set_pixel(access_tokens[credentials_index], pixel_x_start + current_r,
-                              pixel_y_start + current_c, pixel_color_index)
-                    last_time_placed_pixel = math.floor(time.time())
-
-                    current_r += 1
-
-                    # go back to first column when reached end of a row while drawing
-                    if current_r >= image_width:
-                        current_r = 0
-                        current_c += 1
-
-                    # exit when all pixels drawn
-                    if current_c >= image_height:
-                        print("__________________")
-                        print("Thread #" + str(credentials_index))
-                        print("done drawing image to r/place")
-                        print("__________________")
-                        break
-        except:
-            print("__________________")
-            print("Thread #" + str(credentials_index))
-            print("Error refreshing tokens or drawing pixel")
-            print("Trying again in 5 minutes...")
-            print("__________________")
-            time.sleep(5 * 60)
+                    break
+        # except:
+        #     print("__________________")
+        #     print("Thread #" + str(credentials_index))
+        #     print("Error refreshing tokens or drawing pixel")
+        #     print("Trying again in 5 minutes...")
+        #     print("__________________")
+        #     time.sleep(5 * 60)
 
         if not repeat_forever:
             break
