@@ -335,9 +335,7 @@ def task(credentials_index):
             current_timestamp = math.floor(time.time())
 
             # log next time until drawing
-            time_until_next_draw = (
-                next_pixel_placement_time - current_timestamp
-            )
+            time_until_next_draw = next_pixel_placement_time - current_timestamp
             new_update_str = (
                 str(time_until_next_draw) + " seconds until next pixel is drawn"
             )
