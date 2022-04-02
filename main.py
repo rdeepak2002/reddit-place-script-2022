@@ -14,7 +14,7 @@ from PIL import Image
 import random
 
 # set verbose mode to increase output (messy)
-verbose = False
+verbose_mode = False
 
 if os.path.exists("./.env"):
     # load env variables
@@ -134,7 +134,7 @@ def set_pixel_and_check_ratelimit(
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    if verbose:
+    if verbose_mode:
         print("received response: ", response.text)
     # There are 2 different JSON keys for responses to get the next timestamp.
     # If we don't get data, it means we've been rate limited.
@@ -254,28 +254,30 @@ def get_unset_pixel(boardimg, x, y):
 
         if y >= image_height:
             break
-        if verbose:
+        if verbose_mode:
             print(x + pixel_x_start, y + pixel_y_start)
             print(x, y, "boardimg", image_width, image_height)
         target_rgb = pix[x, y]
         new_rgb = closest_color(target_rgb, rgb_colors_array)
-        if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb and verbose:
-            print(
-                pix2[x + pixel_x_start, y + pixel_y_start],
-                new_rgb,
-                new_rgb != (69, 42, 0),
-                pix2[x, y] != new_rgb,
-            )
-            if new_rgb != (69, 42, 0):
+        if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb:
+            if verbose_mode:
                 print(
-                    "Different Pixel found at:",
-                    x + pixel_x_start,
-                    y + pixel_y_start,
-                    "With Color:",
                     pix2[x + pixel_x_start, y + pixel_y_start],
-                    "Replacing with:",
                     new_rgb,
+                    new_rgb != (69, 42, 0),
+                    pix2[x, y] != new_rgb,
                 )
+            if new_rgb != (69, 42, 0):
+                if verbose_mode:
+                    print(
+                        "Different Pixel found at:",
+                        x + pixel_x_start,
+                        y + pixel_y_start,
+                        "With Color:",
+                        pix2[x + pixel_x_start, y + pixel_y_start],
+                        "Replacing with:",
+                        new_rgb,
+                    )
                 break
             else:
                 print("TransparrentPixel")
@@ -290,7 +292,7 @@ def init_rgb_colors_array():
     for color_hex, color_index in color_map.items():
         rgb_array = ImageColor.getcolor(color_hex, "RGB")
         rgb_colors_array.append(rgb_array)
-    if verbose:
+    if verbose_mode:
         print("available colors for palette (rgb): ", rgb_colors_array)
 
 
@@ -430,7 +432,7 @@ def task(credentials_index):
                     headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
                 )
 
-                if verbose:
+                if verbose_mode:
                     print("received response: ", r.text)
 
                 response_data = r.json()
@@ -524,7 +526,7 @@ num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
 if os.getenv("ENV_THREAD_DELAY") != None:
     delay_between_launches_seconds = int(os.getenv("ENV_THREAD_DELAY"))
 else:
-    delay_between_launches_seconds = 0
+    delay_between_launches_seconds = 3
 
 # launch a thread for each account specified in .env
 for i in range(num_credentials):
