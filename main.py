@@ -263,7 +263,7 @@ def task(credentials_index):
             new_update_str = (
                 str(time_until_next_draw) + " seconds until next pixel is drawn"
             )
-            if update_str != new_update_str:
+            if update_str != new_update_str and time_until_next_draw % 10 == 0:
                 update_str = new_update_str
                 print(
                     "-------Thread #"
