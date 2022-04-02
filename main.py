@@ -26,8 +26,8 @@ else:
 ENV_PLACE_PASSWORD='["developer_password"]'
 ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
 ENV_PLACE_SECRET_KEY='["app_secret_key"]'
-ENV_DRAW_X_START="x_position_start_integer"
-ENV_DRAW_Y_START="y_position_start_integer"
+ENV_DRAW_X_START="20"
+ENV_DRAW_Y_START="679"
 ENV_R_START='["0"]'
 ENV_C_START='["0"]\'"""
     )
@@ -324,7 +324,7 @@ def load_image():
     global image_width
     global image_height
     # read and load the image to draw and get its dimensions
-    image_path = os.path.join(os.path.abspath(os.getcwd()), "image.jpg")
+    image_path = os.path.join(os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png")
     im = Image.open(image_path)
     pix = im.load()
     print(
