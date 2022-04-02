@@ -17,7 +17,7 @@ Steps:
 
 
 ### Step 2: Download Code
-1. download the code by `git clone [the url of this repository]`
+1. download the code by `git clone git@github.com:KokeCacao/reddit-place-script-2022.git`
 2. Create a file called `.env` right besides `README.md`, this is your setting file
 3. Put in the following content:
 
