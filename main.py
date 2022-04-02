@@ -59,7 +59,7 @@ name_map = {
     27: "Black",
     29: "Grey",
     30: "Light Grey",
-    32: "White"
+    32: "White",
 }
 
 # color palette
@@ -86,7 +86,7 @@ def rgb_to_hex(rgb):
 # Get a more verbose color indicator from a pixel color ID
 def color_id_to_name(color_id):
     if color_id in name_map.keys():
-        return "{} ({})".format(name_map[color_id],str(color_id))
+        return "{} ({})".format(name_map[color_id], str(color_id))
     return "Invalid Color ({})".format(str(color_id))
 
 
@@ -105,12 +105,7 @@ def closest_color(target_rgb, rgb_colors_array_in):
 def set_pixel_and_check_ratelimit(
     access_token_in, x, y, color_index_in=18, canvas_index=0
 ):
-    print(
-        "placing "
-        + color_id_to_name(color_index_in)
-        + " pixel at "
-        + str((x, y))
-    )
+    print("placing " + color_id_to_name(color_index_in) + " pixel at " + str((x, y)))
 
     url = "https://gql-realtime-2.reddit.com/query"
 
