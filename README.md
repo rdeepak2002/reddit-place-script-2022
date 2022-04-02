@@ -66,7 +66,7 @@ ENV_C_START='["0"]'
 
 ### Notes: 
 - Multiple fields can be passed into the arrays to spawn a thread for each one.
-- Change image.png/.jpg to specify what image to draw. One pixel is drawn every 5 minutes and only jpeg images are supported.
+- Change image.png/.jpg to specify what image to draw. One pixel is drawn every 5 minutes
 - PNG has priority over JPG
 
 ## Run the Script
