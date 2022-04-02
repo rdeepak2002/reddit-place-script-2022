@@ -6,11 +6,7 @@
 
 ## About
 
-<<<<<<< HEAD
 This is a script to draw the offical TUX onto r/place (<https://www.reddit.com/r/place/>).
-=======
-This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/>).
->>>>>>> 44b3f9b407b8b293bbf0d46fe452c2dd2f7a9911
 
 ## Features
 
@@ -34,6 +30,8 @@ Steps:
 1. Visit <https://www.reddit.com/prefs/apps>
 2. Click "create (another) app" button at very bottom
 3. Select the "script" option and fill in the fields with anything
+
+<img width="383" alt="App ID Screenshot" src="https://user-images.githubusercontent.com/19873803/161398668-0705f122-51d3-4785-8bd9-d6700b586634.png">
 
 ## Python Package Requirements
 
@@ -59,6 +57,8 @@ Edit the values to replace with actual credentials and values
 
 ```json
 {
+  //Where the image's path is
+  "image_path":"image.png",
   // [x,y] where you want the top left pixel of the local image to be drawn on canvas
   "image_start_coords": [20, 679],
   // delay between starting threads (can be 0)
@@ -135,11 +135,12 @@ This is useful if you want different threads drawing different parts of the imag
 ```text
 {
     "thread_delay": 2,
+    "unverified_place_frequency": False,
 }
 ```
 
-- thread_delay Adds a delay between starting a new thread. Can be used to avoid ratelimiting
-
+- thread_delay - Adds a delay between starting a new thread. Can be used to avoid ratelimiting
+- unverified_place_frequency - Sets the pixel place frequency to the unverified account limit
 
 ## Developing
 The nox CI job will run flake8 on the code. You can also do this locally by pip installing nox on your system and running 
