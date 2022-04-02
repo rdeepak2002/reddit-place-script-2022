@@ -35,7 +35,7 @@ class PlaceClient:
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if self.json_data["thread_delay"] != None
+            if self.json_data["thread_delay"] is not None
             else 3
         )
 
