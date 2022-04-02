@@ -14,7 +14,7 @@ from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import random
 
 from mappings import color_map, name_map
@@ -108,9 +108,11 @@ class PlaceClient:
         # Read and load the image to draw and get its dimensions
         try:
             im = Image.open(self.image_path)
-        except:
-            logging.fatal(f"Completely failed to load image")
+        except FileNotFoundError:
+            logging.fatal("Failed to load image")
             exit()
+        except UnidentifiedImageError:
+            logging.fatal("File found, but couldn't identify image format")
         self.pix = im.load()
         logging.info(f"Loaded image size: {im.size}")
         self.image_size = im.size
