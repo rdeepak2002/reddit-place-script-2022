@@ -106,9 +106,9 @@ def set_pixel_and_check_ratelimit(
     access_token_in, x, y, color_index_in=18, canvas_index=0
 ):
     print(
-        "placing pixel with color index "
+        "placing "
         + color_id_to_name(color_index_in)
-        + " at "
+        + " pixel at "
         + str((x, y))
     )
 
