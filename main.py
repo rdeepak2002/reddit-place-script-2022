@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from PIL import ImageColor
 from PIL import Image
 import random
+import sys
 
 # load env variables
 load_dotenv()
@@ -169,10 +170,11 @@ def task(credentials_index):
                 new_update_str = str(time_until_next_draw) + " seconds until next pixel is drawn"
                 if update_str != new_update_str:
                     update_str = new_update_str
-                    print("__________________")
-                    print("Thread #" + str(credentials_index))
+                    # print("__________________")
+                    # print("Thread #" + str(credentials_index))
                     print(update_str)
-                    print("__________________")
+                    sys.stdout.write("\033[F")
+                    # print("__________________")
 
                 # refresh access token if necessary
                 if access_tokens[credentials_index] is None or current_timestamp >= access_token_expires_at_timestamp[
@@ -233,20 +235,23 @@ def task(credentials_index):
                               pixel_y_start + current_c, pixel_color_index)
                     last_time_placed_pixel = math.floor(time.time())
 
-                    current_r += 1
+                    # current_r += 1
 
-                    # go back to first column when reached end of a row while drawing
-                    if current_r >= image_width:
-                        current_r = 0
-                        current_c += 1
+                    current_r = random.randint(0, image_height)
+                    current_c = random.randint(0, image_height)
 
-                    # exit when all pixels drawn
-                    if current_c >= image_height:
-                        print("__________________")
-                        print("Thread #" + str(credentials_index))
-                        print("done drawing image to r/place")
-                        print("__________________")
-                        break
+                    # # go back to first column when reached end of a row while drawing
+                    # if current_r >= image_width:
+                    #     current_r = 0
+                    #     current_c += 1
+
+                    # # exit when all pixels drawn
+                    # if current_c >= image_height:
+                    #     print("__________________")
+                    #     print("Thread #" + str(credentials_index))
+                    #     print("done drawing image to r/place")
+                    #     print("__________________")
+                    #     break
         except:
             print("__________________")
             print("Thread #" + str(credentials_index))
