@@ -398,14 +398,15 @@ class PlaceClient:
 
                 # refresh access token if necessary
                 if (
-                    len(self.access_tokens) == 0 or
-                    len(self.access_token_expires_at_timestamp) == 0 or
+                    len(self.access_tokens) == 0
+                    or len(self.access_token_expires_at_timestamp) == 0
+                    or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp or
-                    (
-                        self.access_token_expires_at_timestamp.get(index) and
-                        current_timestamp >=
+                    index not in self.access_token_expires_at_timestamp
+                    or (
                         self.access_token_expires_at_timestamp.get(index)
+                        and current_timestamp
+                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
                     logger.info("Thread #{} :: Refreshing access token", index)
@@ -467,8 +468,8 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time or
-                    self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time
+                    or self.first_run_counter <= index
                 ):
 
                     # place pixel immediately
