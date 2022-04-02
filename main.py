@@ -387,10 +387,8 @@ class PlaceClient:
                 # log next time until drawing
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
 
-                new_update_str = (
-                    "{} seconds until next pixel is drawn",
-                    time_until_next_draw,
-                )
+                new_update_str =  f"{time_until_next_draw} seconds until next pixel is drawn"
+                
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
                     update_str = new_update_str
 
