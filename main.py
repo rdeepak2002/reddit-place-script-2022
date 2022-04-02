@@ -14,7 +14,7 @@ from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import random
 
 from mappings import color_map, name_map
@@ -55,7 +55,7 @@ class PlaceClient:
         # Image information
         self.pix = None
         self.image_size = None
-
+        self.image_path = self.json_data["image_path"]
         self.first_run_counter = 0
 
         # Initialize-functions
@@ -106,7 +106,13 @@ class PlaceClient:
 
     def load_image(self):
         # Read and load the image to draw and get its dimensions
-        im = Image.open(os.path.join(os.path.abspath(os.getcwd()), "image.jpg"))
+        try:
+            im = Image.open(self.image_path)
+        except FileNotFoundError:
+            logging.fatal("Failed to load image")
+            exit()
+        except UnidentifiedImageError:
+            logging.fatal("File found, but couldn't identify image format")
         self.pix = im.load()
         logging.info(f"Loaded image size: {im.size}")
         self.image_size = im.size
@@ -282,7 +288,7 @@ class PlaceClient:
             )
 
             # print(self.pix[x, y])
-            target_rgb = self.pix[x, y]
+            target_rgb = self.pix[x, y][:3]
 
             new_rgb = self.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
