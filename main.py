@@ -1,4 +1,3 @@
-# imports
 import os
 import os.path
 import math
@@ -14,12 +13,14 @@ from PIL import ImageColor
 from PIL import Image
 import random
 
+# set verbose mode to increase output (messy)
+verbose = False
+
 if os.path.exists("./.env"):
     # load env variables
     load_dotenv()
 else:
-    print("No .env file found")
-    exit()
+    exit("No .env file found. Read the README")
 
 # map of colors for pixels you can place
 color_map = {
@@ -108,8 +109,8 @@ def set_pixel_and_check_ratelimit(
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-
-    print("received response: ", response.text)
+    if verbose:
+        print("received response: ", response.text)
     # There are 2 different JSON keys for responses to get the next timestamp.
     # If we don't get data, it means we've been rate limited.
     # If we do, a pixel has been successfully placed.
@@ -222,12 +223,12 @@ def get_unset_pixel(boardimg, x, y):
 
         if y >= image_height:
             break
-
-        print(x + pixel_x_start, y + pixel_y_start)
-        print(x, y, "boardimg", image_width, image_height)
+        if verbose:
+            print(x + pixel_x_start, y + pixel_y_start)
+            print(x, y, "boardimg", image_width, image_height)
         target_rgb = pix[x, y]
         new_rgb = closest_color(target_rgb, rgb_colors_array)
-        if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb:
+        if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb and verbose:
             print(
                 pix2[x + pixel_x_start, y + pixel_y_start],
                 new_rgb,
@@ -258,8 +259,8 @@ def init_rgb_colors_array():
     for color_hex, color_index in color_map.items():
         rgb_array = ImageColor.getcolor(color_hex, "RGB")
         rgb_colors_array.append(rgb_array)
-
-    print("available colors for palette (rgb): ", rgb_colors_array)
+    if verbose:
+        print("available colors for palette (rgb): ", rgb_colors_array)
 
 
 # method to read the input image.jpg file
@@ -376,7 +377,8 @@ def task(credentials_index):
                     headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
                 )
 
-                print("received response: ", r.text)
+                if verbose:
+                    print("received response: ", r.text)
 
                 response_data = r.json()
                 access_tokens[credentials_index] = response_data["access_token"]
