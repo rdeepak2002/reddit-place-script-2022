@@ -161,6 +161,9 @@ def task(credentials_index):
 
         # refresh auth tokens and / or draw a pixel
         while True:
+            # reduce CPU usage
+            time.sleep(1)
+
             # get the current time
             current_timestamp = math.floor(time.time())
 
