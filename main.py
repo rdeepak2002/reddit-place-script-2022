@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import os.path
 import math
@@ -5,6 +7,10 @@ import requests
 import json
 import time
 import threading
+import logging
+import colorama
+import argparse
+import sys
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
