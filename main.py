@@ -508,7 +508,7 @@ class PlaceClient:
                         self.pixel_x_start,
                         self.pixel_y_start,
                         pixel_color_index,
-                        canvas
+                        canvas,
                     )
 
                     current_r += 1
