@@ -24,11 +24,15 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
 
       # Runs the code through Black
       - uses: piotrpawlaczek/python-blacken@release/stable
         with:
           only-check: "no"
+          line-length: "88"
+          sanity-check: "safe"
 
       # Pushes changes made by Black
       - uses: stefanzweifel/git-auto-commit-action@v4
