@@ -265,10 +265,9 @@ def task(credentials_index):
         # global variables for script
         last_time_placed_pixel = math.floor(time.time())
 
-        # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
-        # 5 minutes and 30 seconds per pixel
-        # pixel_place_frequency = 330
-        pixel_place_frequency = 330
+        # note: reddit limits us to place 1 pixel every 20 minutes, so I am setting it to
+        # 20 minutes and 30 seconds per pixel
+        pixel_place_frequency = 1230
 
         # pixel drawing preferences
         pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
