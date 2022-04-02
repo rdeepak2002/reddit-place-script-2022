@@ -68,7 +68,7 @@ python3 main.py
 If you want two threads drawing the image at once you could have a setup like this:
 
 ```text
-ENV_PLACE_USERNAME='["developer_username", "developer_username_2"]'
+ENV_PLACE_USERNAME='["developer_username_1", "developer_username_2"]'
 ENV_PLACE_PASSWORD='["developer_password_1", "developer_password_2"]'
 ENV_PLACE_APP_CLIENT_ID='["app_client_id_1", "app_client_id_2"]'
 ENV_PLACE_SECRET_KEY='["app_secret_key_1", "app_secret_key_2"]'
