@@ -61,6 +61,8 @@ class PlaceClient:
         # Initialize-functions
         self.load_image()
 
+        self.is_painting_disabled = False
+
     """ Utils """
     # Convert rgb tuple to hexadecimal string
 
@@ -323,6 +325,7 @@ class PlaceClient:
                 logging.info(
                     f"{colorama.Fore.GREEN} All pixels correct, trying again in 10 seconds... {colorama.Style.RESET_ALL}"
                 )
+                self.is_painting_disabled = True
 
                 time.sleep(10)
 
@@ -343,6 +346,8 @@ class PlaceClient:
                 logging.debug(
                     f"{pix2[x + self.pixel_x_start, y + self.pixel_y_start]}, {new_rgb}, {new_rgb != (69, 42, 0)}, {pix2[x, y] != new_rgb,}"
                 )
+                self.is_painting_disabled = False
+                
                 if new_rgb != (69, 42, 0):
                     logging.debug(
                         f"Replacing {pix2[x+self.pixel_x_start, y+self.pixel_y_start]} pixel at: {x+self.pixel_x_start},{y+self.pixel_y_start} with {new_rgb} color"
@@ -386,6 +391,9 @@ class PlaceClient:
             while True:
                 # reduce CPU usage
                 time.sleep(1)
+
+                if self.is_painting_disabled is True:
+                    continue
 
                 # get the current time
                 current_timestamp = math.floor(time.time())
