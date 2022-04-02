@@ -245,7 +245,7 @@ def get_unset_pixel(boardimg, x, y):
     pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
     pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
     pix2 = Image.open(boardimg).convert("RGB").load()
-    num_loops = 0
+    num_loops=0
     while True:
         x += 1
 
@@ -255,11 +255,11 @@ def get_unset_pixel(boardimg, x, y):
 
         if y >= image_height:
             if num_loops > 1:
-                target_rgb = pix[pixel_x_start, pixel_y_start]
-                new_rgb = closest_color(target_rgb, rgb_colors_array)
-                return pixel_x_start, pixel_y_start, new_rgb
-            y = pixel_y_start
-            num_loops += 1
+                target_rgb=pix[0,0]
+                new_rgb=closest_color(target_rgb, rgb_colors_array)
+                return 0,0,new_rgb
+            y=0
+            num_loops+=1;
         if verbose_mode:
             print(x + pixel_x_start, y + pixel_y_start)
             print(x, y, "boardimg", image_width, image_height)
