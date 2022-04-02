@@ -333,12 +333,8 @@ def task(credentials_index):
 
         try:
             # current pixel row and pixel column being drawn
-            current_r = int(
-                json.loads(os.getenv("ENV_R_START"))[credentials_index]
-            )
-            current_c = int(
-                json.loads(os.getenv("ENV_C_START"))[credentials_index]
-            )
+            current_r = int(json.loads(os.getenv("ENV_R_START"))[credentials_index])
+            current_c = int(json.loads(os.getenv("ENV_C_START"))[credentials_index])
         except IndexError:
             print(
                 "Array length error: are you sure you have an ENV_R_START and ENV_C_START item for every account?\n",
@@ -370,9 +366,7 @@ def task(credentials_index):
 
             # log next time until drawing
             time_until_next_draw = (
-                last_time_placed_pixel
-                + pixel_place_frequency
-                - current_timestamp
+                last_time_placed_pixel + pixel_place_frequency - current_timestamp
             )
             new_update_str = (
                 str(time_until_next_draw) + " seconds until next pixel is drawn"
@@ -408,9 +402,9 @@ def task(credentials_index):
                         credentials_index
                     ]
                     # note: use https://www.reddit.com/prefs/apps
-                    app_client_id = json.loads(
-                        os.getenv("ENV_PLACE_APP_CLIENT_ID")
-                    )[credentials_index]
+                    app_client_id = json.loads(os.getenv("ENV_PLACE_APP_CLIENT_ID"))[
+                        credentials_index
+                    ]
                     secret_key = json.loads(os.getenv("ENV_PLACE_SECRET_KEY"))[
                         credentials_index
                     ]
@@ -436,9 +430,7 @@ def task(credentials_index):
                     "https://ssl.reddit.com/api/v1/access_token",
                     data=data,
                     auth=HTTPBasicAuth(app_client_id, secret_key),
-                    headers={
-                        "User-agent": f"placebot{random.randint(1, 100000)}"
-                    },
+                    headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
                 )
 
                 if verbose:
@@ -464,8 +456,7 @@ def task(credentials_index):
 
             # draw pixel onto screen
             if access_tokens[credentials_index] is not None and (
-                current_timestamp
-                >= last_time_placed_pixel + pixel_place_frequency
+                current_timestamp >= last_time_placed_pixel + pixel_place_frequency
                 or first_run_counter <= credentials_index
             ):
 
