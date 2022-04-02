@@ -337,7 +337,7 @@ class PlaceClient:
                 current_timestamp = math.floor(time.time())
 
                 # log next time until drawing
-                time_until_next_draw = next_pixel_placement_time - pixel_place_frequency
+                time_until_next_draw = next_pixel_placement_time - current_timestamp
 
                 new_update_str = (
                     f"{time_until_next_draw} seconds until next pixel is drawn"
@@ -417,8 +417,7 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp
-                    >= next_pixel_placement_time + pixel_place_frequency
+                    current_timestamp >= next_pixel_placement_time
                     or self.first_run_counter <= index
                 ):
 
