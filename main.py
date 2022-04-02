@@ -107,9 +107,8 @@ class PlaceClient:
         except:
             logging.fatal(f"Completely failed to load image")
             exit()
-                
-            
-        #im = Image.open(os.path.join(os.path.abspath(os.getcwd()), "image.jpg"))
+
+        # im = Image.open(os.path.join(os.path.abspath(os.getcwd()), "image.jpg"))
         self.pix = im.load()
         logging.info(f"Loaded image size: {im.size}")
         self.image_size = im.size
