@@ -42,6 +42,26 @@ color_map = {
     "#FFFFFF": 31,  # white
 }
 
+# map of pixel color ids to verbose name (for debugging)
+name_map = {
+    2: "Bright Red",
+    3: "Orange",
+    4: "Yellow",
+    6: "Dark Green",
+    8: "Light Green",
+    12: "Dark Blue",
+    13: "Blue",
+    14: "Cyan",
+    18: "Dark Purple",
+    19: "Purple",
+    23: "Pink",
+    25: "Brown",
+    27: "Black",
+    29: "Grey",
+    30: "Light Grey",
+    32: "White"
+}
+
 # color palette
 rgb_colors_array = []
 
@@ -63,6 +83,13 @@ def rgb_to_hex(rgb):
     return ("#%02x%02x%02x" % rgb).upper()
 
 
+# Get a more verbose color indicator from a pixel color ID
+def color_id_to_name(color_id):
+    if color_id in name_map.keys():
+        return "{} ({})".format(name_map[color_id],str(color_id))
+    return "Invalid Color ({})".format(str(color_id))
+
+
 # function to find the closest rgb color from palette to a target rgb color
 def closest_color(target_rgb, rgb_colors_array_in):
     r, g, b = target_rgb
@@ -79,7 +106,10 @@ def set_pixel_and_check_ratelimit(
     access_token_in, x, y, color_index_in=18, canvas_index=0
 ):
     print(
-        "placing pixel with color index " + str(color_index_in) + " at " + str((x, y))
+        "placing "
+        + color_id_to_name(color_index_in)
+        + " pixel at "
+        + str((x, y))
     )
 
     url = "https://gql-realtime-2.reddit.com/query"
