@@ -1,64 +1,64 @@
-# Reddit Place Script 2022
+# Place CMU on Reddit r/place
 
-## About
+We want to put our cmu banner on r/place (https://www.reddit.com/r/place/) right under `Pitt` at around (683, 507)
 
-Script to draw an image onto r/place (https://www.reddit.com/r/place/)
+## How to contribute
 
-## Requirements
-
-Python 3 (https://www.python.org/downloads/)
-
-## How to Get App Client ID and App Secret Key
+### Step 1: Get App Client ID and App Secret Key
 
 You need to generate an app client id and app secret key in order to use this script.
 
 Steps:
 
 1. Visit https://www.reddit.com/prefs/apps
-2. Click "create (another) app" button at very bottom 
-3. Select the "script" option and fill in the fields with anything
+2. Click `create (another) app` button at very bottom 
+3. Select the `script` option and fill in the fields with anything
+4. "redirection": you can fill it as `https://www.reddit.com/r/place/`. It doesn't matter
 
-## Python Package Requirements
 
-Install requirements from 'requirements.txt' file.
-
-```shell
-pip3 install -r requirements.txt
-```
-
-## Get Started
-
-Create a file called '.env'
-
-Put in the following content:
+### Step 2: Download Code
+1. download the code by `git clone [the url of this repository]`
+2. Create a file called `.env` right besides `README.md`, this is your setting file
+3. Put in the following content:
 
 ```text
-ENV_PLACE_USERNAME='["developer_username"]'
-ENV_PLACE_PASSWORD='["developer_password"]'
+ENV_PLACE_USERNAME='["your_reddit_developer_username"]'
+ENV_PLACE_PASSWORD='["your_reddit_password"]'
 ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
 ENV_PLACE_SECRET_KEY='["app_secret_key"]'
-ENV_DRAW_X_START="x_position_start_integer"
-ENV_DRAW_Y_START="y_position_start_integer"
+ENV_DRAW_X_START="654"
+ENV_DRAW_Y_START="504"
 ENV_R_START='["0"]'
 ENV_C_START='["0"]'
 ```
 
 - ENV_PLACE_USERNAME is the username of the developer account
 - ENV_PLACE_PASSWORD is the password of the developer account
-- ENV_PLACE_APP_CLIENT_ID is the client id for the app / script registered with Reddit
-- ENV_PLACE_SECRET_KEY is the secret key for the app / script registered with Reddit
-- ENV_DRAW_X_START specifies the x position to draw the image on the r/place canvas
-- ENV_DRAW_Y_START specifies the y position to draw the image on the r/place canvas
-- ENV_R_START specifies which x position of the original image to start at while drawing it
-- ENV_C_START specifies which y position of the original image to start at while drawing it
+- ENV_PLACE_APP_CLIENT_ID is the client id for the app / script registered with Reddit (under "personal use script", something like `Q98s00Gkb7CnOZgXoj917Q`)
+- ENV_PLACE_SECRET_KEY is the secret key for the app / script registered with Reddit (above "name", something like `LKfIHcTs5pct0VZPgXT99IgAUXpTsg`)
+- ENV_DRAW_X_START don't change it
+- ENV_DRAW_Y_START don't change it
+- ENV_R_START don't change it
+- ENV_C_START don't change it
 
 
-Note: Multiple fields can be passed into the arrays to spawn a thread for each one.
+### Step 3 - Option 1: Using Conda (recommended)
+Install [Python 3](https://www.python.org/downloads/) if you haven't
 
-Change image.jpg to specify what image to draw. One pixel is drawn every 5 minutes and only jpeg images are supported.
-
-## Run the Script
-
-```
+```shell
+conda create --name reddit python=3.8
+conda activate reddit
+conda install --yes --file requirements.txt
+conda install --yes pillow requests python-dotenv
 python3 main.py
 ```
+
+### Step 3 - Option 2: Using Pip
+Install [Python 3](https://www.python.org/downloads/) if you haven't
+
+```shell
+pip3 install -r requirements.txt
+python3 main.py
+```
+
+Note: Multiple fields can be passed into the arrays to spawn a thread for each one.
