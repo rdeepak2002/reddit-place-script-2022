@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import os.path
 import math
@@ -251,9 +253,9 @@ def load_image():
     global image_height
     global image_extension
 
-    image_path = os.path.join(
-        os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png"
-    )
+
+    image_path = os.path.join(os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png")
+
     image_extension = ".png"
 
     if image_path is None:
@@ -383,7 +385,12 @@ def task(credentials_index):
 
                 logging.debug(f"Received response: {r.text}")
                 response_data = r.json()
-                access_tokens[credentials_index] = response_data["access_token"]
+                try:
+                    access_tokens[credentials_index] = response_data["access_token"]
+                except KeyError:
+                    repeat_forever = False
+                    logging.fatal(f"Bad account {username}")
+                    break
                 # access_token_type = response_data["token_type"]  # this is just "bearer"
                 access_token_expires_in_seconds = response_data[
                     "expires_in"

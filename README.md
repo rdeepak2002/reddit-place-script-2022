@@ -15,7 +15,7 @@ This is a script to draw the offical TUX onto r/place (<https://www.reddit.com/r
 
 ## Requirements
 
-- [Python 3](https://www.python.org/downloads/)
+- [Latest Version of Python 3](https://www.python.org/downloads/)
 - [A Reddit App Client ID and App Secret Key](https://www.reddit.com/prefs/apps)
 
 ## How to Get App Client ID and App Secret Key
@@ -34,6 +34,11 @@ If you don't want to create a development app for each account, you can add each
 
 Install requirements from 'requirements.txt' file.
 
+### Windows
+```shell
+pip install -r requirements.txt
+```
+### Other OS
 ```shell
 pip3 install -r requirements.txt
 ```
