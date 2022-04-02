@@ -236,21 +236,67 @@ class PlaceClient:
             )
         )
 
-        file = ""
-        while True:
-            temp = json.loads(ws.recv())
-            if temp["type"] == "data":
-                msg = temp["payload"]["data"]["subscribe"]
-                if msg["data"]["__typename"] == "FullFrameMessageData":
-                    file = msg["data"]["name"]
-                    break
+        image_sizex = 2
+        image_sizey = 1
+
+        imgs = []
+        already_added = []
+        for i in range(0, image_sizex * image_sizey):
+            ws.send(
+                json.dumps(
+                    {
+                        "id": str(2 + i),
+                        "type": "start",
+                        "payload": {
+                            "variables": {
+                                "input": {
+                                    "channel": {
+                                        "teamOwner": "AFD2022",
+                                        "category": "CANVAS",
+                                        "tag": str(i),
+                                    }
+                                }
+                            },
+                            "extensions": {},
+                            "operationName": "replace",
+                            "query": "subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+                        },
+                    }
+                )
+            )
+            file = ""
+            while True:
+                temp = json.loads(ws.recv())
+                # print("\n",temp)
+                if temp["type"] == "data":
+                    msg = temp["payload"]["data"]["subscribe"]
+                    if msg["data"]["__typename"] == "FullFrameMessageData":
+                        if not temp["id"] in already_added:
+                            imgs.append(
+                                Image.open(
+                                    BytesIO(
+                                        requests.get(
+                                            msg["data"]["name"], stream=True
+                                        ).content
+                                    )
+                                )
+                            )
+                            already_added.append(temp["id"])
+                        break
+            ws.send(json.dumps({"id": str(2 + i), "type": "stop"}))
 
         ws.close()
 
-        boardimg = BytesIO(requests.get(file, stream=True).content)
-        logging.info(f"Received board image: {file}")
+        new_img = Image.new("RGB", (1000 * 2, 1000))
 
-        return boardimg
+        x_offset = 0
+        for img in imgs:
+            new_img.paste(img, (x_offset, 0))
+            x_offset += img.size[0]
+
+        print("Got image:", file)
+
+        return new_img
 
     def get_unset_pixel(self, boardimg, x, y):
         pix2 = Image.open(boardimg).convert("RGB").load()
