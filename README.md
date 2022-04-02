@@ -102,8 +102,6 @@ In this case, the first worker will start drawing from (0, 0) and the second wor
 
 This is useful if you want different threads drawing different parts of the image with different accounts.
 
-If you'd like, you can enable Verbose Mode by editing the Python file. This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
-
 ## Other Settings
 
 ```text
@@ -114,7 +112,8 @@ ENV_UNVERIFIED_PLACE_FREQUENCY='True'
 - ENV_THREAD_DELAY Adds a delay between starting a new thread. Can be used to avoid ratelimiting
 - ENV_UNVERIFIED_PLACE_FREQUENCY is for setting the pixel place frequency to the unverified account frequency (20 minutes)
 
-
+- Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
+- If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
 ## Developing
 The nox CI job will run flake8 on the code. You can also do this locally by pip installing nox on your system and running 
 `nox` in the repository directory.
