@@ -1,2 +1,2 @@
 pip3 install -r requirements.txt
-python3 main.py --verbose
+python3 main.py --debug

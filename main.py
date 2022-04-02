@@ -9,7 +9,6 @@ import logging
 import time
 import threading
 import sys
-import argparse
 import random
 from io import BytesIO
 from websocket import create_connection
@@ -17,14 +16,10 @@ from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
+import click
 
 
 from mappings import color_map, name_map
-
-# Option remains for legacy usage
-# equal to running
-# python main.py --verbose
-verbose_mode = False
 
 
 class PlaceClient:
@@ -316,9 +311,7 @@ class PlaceClient:
                 x = 0
 
             if y >= self.image_size[1]:
-                logging.info(
-                    f"{colorama.Fore.GREEN} All pixels correct, trying again in 10 seconds... {colorama.Style.RESET_ALL}"
-                )
+                logging.info("All pixels correct, trying again in 10 seconds... ")
 
                 time.sleep(10)
 
@@ -543,23 +536,24 @@ class PlaceClient:
             time.sleep(self.delay_between_launches)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        help="Be verbose",
-        action="store_const",
-        dest="loglevel",
-        const=logging.DEBUG,
-        default=logging.INFO,
-    )
-    args = parser.parse_args()
+@click.command()
+@click.option(
+    "-d",
+    "--debug",
+    is_flag=True,
+    help="Enable debug mode. Prints debug messages to the console.",
+)
+def main(debug: bool):
 
-    if args.loglevel > logging.DEBUG:
+    if not debug:
+        # default loguru level is DEBUG
         logger.remove()
-        logger.add(sys.stderr, level=logging._levelToName.get(args.loglevel))
+        logger.add(sys.stderr, level="INFO")
 
     client = PlaceClient()
     # Start everything
     client.start()
+
+
+if __name__ == "__main__":
+    main()
