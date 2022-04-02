@@ -383,7 +383,7 @@ def task(credentials_index):
                     credentials_index
                 ] = current_timestamp + int(access_token_expires_in_seconds)
                 logging.info(
-                    f"Received new access token: {access_tokens[credentials_index]}"
+                    f"Received new access token: {access_tokens[credentials_index][:5]}************"
                 )
 
             # draw pixel onto screen
