@@ -21,7 +21,7 @@ from mappings import color_map, name_map
 # Option remains for legacy usage
 # equal to running
 # python main.py --verbose
-verbose_mode = False 
+verbose_mode = False
 
 
 # function to convert rgb tuple to hexadecimal string
@@ -54,7 +54,9 @@ def closest_color(target_rgb, rgb_colors_array_in):
 def set_pixel_and_check_ratelimit(
     access_token_in, x, y, color_index_in=18, canvas_index=0
 ):
-    logging.info(f"Attempting to place {color_id_to_name(color_index_in)} pixel at {x}, {y}")
+    logging.info(
+        f"Attempting to place {color_id_to_name(color_index_in)} pixel at {x}, {y}"
+    )
 
     url = "https://gql-realtime-2.reddit.com/query"
 
@@ -87,7 +89,7 @@ def set_pixel_and_check_ratelimit(
     # There are 2 different JSON keys for responses to get the next timestamp.
     # If we don't get data, it means we've been rate limited.
     # If we do, a pixel has been successfully placed.
-    if response.json()["data"] == None:
+    if response.json()["data"] is None:
         waitTime = math.floor(
             response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
         )
@@ -210,13 +212,17 @@ def get_unset_pixel(boardimg, x, y):
             num_loops += 1
         logging.debug(f"{x+pixel_x_start}, {y+pixel_y_start}")
         logging.debug(f"{x}, {y}, boardimg, {image_width}, {image_height}")
-        
+
         target_rgb = pix[x, y]
         new_rgb = closest_color(target_rgb, rgb_colors_array)
         if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb:
-            logging.debug(f"{pix2[x + pixel_x_start, y + pixel_y_start]}, {new_rgb}, {new_rgb != (69, 42, 0)}, {pix2[x, y] != new_rgb,}")
+            logging.debug(
+                f"{pix2[x + pixel_x_start, y + pixel_y_start]}, {new_rgb}, {new_rgb != (69, 42, 0)}, {pix2[x, y] != new_rgb,}"
+            )
             if new_rgb != (69, 42, 0):
-                logging.debug(f"Replacing {pix2[x+pixel_x_start, y+pixel_y_start]} pixel at: {x+pixel_x_start},{y+pixel_y_start} with {new_rgb} color")
+                logging.debug(
+                    f"Replacing {pix2[x+pixel_x_start, y+pixel_y_start]} pixel at: {x+pixel_x_start},{y+pixel_y_start} with {new_rgb} color"
+                )
                 break
             else:
                 print("TransparrentPixel")
@@ -309,7 +315,6 @@ def task(credentials_index):
             if update_str != new_update_str and time_until_next_draw % 10 == 0:
                 update_str = new_update_str
                 logging.info(f"Thread #{credentials_index} :: {update_str}")
-                
 
             # refresh access token if necessary
             if (
@@ -372,8 +377,9 @@ def task(credentials_index):
                 access_token_expires_at_timestamp[
                     credentials_index
                 ] = current_timestamp + int(access_token_expires_in_seconds)
-                logging.info(f"Received new access token: {access_tokens[credentials_index]}")
-                
+                logging.info(
+                    f"Received new access token: {access_tokens[credentials_index]}"
+                )
 
             # draw pixel onto screen
             if access_tokens[credentials_index] is not None and (
@@ -430,24 +436,29 @@ def task(credentials_index):
             break
 
 
-
-# # # # #  MAIN # # # # # # 
+# # # # #  MAIN # # # # # #
 
 
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument(
-        '-v', '--verbose',
+        "-v",
+        "--verbose",
         help="Be verbose",
-        action="store_const", dest="loglevel", const=logging.DEBUG, default=logging.INFO,
+        action="store_const",
+        dest="loglevel",
+        const=logging.DEBUG,
+        default=logging.INFO,
     )
-    args = parser.parse_args()    
-    
-    
-        
-    logging.basicConfig(level=(logging.DEBUG if verbose_mode else args.loglevel), format='[%(asctime)s] :: [%(levelname)s] - %(message)s',datefmt='%d-%b-%y %H:%M:%S' )
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=(logging.DEBUG if verbose_mode else args.loglevel),
+        format="[%(asctime)s] :: [%(levelname)s] - %(message)s",
+        datefmt="%d-%b-%y %H:%M:%S",
+    )
     logging.info("place-script started")
     if os.path.exists("./.env"):
         # load env variables
@@ -472,7 +483,6 @@ ENV_C_START='["0"]\'"""
         logging.fatal("No .env file found")
         exit()
 
-
     # color palette
     rgb_colors_array = []
 
@@ -489,7 +499,6 @@ ENV_C_START='["0"]\'"""
     # first_run = True
     first_run_counter = 0
 
-
     # get color palette
     init_rgb_colors_array()
 
@@ -500,7 +509,7 @@ ENV_C_START='["0"]\'"""
     num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
 
     # define delay between starting new threads
-    if os.getenv("ENV_THREAD_DELAY") != None:
+    if os.getenv("ENV_THREAD_DELAY") is not None:
         delay_between_launches_seconds = int(os.getenv("ENV_THREAD_DELAY"))
     else:
         delay_between_launches_seconds = 3
