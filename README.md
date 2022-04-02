@@ -50,7 +50,7 @@ Install [conda](https://docs.conda.io/en/latest/miniconda.html) if you haven't
 conda create --name reddit python=3.8
 conda activate reddit
 conda install --yes --file requirements.txt --channel conda-forge
-conda install --yes pillow requests python-dotenv --channel conda-forge
+conda install --yes pillow requests python-dotenv websocket-client --channel conda-forge
 python3 main.py
 ```
 
