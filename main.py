@@ -5,6 +5,9 @@ import requests
 import json
 import time
 import threading
+import logging
+import colorama
+import argparse
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
@@ -13,86 +16,14 @@ from PIL import ImageColor
 from PIL import Image
 import random
 
-# set verbose mode to increase output (messy)
+
+from mappings import color_map, name_map
+
+# Option remains for legacy usage
+# equal to running
+# python main.py --verbose
 verbose_mode = False
 
-if os.path.exists("./.env"):
-    # load env variables
-    load_dotenv()
-else:
-    envfile = open(".env", "w")
-    envfile.write(
-        """ENV_PLACE_USERNAME='["developer_username"]'
-ENV_PLACE_PASSWORD='["developer_password"]'
-ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
-ENV_PLACE_SECRET_KEY='["app_secret_key"]'
-ENV_DRAW_X_START="x_position_start_integer"
-ENV_DRAW_Y_START="y_position_start_integer"
-ENV_R_START='["0"]'
-ENV_C_START='["0"]\'"""
-    )
-    print(
-        "No .env file found. A template has been created for you.",
-        "Read the README and configure it properly.",
-        "Right now, it's full of example data, so you ABSOLUTELY MUST edit it.",
-    )
-    exit("Error: No .env file found")
-
-# map of colors for pixels you can place
-color_map = {
-    "#FF4500": 2,  # bright red
-    "#FFA800": 3,  # orange
-    "#FFD635": 4,  # yellow
-    "#00A368": 6,  # darker green
-    "#7EED56": 8,  # lighter green
-    "#2450A4": 12,  # darkest blue
-    "#3690EA": 13,  # medium normal blue
-    "#51E9F4": 14,  # cyan
-    "#811E9F": 18,  # darkest purple
-    "#B44AC0": 19,  # normal purple
-    "#FF99AA": 23,  # pink
-    "#9C6926": 25,  # brown
-    "#000000": 27,  # black
-    "#898D90": 29,  # grey
-    "#D4D7D9": 30,  # light grey
-    "#FFFFFF": 31,  # white
-}
-
-# map of pixel color ids to verbose name (for debugging)
-name_map = {
-    2: "Bright Red",
-    3: "Orange",
-    4: "Yellow",
-    6: "Dark Green",
-    8: "Light Green",
-    12: "Dark Blue",
-    13: "Blue",
-    14: "Cyan",
-    18: "Dark Purple",
-    19: "Purple",
-    23: "Pink",
-    25: "Brown",
-    27: "Black",
-    29: "Grey",
-    30: "Light Grey",
-    31: "White",
-}
-
-# color palette
-rgb_colors_array = []
-
-# auth variables
-access_tokens = []
-access_token_expires_at_timestamp = []
-
-# image.jpg information
-pix = None
-image_width = None
-image_height = None
-
-# place a pixel immediately
-# first_run = True
-first_run_counter = 0
 
 # function to convert rgb tuple to hexadecimal string
 def rgb_to_hex(rgb):
@@ -121,7 +52,9 @@ def closest_color(target_rgb, rgb_colors_array_in):
 def set_pixel_and_check_ratelimit(
     access_token_in, x, y, color_index_in=18, canvas_index=0
 ):
-    print("placing " + color_id_to_name(color_index_in) + " pixel at " + str((x, y)))
+    logging.info(
+        f"Attempting to place {color_id_to_name(color_index_in)} pixel at {x}, {y}"
+    )
 
     url = "https://gql-realtime-2.reddit.com/query"
 
@@ -150,23 +83,26 @@ def set_pixel_and_check_ratelimit(
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    if verbose_mode:
-        print("received response: ", response.text)
+    logging.debug(f"Received response: {response.text}")
     # There are 2 different JSON keys for responses to get the next timestamp.
     # If we don't get data, it means we've been rate limited.
     # If we do, a pixel has been successfully placed.
-    if response.json()["data"] == None:
+    if response.json()["data"] is None:
         waitTime = math.floor(
             response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
         )
-        print("placing failed: rate limited")
+        logging.info(
+            f"{colorama.Fore.RED}Failed placing pixel: rate limited {colorama.Style.RESET_ALL}"
+        )
     else:
         waitTime = math.floor(
             response.json()["data"]["act"]["data"][0]["data"][
                 "nextAvailablePixelTimestamp"
             ]
         )
-        print("placing succeeded")
+        logging.info(
+            f"{colorama.Fore.GREEN}Succeeded placing pixel {colorama.Style.RESET_ALL}"
+        )
 
     # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
     # Works perfect with one thread.
@@ -182,7 +118,7 @@ def set_pixel_and_check_ratelimit(
 
 
 def get_board(access_token_in):
-    print("Getting board")
+    logging.info("Getting board")
     ws = create_connection(
         "wss://gql-realtime-2.reddit.com/query", origin="https://hot-potato.reddit.com"
     )
@@ -252,7 +188,7 @@ def get_board(access_token_in):
     ws.close()
 
     boardimg = BytesIO(requests.get(file, stream=True).content)
-    print("Got image:", file)
+    logging.info(f"Received board image: {file}")
 
     return boardimg
 
@@ -276,30 +212,19 @@ def get_unset_pixel(boardimg, x, y):
                 return 0, 0, new_rgb
             y = 0
             num_loops += 1
-        if verbose_mode:
-            print(x + pixel_x_start, y + pixel_y_start)
-            print(x, y, "boardimg", image_width, image_height)
+        logging.debug(f"{x+pixel_x_start}, {y+pixel_y_start}")
+        logging.debug(f"{x}, {y}, boardimg, {image_width}, {image_height}")
+
         target_rgb = pix[x, y]
         new_rgb = closest_color(target_rgb, rgb_colors_array)
         if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb:
-            if verbose_mode:
-                print(
-                    pix2[x + pixel_x_start, y + pixel_y_start],
-                    new_rgb,
-                    new_rgb != (69, 42, 0),
-                    pix2[x, y] != new_rgb,
-                )
+            logging.debug(
+                f"{pix2[x + pixel_x_start, y + pixel_y_start]}, {new_rgb}, {new_rgb != (69, 42, 0)}, {pix2[x, y] != new_rgb,}"
+            )
             if new_rgb != (69, 42, 0):
-                if verbose_mode:
-                    print(
-                        "Different Pixel found at:",
-                        x + pixel_x_start,
-                        y + pixel_y_start,
-                        "With Color:",
-                        pix2[x + pixel_x_start, y + pixel_y_start],
-                        "Replacing with:",
-                        new_rgb,
-                    )
+                logging.debug(
+                    f"Replacing {pix2[x+pixel_x_start, y+pixel_y_start]} pixel at: {x+pixel_x_start},{y+pixel_y_start} with {new_rgb} color"
+                )
                 break
             else:
                 print("TransparrentPixel")
@@ -314,8 +239,7 @@ def init_rgb_colors_array():
     for color_hex, color_index in color_map.items():
         rgb_array = ImageColor.getcolor(color_hex, "RGB")
         rgb_colors_array.append(rgb_array)
-    if verbose_mode:
-        print("available colors for palette (rgb): ", rgb_colors_array)
+    logging.debug(f"Available colors for rgb palette: {rgb_colors_array}")
 
 
 # method to read the input image.jpg file
@@ -327,9 +251,7 @@ def load_image():
     image_path = os.path.join(os.path.abspath(os.getcwd()), "image.jpg")
     im = Image.open(image_path)
     pix = im.load()
-    print(
-        "image size: ", im.size
-    )  # Get the width and height of the image for iterating over
+    logging.info(f"Loaded image size: {im.size}")
     image_width, image_height = im.size
 
 
@@ -394,12 +316,7 @@ def task(credentials_index):
             )
             if update_str != new_update_str and time_until_next_draw % 10 == 0:
                 update_str = new_update_str
-                print(
-                    "-------Thread #"
-                    + str(credentials_index)
-                    + "-------\n"
-                    + update_str
-                )
+                logging.info(f"Thread #{credentials_index} :: {update_str}")
 
             # refresh access token if necessary
             if (
@@ -407,12 +324,7 @@ def task(credentials_index):
                 or current_timestamp
                 >= access_token_expires_at_timestamp[credentials_index]
             ):
-                print(
-                    "-------Thread #"
-                    + str(credentials_index)
-                    + "-------\n"
-                    + "Refreshing access token..."
-                )
+                logging.info(f"Thread #{credentials_index} :: Refreshing access token")
 
                 # developer's reddit username and password
                 try:
@@ -454,9 +366,7 @@ def task(credentials_index):
                     headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
                 )
 
-                if verbose_mode:
-                    print("received response: ", r.text)
-
+                logging.debug(f"Received response: {r.text}")
                 response_data = r.json()
                 access_tokens[credentials_index] = response_data["access_token"]
                 # access_token_type = response_data["token_type"]  # this is just "bearer"
@@ -469,10 +379,8 @@ def task(credentials_index):
                 access_token_expires_at_timestamp[
                     credentials_index
                 ] = current_timestamp + int(access_token_expires_in_seconds)
-
-                print(
-                    "received new access token: ",
-                    access_tokens[credentials_index],
+                logging.info(
+                    f"Received new access token: {access_tokens[credentials_index][:5]}************"
                 )
 
             # draw pixel onto screen
@@ -516,12 +424,7 @@ def task(credentials_index):
 
                 # exit when all pixels drawn
                 if current_c >= image_height:
-                    print(
-                        "--------Thread #"
-                        + str(credentials_index)
-                        + "--------\n"
-                        + "done drawing image to r/place\n"
-                    )
+                    logging.info(f"Thread #{credentials_index} :: image completed")
                     break
         # except:
         #     print("__________________")
@@ -535,26 +438,89 @@ def task(credentials_index):
             break
 
 
-# get color palette
-init_rgb_colors_array()
+# # # # #  MAIN # # # # # #
 
-# load the pixels for the input image
-load_image()
 
-# get number of concurrent threads to start
-num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
+if __name__ == "__main__":
 
-# define delay between starting new threads
-if os.getenv("ENV_THREAD_DELAY") != None:
-    delay_between_launches_seconds = int(os.getenv("ENV_THREAD_DELAY"))
-else:
-    delay_between_launches_seconds = 3
+    parser = argparse.ArgumentParser()
+    colorama.init()
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Be verbose",
+        action="store_const",
+        dest="loglevel",
+        const=logging.DEBUG,
+        default=logging.INFO,
+    )
+    args = parser.parse_args()
 
-# launch a thread for each account specified in .env
-for i in range(num_credentials):
-    # run the image drawing task
-    access_tokens.append(None)
-    access_token_expires_at_timestamp.append(math.floor(time.time()))
-    thread1 = threading.Thread(target=task, args=[i])
-    thread1.start()
-    time.sleep(delay_between_launches_seconds)
+    logging.basicConfig(
+        level=(logging.DEBUG if verbose_mode else args.loglevel),
+        format="[%(asctime)s] :: [%(levelname)s] - %(message)s",
+        datefmt="%d-%b-%y %H:%M:%S",
+    )
+    logging.info("place-script started")
+    if os.path.exists("./.env"):
+        # load env variables
+        load_dotenv()
+    else:
+        envfile = open(".env", "w")
+        envfile.write(
+            """ENV_PLACE_USERNAME='["developer_username"]'
+ENV_PLACE_PASSWORD='["developer_password"]'
+ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
+ENV_PLACE_SECRET_KEY='["app_secret_key"]'
+ENV_DRAW_X_START="x_position_start_integer"
+ENV_DRAW_Y_START="y_position_start_integer"
+ENV_R_START='["0"]'
+ENV_C_START='["0"]\'"""
+        )
+        print(
+            "No .env file found. A template has been created for you.",
+            "Read the README and configure it properly.",
+            "Right now, it's full of example data, so you ABSOLUTELY MUST edit it.",
+        )
+        logging.fatal("No .env file found")
+        exit()
+
+    # color palette
+    rgb_colors_array = []
+
+    # auth variables
+    access_tokens = []
+    access_token_expires_at_timestamp = []
+
+    # image.jpg information
+    pix = None
+    image_width = None
+    image_height = None
+
+    # place a pixel immediately
+    # first_run = True
+    first_run_counter = 0
+
+    # get color palette
+    init_rgb_colors_array()
+
+    # load the pixels for the input image
+    load_image()
+
+    # get number of concurrent threads to start
+    num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
+
+    # define delay between starting new threads
+    if os.getenv("ENV_THREAD_DELAY") is not None:
+        delay_between_launches_seconds = int(os.getenv("ENV_THREAD_DELAY"))
+    else:
+        delay_between_launches_seconds = 3
+
+    # launch a thread for each account specified in .env
+    for i in range(num_credentials):
+        # run the image drawing task
+        access_tokens.append(None)
+        access_token_expires_at_timestamp.append(math.floor(time.time()))
+        thread1 = threading.Thread(target=task, args=[i])
+        thread1.start()
+        time.sleep(delay_between_launches_seconds)
