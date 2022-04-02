@@ -11,6 +11,7 @@ import logging
 import colorama
 import argparse
 import sys
+import shutil
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
@@ -258,6 +259,14 @@ def load_image():
     )
 
     image_extension = ".png"
+
+    res = requests.get("https://github.com/r-PlaceTux/place_tux/raw/main/GloriousOfficialFinal52x80FlatTux.png", stream = True)
+    if res.status_code == 200:
+        with open(image_path, 'wb') as f:
+            shutil.copyfileobj(res.raw, f)
+            logging.info("Sucessfully updated image.")
+    else:
+        logging.warn("Unable to update image")
 
     if image_path is None:
         sys.exit("No valid image path found!")
