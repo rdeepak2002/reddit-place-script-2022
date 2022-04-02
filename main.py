@@ -5,17 +5,19 @@ import os.path
 import math
 import requests
 import json
+import logging
 import time
 import threading
-import logging
-import colorama
+import sys
 import argparse
+import random
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
-import random
+from loguru import logger
+
 
 from mappings import color_map, name_map
 
@@ -109,12 +111,12 @@ class PlaceClient:
         try:
             im = Image.open(self.image_path)
         except FileNotFoundError:
-            logging.fatal("Failed to load image")
+            logger.fatal("Failed to load image")
             exit()
         except UnidentifiedImageError:
-            logging.fatal("File found, but couldn't identify image format")
+            logger.fatal("File found, but couldn't identify image format")
         self.pix = im.load()
-        logging.info(f"Loaded image size: {im.size}")
+        logger.info("Loaded image size: {}", im.size)
         self.image_size = im.size
 
     """ Main """
@@ -123,8 +125,11 @@ class PlaceClient:
     def set_pixel_and_check_ratelimit(
         self, access_token_in, x, y, color_index_in=18, canvas_index=0
     ):
-        logging.info(
-            f"Attempting to place {self.color_id_to_name(color_index_in)} pixel at {x + (1000 * canvas_index)}, {y}"
+        logger.info(
+            "Attempting to place {} pixel at {}, {}",
+            self.color_id_to_name(color_index_in),
+            x + (1000 * canvas_index),
+            y
         )
 
         url = "https://gql-realtime-2.reddit.com/query"
@@ -154,7 +159,7 @@ class PlaceClient:
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        logging.debug(f"Received response: {response.text}")
+        logger.debug("Received response: {}", response.text)
 
         # There are 2 different JSON keys for responses to get the next timestamp.
         # If we don't get data, it means we've been rate limited.
@@ -163,8 +168,8 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logging.info(
-                f"{colorama.Fore.RED}Failed placing pixel: rate limited {colorama.Style.RESET_ALL}"
+            logger.error(
+                "Failed placing pixel: rate limited"
             )
         else:
             waitTime = math.floor(
@@ -172,8 +177,8 @@ class PlaceClient:
                     "nextAvailablePixelTimestamp"
                 ]
             )
-            logging.info(
-                f"{colorama.Fore.GREEN}Succeeded placing pixel {colorama.Style.RESET_ALL}"
+            logger.info(
+                "Succeeded placing pixel"
             )
 
         # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
@@ -181,15 +186,11 @@ class PlaceClient:
         # With multiple threads, every time you press Enter you move to the next one.
         # Move the code anywhere you want, I put it here to inspect the API responses.
 
-        # import code
-
-        # code.interact(local=locals())
-
         # Reddit returns time in ms and we need seconds, so divide by 1000
         return waitTime / 1000
 
     def get_board(self, access_token_in):
-        logging.info("Getting board")
+        logger.info("Getting board")
         ws = create_connection(
             "wss://gql-realtime-2.reddit.com/query",
             origin="https://hot-potato.reddit.com",
@@ -279,7 +280,6 @@ class PlaceClient:
             file = ""
             while True:
                 temp = json.loads(ws.recv())
-                # print("\n",temp)
                 if temp["type"] == "data":
                     msg = temp["payload"]["data"]["subscribe"]
                     if msg["data"]["__typename"] == "FullFrameMessageData":
@@ -306,7 +306,7 @@ class PlaceClient:
             new_img.paste(img, (x_offset, 0))
             x_offset += img.size[0]
 
-        print("Got image:", file)
+        logger.info("Got image: {}", file)
 
         return new_img
 
@@ -330,26 +330,37 @@ class PlaceClient:
                 pix2 = boardimg.convert("RGB").load()
                 y = 0
 
-            logging.debug(f"{x+self.pixel_x_start}, {y+self.pixel_y_start}")
-            logging.debug(
-                f"{x}, {y}, boardimg, {self.image_size[0]}, {self.image_size[1]}"
+            logger.debug("{}, {}", x + self.pixel_x_start, y + self.pixel_y_start)
+            logger.debug(
+                "{}, {}, boardimg, {}, {}",
+                x,
+                y,
+                self.image_size[0],
+                self.image_size[1]
             )
 
-            # print(self.pix[x, y])
             target_rgb = self.pix[x, y][:3]
 
             new_rgb = self.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
-                logging.debug(
-                    f"{pix2[x + self.pixel_x_start, y + self.pixel_y_start]}, {new_rgb}, {new_rgb != (69, 42, 0)}, {pix2[x, y] != new_rgb,}"
+                logger.debug(
+                    "{}, {}, {}, {}",
+                    pix2[x + self.pixel_x_start, y + self.pixel_y_start],
+                    new_rgb,
+                    new_rgb != (69, 42, 0),
+                    pix2[x, y] != new_rgb,
                 )
                 if new_rgb != (69, 42, 0):
-                    logging.debug(
-                        f"Replacing {pix2[x+self.pixel_x_start, y+self.pixel_y_start]} pixel at: {x+self.pixel_x_start},{y+self.pixel_y_start} with {new_rgb} color"
+                    logger.debug(
+                        "Replacing {} pixel at: {},{} with {} color",
+                        pix2[x + self.pixel_x_start, y + self.pixel_y_start],
+                        x + self.pixel_x_start,
+                        y + self.pixel_y_start,
+                        new_rgb
                     )
                     break
                 else:
-                    print("TransparrentPixel")
+                    logger.info("TransparrentPixel")
         return x, y, new_rgb
 
     # Draw the input image
@@ -374,8 +385,8 @@ class PlaceClient:
                 current_r = worker["start_coords"][0]
                 current_c = worker["start_coords"][1]
             except Exception:
-                print(
-                    f"You need to provide start_coords to worker '{name}'",
+                logger.info(
+                    "You need to provide start_coords to worker '{}'", name
                 )
                 exit(1)
 
@@ -394,28 +405,27 @@ class PlaceClient:
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
 
                 new_update_str = (
-                    f"{time_until_next_draw} seconds until next pixel is drawn"
+                    "{} seconds until next pixel is drawn",
+                    time_until_next_draw
                 )
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
                     update_str = new_update_str
 
-                logging.info(f"Thread #{index} :: {update_str}")
+                logger.info("Thread #{} :: {}", index, update_str)
 
                 # refresh access token if necessary
-                # print("TEST:", self.access_token_expires_at_timestamp, "INDEX:", index)
                 if (
-                    len(self.access_tokens) == 0
-                    or len(self.access_token_expires_at_timestamp) == 0
-                    or
+                    len(self.access_tokens) == 0 or
+                    len(self.access_token_expires_at_timestamp) == 0 or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp
-                    or (
+                    index not in self.access_token_expires_at_timestamp or
+                    (
+                        self.access_token_expires_at_timestamp.get(index) and
+                        current_timestamp >=
                         self.access_token_expires_at_timestamp.get(index)
-                        and current_timestamp
-                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
-                    logging.info(f"Thread #{index} :: Refreshing access token")
+                    logger.info("Thread #{} :: Refreshing access token", index)
 
                     # developer's reddit username and password
                     try:
@@ -425,8 +435,8 @@ class PlaceClient:
                         app_client_id = worker["client_id"]
                         secret_key = worker["client_secret"]
                     except Exception:
-                        print(
-                            f"You need to provide all required fields to worker '{name}'",
+                        logger.info(
+                            "You need to provide all required fields to worker '{}'", name
                         )
                         exit(1)
 
@@ -443,13 +453,14 @@ class PlaceClient:
                         headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
                     )
 
-                    logging.debug(f"Received response: {r.text}")
+                    logger.debug("Received response: {}", r.text)
 
                     response_data = r.json()
 
                     if "error" in response_data:
-                        print(
-                            f"An error occured. Make sure you have the correct credentials. Response data: {response_data}"
+                        logger.info(
+                            "An error occured. Make sure you have the correct credentials. Response data: {}",
+                            response_data
                         )
                         exit(1)
 
@@ -465,14 +476,15 @@ class PlaceClient:
                         index
                     ] = current_timestamp + int(access_token_expires_in_seconds)
 
-                    logging.info(
-                        f"Received new access token: {self.access_tokens.get(index)[:5]}************"
+                    logger.info(
+                        "Received new access token: {}************",
+                        self.access_tokens.get(index)[:5]
                     )
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time
-                    or self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time or
+                    self.first_run_counter <= index
                 ):
 
                     # place pixel immediately
@@ -494,7 +506,7 @@ class PlaceClient:
                     new_rgb_hex = self.rgb_to_hex(new_rgb)
                     pixel_color_index = color_map[new_rgb_hex]
 
-                    print("\nAccount Placing: ", name, "\n")
+                    logger.info("\nAccount Placing: ", name, "\n")
 
                     # draw the pixel onto r/place
                     # There's a better way to do this
@@ -523,7 +535,7 @@ class PlaceClient:
 
                     # exit when all pixels drawn
                     if current_c >= self.image_size[1]:
-                        logging.info(f"Thread #{index} :: image completed")
+                        logger.info("Thread #{} :: image completed", index)
                         break
 
             if not repeat_forever:
@@ -541,24 +553,20 @@ class PlaceClient:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    colorama.init()
     parser.add_argument(
         "-v",
         "--verbose",
         help="Be verbose",
         action="store_const",
         dest="loglevel",
-        const=logging.DEBUG,
-        default=logging.INFO,
+        const=logger.DEBUG,
+        default=logger.INFO,
     )
     args = parser.parse_args()
 
-    logging.basicConfig(
-        level=(logging.DEBUG if verbose_mode else args.loglevel),
-        format="[%(asctime)s] :: [%(levelname)s] - %(message)s",
-        datefmt="%d-%b-%y %H:%M:%S",
-    )
-    logging.info("place-script started")
+    if args.loglevel > logging.DEBUG:
+        logger.remove()
+        logger.add(sys.stderr, level=logging._levelToName.get(args.loglevel))
 
     client = PlaceClient()
     # Start everything
