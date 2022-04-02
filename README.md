@@ -133,10 +133,12 @@ This is useful if you want different threads drawing different parts of the imag
 
 ## Other Settings
 
+If any JSON decoders errors are found, the `config.json` needs a fix. Make sure to add the below 2 lines in the file.
+
 ```text
 {
     "thread_delay": 2,
-    "unverified_place_frequency": False,
+    "unverified_place_frequency": false,
 }
 ```
 
