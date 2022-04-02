@@ -8,7 +8,6 @@ import json
 import logging
 import time
 import threading
-import logging
 import sys
 import random
 from io import BytesIO
