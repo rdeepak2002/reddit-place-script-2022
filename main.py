@@ -8,6 +8,7 @@ import threading
 import logging
 import colorama
 import argparse
+import sys
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
@@ -39,10 +40,8 @@ def color_id_to_name(color_id):
 
 # function to find the closest rgb color from palette to a target rgb color
 def closest_color(target_rgb, rgb_colors_array_in):
-    if len(target_rgb) == 4:
-        r, g, b, a = target_rgb
-    else:
-        r, g, b = target_rgb
+    r, g, b = target_rgb[:3]  # trim rgba tuple to rgb if png
+
     color_diffs = []
     for color in rgb_colors_array_in:
         cr, cg, cb = color
@@ -250,10 +249,27 @@ def load_image():
     global pix
     global image_width
     global image_height
+    global image_extension
+
     # read and load the image to draw and get its dimensions
-    image_path = os.path.join(
-        os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png"
-    )
+    valid_image_extensions = [
+        ".png",
+        ".jpg",
+        ".jpeg",
+    ]  # List your valid image extensions here
+
+    image_path = None
+    for extension in valid_image_extensions:
+        path = os.path.join(os.path.abspath(os.getcwd()), "image" + extension)
+        if os.path.exists(path):
+            image_path = path
+            image_extension = extension
+            break
+
+    if image_path is None:
+        sys.exit("No valid image path found!")
+
+    print("Loading image from " + image_path)
     im = Image.open(image_path)
     pix = im.load()
     logging.info(f"Loaded image size: {im.size}")
@@ -268,12 +284,18 @@ def task(credentials_index):
     while True:
         # try:
         # global variables for script
-        last_time_placed_pixel = math.floor(time.time())
-
         # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
         # 5 minutes and 30 seconds per pixel
         # pixel_place_frequency = 330
-        pixel_place_frequency = 0
+        if os.getenv("ENV_UNVERIFIED_PLACE_FREQUENCY") is not None:
+            if bool(os.getenv("ENV_UNVERIFIED_PLACE_FREQUENCY")):
+                pixel_place_frequency = 1230
+            else:
+                pixel_place_frequency = 330
+        else:
+            pixel_place_frequency = 330
+
+        next_pixel_placement_time = math.floor(time.time()) + pixel_place_frequency
 
         # pixel drawing preferences
         pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
@@ -313,9 +335,7 @@ def task(credentials_index):
             current_timestamp = math.floor(time.time())
 
             # log next time until drawing
-            time_until_next_draw = (
-                last_time_placed_pixel + pixel_place_frequency - current_timestamp
-            )
+            time_until_next_draw = next_pixel_placement_time - current_timestamp
             new_update_str = (
                 str(time_until_next_draw) + " seconds until next pixel is drawn"
             )
@@ -390,7 +410,7 @@ def task(credentials_index):
 
             # draw pixel onto screen
             if access_tokens[credentials_index] is not None and (
-                current_timestamp >= last_time_placed_pixel + pixel_place_frequency
+                current_timestamp >= next_pixel_placement_time
                 or first_run_counter <= credentials_index
             ):
 
@@ -413,7 +433,7 @@ def task(credentials_index):
                 pixel_color_index = color_map[new_rgb_hex]
 
                 # draw the pixel onto r/place
-                last_time_placed_pixel = set_pixel_and_check_ratelimit(
+                next_pixel_placement_time = set_pixel_and_check_ratelimit(
                     access_tokens[credentials_index],
                     pixel_x_start + current_r,
                     pixel_y_start + current_c,
