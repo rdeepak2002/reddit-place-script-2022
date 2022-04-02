@@ -232,7 +232,7 @@ def task(credentials_index):
                 update_str = new_update_str
                 # print("__________________")
                 # print("Thread #" + str(credentials_index))
-                print(update_str)
+                print("Thread #" + str(credentials_index) + " | " + update_str)
                 sys.stdout.write("\033[F")
                 # print("__________________")
 
