@@ -1,5 +1,5 @@
-# imports
 import os
+import os.path
 import math
 import requests
 import json
@@ -12,10 +12,15 @@ from dotenv import load_dotenv
 from PIL import ImageColor
 from PIL import Image
 import random
-import sys
 
-# load env variables
-load_dotenv()
+# set verbose mode to increase output (messy)
+verbose = False
+
+if os.path.exists("./.env"):
+    # load env variables
+    load_dotenv()
+else:
+    exit("No .env file found. Read the README")
 
 # map of colors for pixels you can place
 color_map = {
@@ -55,7 +60,7 @@ first_run_counter = 0
 
 # function to convert rgb tuple to hexadecimal string
 def rgb_to_hex(rgb):
-    return ('#%02x%02x%02x' % rgb).upper()
+    return ("#%02x%02x%02x" % rgb).upper()
 
 
 # function to find the closest rgb color from palette to a target rgb color
@@ -70,72 +75,151 @@ def closest_color(target_rgb, rgb_colors_array_in):
 
 
 # method to draw a pixel at an x, y coordinate in r/place with a specific color
-def set_pixel(access_token_in, x, y, color_index_in=18, canvas_index=0):
-    print("placing pixel with color index " + str(color_index_in) + " at " + str((x, y)))
+def set_pixel_and_check_ratelimit(
+    access_token_in, x, y, color_index_in=18, canvas_index=0
+):
+    print(
+        "placing pixel with color index "
+        + str(color_index_in)
+        + " at "
+        + str((x, y))
+    )
 
     url = "https://gql-realtime-2.reddit.com/query"
 
-    payload = json.dumps({
-        "operationName": "setPixel",
-        "variables": {
-            "input": {
-                "actionName": "r/replace:set_pixel",
-                "PixelMessageData": {
-                    "coordinate": {
-                        "x": x,
-                        "y": y
+    payload = json.dumps(
+        {
+            "operationName": "setPixel",
+            "variables": {
+                "input": {
+                    "actionName": "r/replace:set_pixel",
+                    "PixelMessageData": {
+                        "coordinate": {"x": x, "y": y},
+                        "colorIndex": color_index_in,
+                        "canvasIndex": canvas_index,
                     },
-                    "colorIndex": color_index_in,
-                    "canvasIndex": canvas_index
                 }
-            }
-        },
-        "query": "mutation setPixel($input: ActInput!) {\n  act(input: $input) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetUserCooldownResponseMessageData {\n            nextAvailablePixelTimestamp\n            __typename\n          }\n          ... on SetPixelResponseMessageData {\n            timestamp\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
-    })
+            },
+            "query": "mutation setPixel($input: ActInput!) {\n  act(input: $input) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetUserCooldownResponseMessageData {\n            nextAvailablePixelTimestamp\n            __typename\n          }\n          ... on SetPixelResponseMessageData {\n            timestamp\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+        }
+    )
     headers = {
-        'origin': 'https://hot-potato.reddit.com',
-        'referer': 'https://hot-potato.reddit.com/',
-        'apollographql-client-name': 'mona-lisa',
-        'Authorization': 'Bearer ' + access_token_in,
-        'Content-Type': 'application/json'
+        "origin": "https://hot-potato.reddit.com",
+        "referer": "https://hot-potato.reddit.com/",
+        "apollographql-client-name": "mona-lisa",
+        "Authorization": "Bearer " + access_token_in,
+        "Content-Type": "application/json",
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
+    if verbose:
+        print("received response: ", response.text)
+    # There are 2 different JSON keys for responses to get the next timestamp.
+    # If we don't get data, it means we've been rate limited.
+    # If we do, a pixel has been successfully placed.
+    if response.json()["data"] == None:
+        waitTime = math.floor(
+            response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
+        )
+        print("placing failed: rate limited")
+    else:
+        waitTime = math.floor(
+            response.json()["data"]["act"]["data"][0]["data"][
+                "nextAvailablePixelTimestamp"
+            ]
+        )
+        print("placing succeeded")
 
-    print("received response: ", response.text)
+    # LETS YOU DEBUG THREADS FOR TESTING
+    # Works perfect with one thread.
+    # With multiple threads, every time you press Enter you move to the next one.
+    # import code
+
+    # code.interact(local=locals())
+
+    # We don't need a global variable for this, just return it. It is a function after all.
+    # Reddit returns time in ms and we need seconds
+    return waitTime / 1000
+
 
 def get_board(access_token_in):
     print("Getting board")
     ws = create_connection("wss://gql-realtime-2.reddit.com/query")
-    ws.send(json.dumps({"type":"connection_init","payload":{"Authorization":"Bearer "+ access_token_in}}))
+    ws.send(
+        json.dumps(
+            {
+                "type": "connection_init",
+                "payload": {"Authorization": "Bearer " + access_token_in},
+            }
+        )
+    )
     ws.recv()
-    ws.send(json.dumps({"id":"1","type":"start","payload":{"variables":{"input":{"channel":{"teamOwner":"AFD2022","category":"CONFIG"}}},"extensions":{},"operationName":"configuration","query":"subscription configuration($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on ConfigurationMessageData {\n          colorPalette {\n            colors {\n              hex\n              index\n              __typename\n            }\n            __typename\n          }\n          canvasConfigurations {\n            index\n            dx\n            dy\n            __typename\n          }\n          canvasWidth\n          canvasHeight\n          __typename\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}}))
+    ws.send(
+        json.dumps(
+            {
+                "id": "1",
+                "type": "start",
+                "payload": {
+                    "variables": {
+                        "input": {
+                            "channel": {
+                                "teamOwner": "AFD2022",
+                                "category": "CONFIG",
+                            }
+                        }
+                    },
+                    "extensions": {},
+                    "operationName": "configuration",
+                    "query": "subscription configuration($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on ConfigurationMessageData {\n          colorPalette {\n            colors {\n              hex\n              index\n              __typename\n            }\n            __typename\n          }\n          canvasConfigurations {\n            index\n            dx\n            dy\n            __typename\n          }\n          canvasWidth\n          canvasHeight\n          __typename\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+                },
+            }
+        )
+    )
     ws.recv()
-    ws.send(json.dumps({"id":"2","type":"start","payload":{"variables":{"input":{"channel":{"teamOwner":"AFD2022","category":"CANVAS","tag":"0"}}},"extensions":{},"operationName":"replace","query":"subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}}))
+    ws.send(
+        json.dumps(
+            {
+                "id": "2",
+                "type": "start",
+                "payload": {
+                    "variables": {
+                        "input": {
+                            "channel": {
+                                "teamOwner": "AFD2022",
+                                "category": "CANVAS",
+                                "tag": "0",
+                            }
+                        }
+                    },
+                    "extensions": {},
+                    "operationName": "replace",
+                    "query": "subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+                },
+            }
+        )
+    )
 
     file = ""
     while True:
         temp = json.loads(ws.recv())
-        if temp['type'] == 'data':
-            msg = temp['payload']['data']['subscribe']
-            if msg['data']['__typename'] == 'FullFrameMessageData':
-                file = msg['data']['name']
-                break;
-
+        if temp["type"] == "data":
+            msg = temp["payload"]["data"]["subscribe"]
+            if msg["data"]["__typename"] == "FullFrameMessageData":
+                file = msg["data"]["name"]
+                break
 
     ws.close()
 
-    boardimg = BytesIO(requests.get(file, stream = True).content)
+    boardimg = BytesIO(requests.get(file, stream=True).content)
     print("Got image:", file)
 
     return boardimg
 
+
 def get_unset_pixel(boardimg, x, y):
-    x = 0
-    y= 0
-    pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
-    pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
-    pix2 = Image.open(boardimg).convert('RGB').load()
+    pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
+    pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
+    pix2 = Image.open(boardimg).convert("RGB").load()
     while True:
         x += 1
 
@@ -144,20 +228,34 @@ def get_unset_pixel(boardimg, x, y):
             x = 0
 
         if y >= image_height:
-            break;
-
-        print(x+pixel_x_start,y+pixel_y_start)
-        print(x, y,"boardimg",image_width,image_height)
+            break
+        if verbose:
+            print(x + pixel_x_start, y + pixel_y_start)
+            print(x, y, "boardimg", image_width, image_height)
         target_rgb = pix[x, y]
         new_rgb = closest_color(target_rgb, rgb_colors_array)
-        if pix2[x+pixel_x_start,y+pixel_y_start] != new_rgb:
-            print(pix2[x+pixel_x_start,y+pixel_y_start], new_rgb,new_rgb != (69,42,0), pix2[x,y] != new_rgb)
-            if new_rgb != (69,42,0):
-                print("Different Pixel found at:",x+pixel_x_start,y+pixel_y_start,"With Color:",pix2[x+pixel_x_start,y+pixel_y_start],"Replacing with:",new_rgb)
-                break;
+        if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb and verbose:
+            print(
+                pix2[x + pixel_x_start, y + pixel_y_start],
+                new_rgb,
+                new_rgb != (69, 42, 0),
+                pix2[x, y] != new_rgb,
+            )
+            if new_rgb != (69, 42, 0):
+                print(
+                    "Different Pixel found at:",
+                    x + pixel_x_start,
+                    y + pixel_y_start,
+                    "With Color:",
+                    pix2[x + pixel_x_start, y + pixel_y_start],
+                    "Replacing with:",
+                    new_rgb,
+                )
+                break
             else:
                 print("TransparrentPixel")
-    return x,y
+    return x, y, new_rgb
+
 
 # method to define the color palette array
 def init_rgb_colors_array():
@@ -167,8 +265,8 @@ def init_rgb_colors_array():
     for color_hex, color_index in color_map.items():
         rgb_array = ImageColor.getcolor(color_hex, "RGB")
         rgb_colors_array.append(rgb_array)
-
-    print("available colors for palette (rgb): ", rgb_colors_array)
+    if verbose:
+        print("available colors for palette (rgb): ", rgb_colors_array)
 
 
 # method to read the input image.jpg file
@@ -177,10 +275,12 @@ def load_image():
     global image_width
     global image_height
     # read and load the image to draw and get its dimensions
-    image_path = os.path.join(os.path.abspath(os.getcwd()), 'image.jpg')
+    image_path = os.path.join(os.path.abspath(os.getcwd()), "image.jpg")
     im = Image.open(image_path)
     pix = im.load()
-    print("image size: ", im.size)  # Get the width and height of the image for iterating over
+    print(
+        "image size: ", im.size
+    )  # Get the width and height of the image for iterating over
     image_width, image_height = im.size
 
 
@@ -196,15 +296,16 @@ def task(credentials_index):
 
         # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
         # 5 minutes and 30 seconds per pixel
+        # pixel_place_frequency = 330
         pixel_place_frequency = 330
 
         # pixel drawing preferences
-        pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
-        pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
+        pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
+        pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
 
         # current pixel row and pixel column being drawn
-        current_r = int(json.loads(os.getenv('ENV_R_START'))[credentials_index])
-        current_c = int(json.loads(os.getenv('ENV_C_START'))[credentials_index])
+        current_r = int(json.loads(os.getenv("ENV_R_START"))[credentials_index])
+        current_c = int(json.loads(os.getenv("ENV_C_START"))[credentials_index])
 
         # string for time until next pixel is drawn
         update_str = ""
@@ -226,87 +327,120 @@ def task(credentials_index):
             current_timestamp = math.floor(time.time())
 
             # log next time until drawing
-            time_until_next_draw = last_time_placed_pixel + pixel_place_frequency - current_timestamp
-            new_update_str = str(time_until_next_draw) + " seconds until next pixel is drawn"
-            if update_str != new_update_str:
+            time_until_next_draw = (
+                last_time_placed_pixel
+                + pixel_place_frequency
+                - current_timestamp
+            )
+            new_update_str = (
+                str(time_until_next_draw) + " seconds until next pixel is drawn"
+            )
+            if update_str != new_update_str and time_until_next_draw % 10 == 0:
                 update_str = new_update_str
-                # print("__________________")
-                # print("Thread #" + str(credentials_index))
-                print("Thread #" + str(credentials_index) + " | " + update_str)
-                sys.stdout.write("\033[F")
-                # print("__________________")
+                print(
+                    "-------Thread #"
+                    + str(credentials_index)
+                    + "-------\n"
+                    + update_str
+                )
 
             # refresh access token if necessary
-            if access_tokens[credentials_index] is None or current_timestamp >= access_token_expires_at_timestamp[
-                credentials_index]:
-                print("__________________")
-                print("Thread #" + str(credentials_index))
-                print("refreshing access token...")
+            if (
+                access_tokens[credentials_index] is None
+                or current_timestamp
+                >= access_token_expires_at_timestamp[credentials_index]
+            ):
+                print(
+                    "-------Thread #"
+                    + str(credentials_index)
+                    + "-------\n"
+                    + "Refreshing access token..."
+                )
 
                 # developer's reddit username and password
-                username = json.loads(os.getenv('ENV_PLACE_USERNAME'))[credentials_index]
-                password = json.loads(os.getenv('ENV_PLACE_PASSWORD'))[credentials_index]
+                username = json.loads(os.getenv("ENV_PLACE_USERNAME"))[
+                    credentials_index
+                ]
+                password = json.loads(os.getenv("ENV_PLACE_PASSWORD"))[
+                    credentials_index
+                ]
                 # note: use https://www.reddit.com/prefs/apps
-                app_client_id = json.loads(os.getenv('ENV_PLACE_APP_CLIENT_ID'))[credentials_index]
-                secret_key = json.loads(os.getenv('ENV_PLACE_SECRET_KEY'))[credentials_index]
+                app_client_id = json.loads(os.getenv("ENV_PLACE_APP_CLIENT_ID"))[
+                    credentials_index
+                ]
+                secret_key = json.loads(os.getenv("ENV_PLACE_SECRET_KEY"))[
+                    credentials_index
+                ]
 
                 data = {
-                    'grant_type': 'password',
-                    'username': username,
-                    'password': password
+                    "grant_type": "password",
+                    "username": username,
+                    "password": password,
                 }
 
-                r = requests.post("https://ssl.reddit.com/api/v1/access_token",
-                                  data=data,
-                                  auth=HTTPBasicAuth(app_client_id, secret_key),
-                                  headers={'User-agent': f'placebot{random.randint(1, 100000)}'})
+                r = requests.post(
+                    "https://ssl.reddit.com/api/v1/access_token",
+                    data=data,
+                    auth=HTTPBasicAuth(app_client_id, secret_key),
+                    headers={
+                        "User-agent": f"placebot{random.randint(1, 100000)}"
+                    },
+                )
 
-                print("received response: ", r.text)
+                if verbose:
+                    print("received response: ", r.text)
 
                 response_data = r.json()
                 access_tokens[credentials_index] = response_data["access_token"]
                 # access_token_type = response_data["token_type"]  # this is just "bearer"
-                access_token_expires_in_seconds = response_data["expires_in"]  # this is usually "3600"
+                access_token_expires_in_seconds = response_data[
+                    "expires_in"
+                ]  # this is usually "3600"
                 # access_token_scope = response_data["scope"]  # this is usually "*"
 
                 # ts stores the time in seconds
-                access_token_expires_at_timestamp[credentials_index] = current_timestamp \
-                                                                       + int(access_token_expires_in_seconds)
+                access_token_expires_at_timestamp[
+                    credentials_index
+                ] = current_timestamp + int(access_token_expires_in_seconds)
 
-                print("received new access token: ", access_tokens[credentials_index])
-                print("__________________")
+                print(
+                    "received new access token: ",
+                    access_tokens[credentials_index],
+                )
 
             # draw pixel onto screen
-            if access_tokens[credentials_index] is not None and (current_timestamp >= last_time_placed_pixel
-                                                                 + pixel_place_frequency or first_run_counter==0):
-                
-                
+            if access_tokens[credentials_index] is not None and (
+                current_timestamp
+                >= last_time_placed_pixel + pixel_place_frequency
+                or first_run_counter <= credentials_index
+            ):
+
                 # place pixel immediately
                 # first_run = False
                 first_run_counter += 1
 
                 # get target color
-                target_rgb = pix[current_r, current_c]
+                # target_rgb = pix[current_r, current_c]
+
+                # get current pixel position from input image and replacement color
+                current_r, current_c, new_rgb = get_unset_pixel(
+                    get_board(access_tokens[credentials_index]),
+                    current_r,
+                    current_c,
+                )
 
                 # get converted color
-                new_rgb = closest_color(target_rgb, rgb_colors_array)
                 new_rgb_hex = rgb_to_hex(new_rgb)
                 pixel_color_index = color_map[new_rgb_hex]
 
-                # get current pixel position from input image
-                current_r, current_c = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + random.randint(0, image_width),
-                          pixel_y_start + random.randint(0, image_height))
-                # current_r, current_c = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + current_r,
-                #           pixel_y_start + current_c)
-
                 # draw the pixel onto r/place
-                set_pixel(access_tokens[credentials_index], pixel_x_start + current_r,
-                          pixel_y_start + current_c, pixel_color_index)
-                last_time_placed_pixel = math.floor(time.time())
+                last_time_placed_pixel = set_pixel_and_check_ratelimit(
+                    access_tokens[credentials_index],
+                    pixel_x_start + current_r,
+                    pixel_y_start + current_c,
+                    pixel_color_index,
+                )
 
-
-                # current_r = random.randint(0, image_width)
-                # current_c = random.randint(0, image_height)
                 current_r += 1
 
                 # go back to first column when reached end of a row while drawing
@@ -316,10 +450,12 @@ def task(credentials_index):
 
                 # exit when all pixels drawn
                 if current_c >= image_height:
-                    print("__________________")
-                    print("Thread #" + str(credentials_index))
-                    print("done drawing image to r/place")
-                    print("__________________")
+                    print(
+                        "--------Thread #"
+                        + str(credentials_index)
+                        + "--------\n"
+                        + "done drawing image to r/place\n"
+                    )
                     break
         # except:
         #     print("__________________")
@@ -340,10 +476,13 @@ init_rgb_colors_array()
 load_image()
 
 # get number of concurrent threads to start
-num_credentials = len(json.loads(os.getenv('ENV_PLACE_USERNAME')))
+num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
 
 # define delay between starting new threads
-delay_between_launches_seconds = 0
+if os.getenv("ENV_THREAD_DELAY") != None:
+    delay_between_launches_seconds = int(os.getenv("ENV_THREAD_DELAY"))
+else:
+    delay_between_launches_seconds = 0
 
 # launch a thread for each account specified in .env
 for i in range(num_credentials):
