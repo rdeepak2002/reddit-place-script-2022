@@ -1,5 +1,6 @@
 # imports
 import os
+import os.path
 import math
 import requests
 import json
@@ -13,8 +14,12 @@ from PIL import ImageColor
 from PIL import Image
 import random
 
-# load env variables
-load_dotenv()
+if(os.path.exists("./.env")):
+    # load env variables
+    load_dotenv()
+else:
+    print("No .env file found")
+    exit()
 
 # map of colors for pixels you can place
 color_map = {
@@ -398,7 +403,10 @@ load_image()
 num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
 
 # define delay between starting new threads
-delay_between_launches_seconds = 0
+if(os.getenv('ENV_THREAD_DELAY') != None):
+    delay_between_launches_seconds = int(os.getenv('ENV_THREAD_DELAY'))
+else:
+    delay_between_launches_seconds = 0
 
 # launch a thread for each account specified in .env
 for i in range(num_credentials):
