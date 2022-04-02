@@ -59,7 +59,7 @@ name_map = {
     27: "Black",
     29: "Grey",
     30: "Light Grey",
-    32: "White",
+    31: "White",
 }
 
 # color palette
