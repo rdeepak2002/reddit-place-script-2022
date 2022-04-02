@@ -108,7 +108,10 @@ def color_id_to_name(color_id):
 
 # function to find the closest rgb color from palette to a target rgb color
 def closest_color(target_rgb, rgb_colors_array_in):
-    r, g, b = target_rgb
+    if len(target_rgb) == 4:
+        r, g, b, a = target_rgb
+    else:
+        r, g, b = target_rgb
     color_diffs = []
     for color in rgb_colors_array_in:
         cr, cg, cb = color
@@ -346,7 +349,7 @@ def task(credentials_index):
         # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
         # 5 minutes and 30 seconds per pixel
         # pixel_place_frequency = 330
-        pixel_place_frequency = 330
+        pixel_place_frequency = 0
 
         # pixel drawing preferences
         pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
