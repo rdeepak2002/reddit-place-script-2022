@@ -417,8 +417,7 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp
-                    >= next_pixel_placement_time
+                    current_timestamp >= next_pixel_placement_time
                     or self.first_run_counter <= index
                 ):
 
