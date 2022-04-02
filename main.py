@@ -11,7 +11,6 @@ import threading
 import sys
 import argparse
 import random
-import sys
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
