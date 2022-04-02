@@ -4,7 +4,7 @@
 
 ## About
 
-This is a script to draw a JPG onto r/place (<https://www.reddit.com/r/place/>).
+This is a script to draw the offical TUX onto r/place (<https://www.reddit.com/r/place/>).
 
 ## Features
 
@@ -49,8 +49,8 @@ ENV_PLACE_USERNAME='["developer_username"]'
 ENV_PLACE_PASSWORD='["developer_password"]'
 ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
 ENV_PLACE_SECRET_KEY='["app_secret_key"]'
-ENV_DRAW_X_START="x_position_start_integer"
-ENV_DRAW_Y_START="y_position_start_integer"
+ENV_DRAW_X_START=20
+ENV_DRAW_Y_START=679
 ENV_R_START='["0"]'
 ENV_C_START='["0"]'
 ```
@@ -65,8 +65,6 @@ ENV_C_START='["0"]'
 - ENV_C_START is an array which specifies which y position of the original image to start at while drawing it
 
 Note: Multiple fields can be passed into the arrays to spawn a thread for each one.
-
-Change image.jpg to specify what image to draw. One pixel is drawn every 5 minutes and only jpeg images are supported.
 
 ## Run the Script
 
@@ -83,8 +81,8 @@ ENV_PLACE_USERNAME='["developer_username_1", "developer_username_2"]'
 ENV_PLACE_PASSWORD='["developer_password_1", "developer_password_2"]'
 ENV_PLACE_APP_CLIENT_ID='["app_client_id_1", "app_client_id_2"]'
 ENV_PLACE_SECRET_KEY='["app_secret_key_1", "app_secret_key_2"]'
-ENV_DRAW_X_START="x_position_start_integer"
-ENV_DRAW_Y_START="y_position_start_integer"
+ENV_DRAW_X_START=20
+ENV_DRAW_Y_START=679
 ENV_R_START='["0", "0"]'
 ENV_C_START='["0", "50"]'
 ```
@@ -102,11 +100,6 @@ In this case, the first worker will start drawing from (0, 0) and the second wor
 
 This is useful if you want different threads drawing different parts of the image with different accounts.
 
-<<<<<<< HEAD
-If you'd like, you can enable Verbose Mode by editing the Python file. This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
-
-=======
->>>>>>> 1c82ffe6d2acc03d56e49846c11b14ed8a494548
 ## Other Settings
 
 ```text
@@ -116,14 +109,8 @@ ENV_UNVERIFIED_PLACE_FREQUENCY='True'
 
 - ENV_THREAD_DELAY Adds a delay between starting a new thread. Can be used to avoid ratelimiting
 - ENV_UNVERIFIED_PLACE_FREQUENCY is for setting the pixel place frequency to the unverified account frequency (20 minutes)
-<<<<<<< HEAD
-- Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 
-=======
 
-- Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
-- If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
->>>>>>> 1c82ffe6d2acc03d56e49846c11b14ed8a494548
 ## Developing
 The nox CI job will run flake8 on the code. You can also do this locally by pip installing nox on your system and running 
 `nox` in the repository directory.
