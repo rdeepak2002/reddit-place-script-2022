@@ -44,12 +44,13 @@ ENV_C_START='["0"]'
 
 ### Step 3 - Option 1: Using Conda (recommended)
 Install [Python 3](https://www.python.org/downloads/) if you haven't
+Install [conda](https://docs.conda.io/en/latest/miniconda.html) if you haven't
 
 ```shell
 conda create --name reddit python=3.8
 conda activate reddit
-conda install --yes --file requirements.txt
-conda install --yes pillow requests python-dotenv
+conda install --yes --file requirements.txt --channel conda-forge
+conda install --yes pillow requests python-dotenv --channel conda-forge
 python3 main.py
 ```
 
