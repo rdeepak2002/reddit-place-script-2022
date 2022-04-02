@@ -14,7 +14,7 @@ from PIL import ImageColor
 from PIL import Image
 import random
 
-if(os.path.exists("./.env")):
+if os.path.exists("./.env"):
     # load env variables
     load_dotenv()
 else:
@@ -137,36 +137,82 @@ def set_pixel_and_check_ratelimit(
     # Reddit returns time in ms and we need seconds
     return waitTime / 1000
 
+
 def get_board(access_token_in):
     print("Getting board")
     ws = create_connection("wss://gql-realtime-2.reddit.com/query")
-    ws.send(json.dumps({"type":"connection_init","payload":{"Authorization":"Bearer "+ access_token_in}}))
+    ws.send(
+        json.dumps(
+            {
+                "type": "connection_init",
+                "payload": {"Authorization": "Bearer " + access_token_in},
+            }
+        )
+    )
     ws.recv()
-    ws.send(json.dumps({"id":"1","type":"start","payload":{"variables":{"input":{"channel":{"teamOwner":"AFD2022","category":"CONFIG"}}},"extensions":{},"operationName":"configuration","query":"subscription configuration($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on ConfigurationMessageData {\n          colorPalette {\n            colors {\n              hex\n              index\n              __typename\n            }\n            __typename\n          }\n          canvasConfigurations {\n            index\n            dx\n            dy\n            __typename\n          }\n          canvasWidth\n          canvasHeight\n          __typename\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}}))
+    ws.send(
+        json.dumps(
+            {
+                "id": "1",
+                "type": "start",
+                "payload": {
+                    "variables": {
+                        "input": {
+                            "channel": {"teamOwner": "AFD2022", "category": "CONFIG"}
+                        }
+                    },
+                    "extensions": {},
+                    "operationName": "configuration",
+                    "query": "subscription configuration($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on ConfigurationMessageData {\n          colorPalette {\n            colors {\n              hex\n              index\n              __typename\n            }\n            __typename\n          }\n          canvasConfigurations {\n            index\n            dx\n            dy\n            __typename\n          }\n          canvasWidth\n          canvasHeight\n          __typename\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+                },
+            }
+        )
+    )
     ws.recv()
-    ws.send(json.dumps({"id":"2","type":"start","payload":{"variables":{"input":{"channel":{"teamOwner":"AFD2022","category":"CANVAS","tag":"0"}}},"extensions":{},"operationName":"replace","query":"subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}}))
+    ws.send(
+        json.dumps(
+            {
+                "id": "2",
+                "type": "start",
+                "payload": {
+                    "variables": {
+                        "input": {
+                            "channel": {
+                                "teamOwner": "AFD2022",
+                                "category": "CANVAS",
+                                "tag": "0",
+                            }
+                        }
+                    },
+                    "extensions": {},
+                    "operationName": "replace",
+                    "query": "subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+                },
+            }
+        )
+    )
 
     file = ""
     while True:
         temp = json.loads(ws.recv())
-        if temp['type'] == 'data':
-            msg = temp['payload']['data']['subscribe']
-            if msg['data']['__typename'] == 'FullFrameMessageData':
-                file = msg['data']['name']
-                break;
-
+        if temp["type"] == "data":
+            msg = temp["payload"]["data"]["subscribe"]
+            if msg["data"]["__typename"] == "FullFrameMessageData":
+                file = msg["data"]["name"]
+                break
 
     ws.close()
 
-    boardimg = BytesIO(requests.get(file, stream = True).content)
+    boardimg = BytesIO(requests.get(file, stream=True).content)
     print("Got image:", file)
 
     return boardimg
 
+
 def get_unset_pixel(boardimg, x, y):
-    pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
-    pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
-    pix2 = Image.open(boardimg).convert('RGB').load()
+    pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
+    pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
+    pix2 = Image.open(boardimg).convert("RGB").load()
     while True:
         x += 1
 
@@ -175,20 +221,34 @@ def get_unset_pixel(boardimg, x, y):
             x = 0
 
         if y >= image_height:
-            break;
+            break
 
-        print(x+pixel_x_start,y+pixel_y_start)
-        print(x, y,"boardimg",image_width,image_height)
+        print(x + pixel_x_start, y + pixel_y_start)
+        print(x, y, "boardimg", image_width, image_height)
         target_rgb = pix[x, y]
         new_rgb = closest_color(target_rgb, rgb_colors_array)
-        if pix2[x+pixel_x_start,y+pixel_y_start] != new_rgb:
-            print(pix2[x+pixel_x_start,y+pixel_y_start], new_rgb,new_rgb != (69,42,0), pix2[x,y] != new_rgb)
-            if new_rgb != (69,42,0):
-                print("Different Pixel found at:",x+pixel_x_start,y+pixel_y_start,"With Color:",pix2[x+pixel_x_start,y+pixel_y_start],"Replacing with:",new_rgb)
-                break;
+        if pix2[x + pixel_x_start, y + pixel_y_start] != new_rgb:
+            print(
+                pix2[x + pixel_x_start, y + pixel_y_start],
+                new_rgb,
+                new_rgb != (69, 42, 0),
+                pix2[x, y] != new_rgb,
+            )
+            if new_rgb != (69, 42, 0):
+                print(
+                    "Different Pixel found at:",
+                    x + pixel_x_start,
+                    y + pixel_y_start,
+                    "With Color:",
+                    pix2[x + pixel_x_start, y + pixel_y_start],
+                    "Replacing with:",
+                    new_rgb,
+                )
+                break
             else:
                 print("TransparrentPixel")
-    return x,y,new_rgb
+    return x, y, new_rgb
+
 
 # method to define the color palette array
 def init_rgb_colors_array():
@@ -344,16 +404,16 @@ def task(credentials_index):
                 first_run_counter += 1
 
                 # get target color
-                #target_rgb = pix[current_r, current_c]
+                # target_rgb = pix[current_r, current_c]
 
                 # get current pixel position from input image and replacement color
-                current_r, current_c, new_rgb = get_unset_pixel(get_board(access_tokens[credentials_index]), current_r,
-                        current_c)
+                current_r, current_c, new_rgb = get_unset_pixel(
+                    get_board(access_tokens[credentials_index]), current_r, current_c
+                )
 
-                # get converted color                          
+                # get converted color
                 new_rgb_hex = rgb_to_hex(new_rgb)
                 pixel_color_index = color_map[new_rgb_hex]
-
 
                 # draw the pixel onto r/place
                 last_time_placed_pixel = set_pixel_and_check_ratelimit(
@@ -401,8 +461,8 @@ load_image()
 num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
 
 # define delay between starting new threads
-if(os.getenv('ENV_THREAD_DELAY') != None):
-    delay_between_launches_seconds = int(os.getenv('ENV_THREAD_DELAY'))
+if os.getenv("ENV_THREAD_DELAY") != None:
+    delay_between_launches_seconds = int(os.getenv("ENV_THREAD_DELAY"))
 else:
     delay_between_launches_seconds = 0
 
