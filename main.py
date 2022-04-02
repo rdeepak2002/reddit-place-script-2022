@@ -310,9 +310,8 @@ class PlaceClient:
 
         return new_img
 
-    def get_unset_pixel(self, boardimg, x, y):
+    def get_unset_pixel(self, boardimg, x, y, index):
         pix2 = boardimg.convert("RGB").load()
-        num_loops = 0
         while True:
             x += 1
 
@@ -321,12 +320,15 @@ class PlaceClient:
                 x = 0
 
             if y >= self.image_size[1]:
-                if num_loops > 1:
-                    target_rgb = self.pix[0, 0]
-                    new_rgb = self.closest_color(target_rgb)
-                    return self.pixel_x_start, self.pixel_y_start, new_rgb
-                y = self.pixel_y_start
-                num_loops += 1
+                logging.info(
+                    f"{colorama.Fore.GREEN} All pixels correct, trying again in 10 seconds... {colorama.Style.RESET_ALL}"
+                )
+
+                time.sleep(10)
+
+                boardimg = self.get_board(self.access_tokens[index])
+                pix2 = boardimg.convert("RGB").load()
+                y = 0
 
             logging.debug(f"{x+self.pixel_x_start}, {y+self.pixel_y_start}")
             logging.debug(
@@ -485,6 +487,7 @@ class PlaceClient:
                         self.get_board(self.access_tokens[index]),
                         current_r,
                         current_c,
+                        index,
                     )
 
                     # get converted color
@@ -496,17 +499,17 @@ class PlaceClient:
                     # draw the pixel onto r/place
                     # There's a better way to do this
                     canvas = 0
-                    self.pixel_x_start += current_r
-                    self.pixel_y_start += current_c
-                    while self.pixel_x_start > 999:
-                        self.pixel_x_start -= 1000
+                    pixel_x_start = self.pixel_x_start + current_r
+                    pixel_y_start = self.pixel_y_start + current_c
+                    while pixel_x_start > 999:
+                        pixel_x_start -= 1000
                         canvas += 1
 
                     # draw the pixel onto r/place
                     next_pixel_placement_time = self.set_pixel_and_check_ratelimit(
                         self.access_tokens[index],
-                        self.pixel_x_start,
-                        self.pixel_y_start,
+                        pixel_x_start,
+                        pixel_y_start,
                         pixel_color_index,
                         canvas,
                     )
