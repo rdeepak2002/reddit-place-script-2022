@@ -40,8 +40,8 @@ def color_id_to_name(color_id):
 
 # function to find the closest rgb color from palette to a target rgb color
 def closest_color(target_rgb, rgb_colors_array_in):
-    r, g, b = target_rgb[:3] # trim rgba tuple to rgb if png
-    
+    r, g, b = target_rgb[:3]  # trim rgba tuple to rgb if png
+
     color_diffs = []
     for color in rgb_colors_array_in:
         cr, cg, cb = color
@@ -252,7 +252,11 @@ def load_image():
     global image_extension
 
     # read and load the image to draw and get its dimensions
-    valid_image_extensions = [".png", ".jpg", ".jpeg"] # List your valid image extensions here
+    valid_image_extensions = [
+        ".png",
+        ".jpg",
+        ".jpeg",
+    ]  # List your valid image extensions here
 
     image_path = None
     for extension in valid_image_extensions:
@@ -261,11 +265,11 @@ def load_image():
             image_path = path
             image_extension = extension
             break
-    
+
     if image_path is None:
         sys.exit("No valid image path found!")
-    
-    print('Loading image from ' + image_path)
+
+    print("Loading image from " + image_path)
     im = Image.open(image_path)
     pix = im.load()
     logging.info(f"Loaded image size: {im.size}")
