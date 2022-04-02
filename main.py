@@ -3,7 +3,6 @@
 import os
 import os.path
 import math
-from posixpath import abspath
 import requests
 import json
 import time
@@ -40,6 +39,12 @@ class PlaceClient:
             else 3
         )
 
+        self.unverified_place_frequency = (
+            self.json_data["unverified_place_frequency"]
+            if self.json_data["unverified_place_frequency"] is not None
+            else False
+        )
+
         # Color palette
         self.rgb_colors_array = self.generate_rgb_colors_array()
 
@@ -49,7 +54,6 @@ class PlaceClient:
 
         # Image information
         self.pix = None
-        self.image_path = self.json_data["image_path"]
         self.image_size = None
 
         self.first_run_counter = 0
@@ -102,13 +106,7 @@ class PlaceClient:
 
     def load_image(self):
         # Read and load the image to draw and get its dimensions
-        try:
-            im = Image.open(self.image_path)
-        except:
-            logging.fatal(f"Completely failed to load image")
-            exit()
-
-        # im = Image.open(os.path.join(os.path.abspath(os.getcwd()), "image.jpg"))
+        im = Image.open(os.path.join(os.path.abspath(os.getcwd()), "image.jpg"))
         self.pix = im.load()
         logging.info(f"Loaded image size: {im.size}")
         self.image_size = im.size
@@ -284,7 +282,7 @@ class PlaceClient:
             )
 
             # print(self.pix[x, y])
-            target_rgb = self.pix[x, y][:3]
+            target_rgb = self.pix[x, y]
 
             new_rgb = self.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
@@ -310,7 +308,10 @@ class PlaceClient:
 
             # note: Reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
             # 5 minutes and 30 seconds per pixel
-            pixel_place_frequency = 330
+            if self.unverified_place_frequency:
+                pixel_place_frequency = 1230
+            else:
+                pixel_place_frequency = 330
 
             next_pixel_placement_time = math.floor(time.time()) + pixel_place_frequency
 

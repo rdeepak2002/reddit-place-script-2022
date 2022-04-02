@@ -133,10 +133,12 @@ This is useful if you want different threads drawing different parts of the imag
 ```text
 {
     "thread_delay": 2,
+    "unverified_place_frequency": False,
 }
 ```
 
-- thread_delay Adds a delay between starting a new thread. Can be used to avoid ratelimiting
+- thread_delay - Adds a delay between starting a new thread. Can be used to avoid ratelimiting
+- unverified_place_frequency - Sets the pixel place frequency to the unverified account limit
 
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
