@@ -146,6 +146,17 @@ This is useful if you want different threads drawing different parts of the imag
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
 
+## Docker
+
+A dockerfile is provided. Instructions on installing docker are outside the scope of this guide.
+
+To build: After editing your config.json, run `docker build . -t place-bot`. and wait for the image to build
+
+You can now run with 
+
+`docker run place-bot`
+
+
 ## Developing
 
 The nox CI job will run flake8 and black on the code. You can also do this locally by pip installing nox on your system and running `nox` in the repository directory.
