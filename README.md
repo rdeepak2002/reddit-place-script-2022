@@ -62,3 +62,31 @@ Change image.jpg to specify what image to draw. One pixel is drawn every 5 minut
 ```
 python3 main.py
 ```
+
+## Multiple Workers
+
+If you want two threads drawing the image at once you could have a setup like this:
+
+```text
+ENV_PLACE_USERNAME='["developer_username_1", "developer_username_2"]'
+ENV_PLACE_PASSWORD='["developer_password_1", "developer_password_2"]'
+ENV_PLACE_APP_CLIENT_ID='["app_client_id_1", "app_client_id_2"]'
+ENV_PLACE_SECRET_KEY='["app_secret_key_1", "app_secret_key_2"]'
+ENV_DRAW_X_START="x_position_start_integer"
+ENV_DRAW_Y_START="y_position_start_integer"
+ENV_R_START='["0", "0"]'
+ENV_C_START='["0", "50"]'
+```
+
+The same pattern can be used for 3 or more threads drawing at once. Note that the "ENV_PLACE_USERNAME", "ENV_PLACE_PASSWORD", "ENV_PLACE_APP_CLIENT_ID", "ENV_PLACE_SECRET_KEY", "ENV_R_START", and "ENV_C_START" variables should all be string arrays of the same size.
+
+Also note that I did the following in the above example:
+
+```text
+ENV_R_START='["0", "0"]'
+ENV_C_START='["0", "50"]'
+```
+
+In this case, the first worker will start drawing from (0, 0) and the second worker will start drawing from (0, 50) from the input image.jpg file. 
+
+This is useful if you want different threads drawing different parts of the image with different accounts. 
