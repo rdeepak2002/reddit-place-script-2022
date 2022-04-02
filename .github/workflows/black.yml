@@ -29,6 +29,8 @@ jobs:
       - uses: piotrpawlaczek/python-blacken@release/stable
         with:
           only-check: "no"
+          line-length: "88"
+          sanity-check: "safe"
 
       # Pushes changes made by Black
       - uses: stefanzweifel/git-auto-commit-action@v4
