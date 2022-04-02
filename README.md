@@ -1,10 +1,16 @@
 # Reddit Place Script 2022
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/60-percent-of-the-time-works-every-time.svg)](https://forthebadge.com)
 
 ## About
 
+<<<<<<< HEAD
 This is a script to draw the offical TUX onto r/place (<https://www.reddit.com/r/place/>).
+=======
+This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/>).
+>>>>>>> 44b3f9b407b8b293bbf0d46fe452c2dd2f7a9911
 
 ## Features
 
@@ -12,6 +18,7 @@ This is a script to draw the offical TUX onto r/place (<https://www.reddit.com/r
 - Determines the cooldown time remaining for each account
 - Detects existing matching pixels on the r/place map and skips them
 - Automatically converts colors to the r/place color palette
+- Easy(ish) to read output with colors
 
 ## Requirements
 
@@ -20,7 +27,7 @@ This is a script to draw the offical TUX onto r/place (<https://www.reddit.com/r
 
 ## How to Get App Client ID and App Secret Key
 
-You need to generate an app client id and app secret key for each account in order to use this script.
+You need to generate an app client id and app secret key for each account in order to use this script. Or, just create one, and add each username as a developer in the developer app settings. You will need to duplicate the client ID and secret in .env, though.
 
 Steps:
 
@@ -28,46 +35,62 @@ Steps:
 2. Click "create (another) app" button at very bottom
 3. Select the "script" option and fill in the fields with anything
 
-If you don't want to create a development app for each account, you can add each username as a developer in the developer app settings. You will need to duplicate the client ID and secret in .env, though.
-
 ## Python Package Requirements
 
 Install requirements from 'requirements.txt' file.
 
 ### Windows
+
 ```shell
 pip install -r requirements.txt
 ```
+
 ### Other OS
+
 ```shell
 pip3 install -r requirements.txt
 ```
 
 ## Get Started
 
-Create a file called '.env'
+Move the file 'config_example.json' to config.json
 
-Put in the following content:
+Edit the values to replace with actual credentials and values
 
-```text
-ENV_PLACE_USERNAME='["developer_username"]'
-ENV_PLACE_PASSWORD='["developer_password"]'
-ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
-ENV_PLACE_SECRET_KEY='["app_secret_key"]'
-ENV_DRAW_X_START=20
-ENV_DRAW_Y_START=679
-ENV_R_START='["0"]'
-ENV_C_START='["0"]'
+```json
+{
+  // [x,y] where you want the top left pixel of the local image to be drawn on canvas
+  "image_start_coords": [20, 679],
+  // delay between starting threads (can be 0)
+  "thread_delay": 2,
+  // array of accounts to use
+  "workers": {
+    // username of account 1
+    "worker1username": {
+      // password of account 1
+      "password": "password",
+      // appid and secret (see How To Get App Client ID And App Secret Key)
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      // which pixel of the image to draw first
+      "start_coords": [0, 0]
+    },
+    // username of account 2
+    "worker1username": {
+      // password of account 2
+      "password": "password",
+      // appid and secret (see How To Get App Client ID And App Secret Key)
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      // which pixel of the image to draw first
+      "start_coords": [0, 0]
+    }
+    // etc... add as many accounts as you want (but reddit may detect you the more you add)
+  }
+}
 ```
 
-- ENV_PLACE_USERNAME is an array of usernames of developer accounts
-- ENV_PLACE_PASSWORD is an array of the passwords of developer accounts
-- ENV_PLACE_APP_CLIENT_ID is an array of the client ids for the app / script registered with Reddit
-- ENV_PLACE_SECRET_KEY is an array of the secret keys for the app / script registered with Reddit
-- ENV_DRAW_X_START specifies the x position to draw the image on the r/place canvas
-- ENV_DRAW_Y_START specifies the y position to draw the image on the r/place canvas
-- ENV_R_START is an array which specifies which x position of the original image to start at while drawing it
-- ENV_C_START is an array which specifies which y position of the original image to start at while drawing it
+### Notes
 
 Note: Multiple fields can be passed into the arrays to spawn a thread for each one.
 
@@ -79,26 +102,28 @@ python3 main.py
 
 ## Multiple Workers
 
-If you want two threads drawing the image at once you could have a setup like this:
+Just create multiple child arrays to "workers" in the .json
 
-```text
-ENV_PLACE_USERNAME='["developer_username_1", "developer_username_2"]'
-ENV_PLACE_PASSWORD='["developer_password_1", "developer_password_2"]'
-ENV_PLACE_APP_CLIENT_ID='["app_client_id_1", "app_client_id_2"]'
-ENV_PLACE_SECRET_KEY='["app_secret_key_1", "app_secret_key_2"]'
-ENV_DRAW_X_START=20
-ENV_DRAW_Y_START=679
-ENV_R_START='["0", "0"]'
-ENV_C_START='["0", "50"]'
-```
+```json
+{
+  "image_start_coords": [20, 679],
+  "thread_delay": 2,
 
-The same pattern can be used for multiple drawing at once. Note that the "ENV_PLACE_USERNAME", "ENV_PLACE_PASSWORD", "ENV_PLACE_APP_CLIENT_ID", "ENV_PLACE_SECRET_KEY", "ENV_R_START", and "ENV_C_START" variables MUST be string arrays of the same size.
-
-Also note that I did the following in the above example:
-
-```text
-ENV_R_START='["0", "0"]'
-ENV_C_START='["0", "50"]'
+  "workers": {
+    "worker1username": {
+      "password": "password",
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      "start_coords": [0, 0]
+    },
+    "worker2username": {
+      "password": "password",
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      "start_coords": [0, 50]
+    }
+  }
+}
 ```
 
 In this case, the first worker will start drawing from (0, 0) and the second worker will start drawing from (0, 50) from the input image.jpg file.
@@ -108,12 +133,12 @@ This is useful if you want different threads drawing different parts of the imag
 ## Other Settings
 
 ```text
-ENV_THREAD_DELAY='0'
-ENV_UNVERIFIED_PLACE_FREQUENCY='True'
+{
+    "thread_delay": 2,
+}
 ```
 
-- ENV_THREAD_DELAY Adds a delay between starting a new thread. Can be used to avoid ratelimiting
-- ENV_UNVERIFIED_PLACE_FREQUENCY is for setting the pixel place frequency to the unverified account frequency (20 minutes)
+- thread_delay Adds a delay between starting a new thread. Can be used to avoid ratelimiting
 
 
 ## Developing
