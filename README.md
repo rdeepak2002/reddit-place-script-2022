@@ -1,6 +1,9 @@
 # Reddit Place Script 2022
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/powered-by-pull-requests.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/60-percent-of-the-time-works-every-time.svg)](https://forthebadge.com)
 
 ## About
 
@@ -53,34 +56,34 @@ Edit the values to replace with actual credentials and values
 
 ```json
 {
-    // [x,y] where you want the top left pixel of the local image to be drawn on canvas
-    "image_start_coords": [741, 610],
-    // delay between starting threads (can be 0)
-    "thread_delay": 2,
-    // array of accounts to use
-    "workers": {
-        // username of account 1
-        "worker1username": {
-            // password of account 1
-            "password": "password",
-            // appid and secret (see How To Get App Client ID And App Secret Key)
-            "client_id": "clientid",
-            "client_secret": "clientsecret",
-            // which pixel of the image to draw first
-            "start_coords": [0, 0]
-        },
-        // username of account 2
-        "worker1username": {
-            // password of account 2
-            "password": "password",
-            // appid and secret (see How To Get App Client ID And App Secret Key)
-            "client_id": "clientid",
-            "client_secret": "clientsecret",
-            // which pixel of the image to draw first
-            "start_coords": [0, 0]
-        }
-        // etc... add as many accounts as you want (but reddit may detect you the more you add)
+  // [x,y] where you want the top left pixel of the local image to be drawn on canvas
+  "image_start_coords": [741, 610],
+  // delay between starting threads (can be 0)
+  "thread_delay": 2,
+  // array of accounts to use
+  "workers": {
+    // username of account 1
+    "worker1username": {
+      // password of account 1
+      "password": "password",
+      // appid and secret (see How To Get App Client ID And App Secret Key)
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      // which pixel of the image to draw first
+      "start_coords": [0, 0]
+    },
+    // username of account 2
+    "worker1username": {
+      // password of account 2
+      "password": "password",
+      // appid and secret (see How To Get App Client ID And App Secret Key)
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      // which pixel of the image to draw first
+      "start_coords": [0, 0]
     }
+    // etc... add as many accounts as you want (but reddit may detect you the more you add)
+  }
 }
 ```
 
