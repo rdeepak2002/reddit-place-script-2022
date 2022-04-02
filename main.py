@@ -294,8 +294,10 @@ def task(credentials_index):
                 pixel_color_index = color_map[new_rgb_hex]
 
                 # get current pixel position from input image
-                current_r, current_c = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + current_r,
-                          pixel_y_start + current_c)
+                current_r, current_c = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + random.randint(0, image_width),
+                          pixel_y_start + random.randint(0, image_height))
+                # current_r, current_c = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + current_r,
+                #           pixel_y_start + current_c)
 
                 # draw the pixel onto r/place
                 set_pixel(access_tokens[credentials_index], pixel_x_start + current_r,
