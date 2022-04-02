@@ -79,10 +79,7 @@ def set_pixel_and_check_ratelimit(
     access_token_in, x, y, color_index_in=18, canvas_index=0
 ):
     print(
-        "placing pixel with color index "
-        + str(color_index_in)
-        + " at "
-        + str((x, y))
+        "placing pixel with color index " + str(color_index_in) + " at " + str((x, y))
     )
 
     url = "https://gql-realtime-2.reddit.com/query"
@@ -130,15 +127,16 @@ def set_pixel_and_check_ratelimit(
         )
         print("placing succeeded")
 
-    # LETS YOU DEBUG THREADS FOR TESTING
+    # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
     # Works perfect with one thread.
     # With multiple threads, every time you press Enter you move to the next one.
+    # Move the code anywhere you want, I put it here to inspect the API responses.
+
     # import code
 
     # code.interact(local=locals())
 
-    # We don't need a global variable for this, just return it. It is a function after all.
-    # Reddit returns time in ms and we need seconds
+    # Reddit returns time in ms and we need seconds, so divide by 1000
     return waitTime / 1000
 
 
@@ -303,9 +301,19 @@ def task(credentials_index):
         pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
         pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
 
-        # current pixel row and pixel column being drawn
-        current_r = int(json.loads(os.getenv("ENV_R_START"))[credentials_index])
-        current_c = int(json.loads(os.getenv("ENV_C_START"))[credentials_index])
+        try:
+            # current pixel row and pixel column being drawn
+            current_r = int(json.loads(os.getenv("ENV_R_START"))[credentials_index])
+            current_c = int(json.loads(os.getenv("ENV_C_START"))[credentials_index])
+        except IndexError:
+            print(
+                "Array length error: are you sure you have an ENV_R_START and ENV_C_START item for every account?\n",
+                "Example for 5 accounts:\n",
+                'ENV_R_START=\'["0","5","6","7","9"]\'\n',
+                'ENV_C_START=\'["0","5","6","8","9"]\'\n',
+                "Note: There can be duplicate entries, but every array must have the same amount of items.",
+            )
+            exit(1)
 
         # string for time until next pixel is drawn
         update_str = ""
@@ -328,9 +336,7 @@ def task(credentials_index):
 
             # log next time until drawing
             time_until_next_draw = (
-                last_time_placed_pixel
-                + pixel_place_frequency
-                - current_timestamp
+                last_time_placed_pixel + pixel_place_frequency - current_timestamp
             )
             new_update_str = (
                 str(time_until_next_draw) + " seconds until next pixel is drawn"
@@ -358,19 +364,31 @@ def task(credentials_index):
                 )
 
                 # developer's reddit username and password
-                username = json.loads(os.getenv("ENV_PLACE_USERNAME"))[
-                    credentials_index
-                ]
-                password = json.loads(os.getenv("ENV_PLACE_PASSWORD"))[
-                    credentials_index
-                ]
-                # note: use https://www.reddit.com/prefs/apps
-                app_client_id = json.loads(os.getenv("ENV_PLACE_APP_CLIENT_ID"))[
-                    credentials_index
-                ]
-                secret_key = json.loads(os.getenv("ENV_PLACE_SECRET_KEY"))[
-                    credentials_index
-                ]
+                try:
+                    username = json.loads(os.getenv("ENV_PLACE_USERNAME"))[
+                        credentials_index
+                    ]
+                    password = json.loads(os.getenv("ENV_PLACE_PASSWORD"))[
+                        credentials_index
+                    ]
+                    # note: use https://www.reddit.com/prefs/apps
+                    app_client_id = json.loads(os.getenv("ENV_PLACE_APP_CLIENT_ID"))[
+                        credentials_index
+                    ]
+                    secret_key = json.loads(os.getenv("ENV_PLACE_SECRET_KEY"))[
+                        credentials_index
+                    ]
+                except IndexError:
+                    print(
+                        "Array length error: are you sure your credentials have an equal amount of items?\n",
+                        "Example for 2 accounts:\n",
+                        'ENV_PLACE_USERNAME=\'["Username1", "Username2]\'\n',
+                        'ENV_PLACE_PASSWORD=\'["Password", "Password"]\'\n',
+                        'ENV_PLACE_APP_CLIENT_ID=\'["NBVSIBOPVAINCVIAVBOVV", "VNOPSNSJVQNVNJVSNVDV"]\'\n',
+                        'ENV_PLACE_SECRET_KEY=\'["INSVDSINDJV_SVTNNJSNVNJV", "ANIJCINLLPJCSCOJNCA_ASDV"]\'\n',
+                        "Note: There can be duplicate entries, but every array must have the same amount of items.",
+                    )
+                    exit(1)
 
                 data = {
                     "grant_type": "password",
@@ -382,9 +400,7 @@ def task(credentials_index):
                     "https://ssl.reddit.com/api/v1/access_token",
                     data=data,
                     auth=HTTPBasicAuth(app_client_id, secret_key),
-                    headers={
-                        "User-agent": f"placebot{random.randint(1, 100000)}"
-                    },
+                    headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
                 )
 
                 if verbose:
@@ -410,8 +426,7 @@ def task(credentials_index):
 
             # draw pixel onto screen
             if access_tokens[credentials_index] is not None and (
-                current_timestamp
-                >= last_time_placed_pixel + pixel_place_frequency
+                current_timestamp >= last_time_placed_pixel + pixel_place_frequency
                 or first_run_counter <= credentials_index
             ):
 
