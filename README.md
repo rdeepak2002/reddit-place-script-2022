@@ -44,6 +44,8 @@ Move the file 'config_example.json' to config.json
 
 Edit the values to replace with actual credentials and values
 
+Note: Please use https://jsonlint.com/ to check that your JSON file is correctly formatted
+
 ```json
 {
   //Where the image's path is
