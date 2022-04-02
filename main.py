@@ -5,6 +5,8 @@ import requests
 import json
 import time
 import threading
+from io import BytesIO
+from websocket import create_connection
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 from PIL import ImageColor
@@ -101,6 +103,60 @@ def set_pixel(access_token_in, x, y, color_index_in=18, canvas_index=0):
 
     print("received response: ", response.text)
 
+def get_board(access_token_in):
+    print("Getting board")
+    ws = create_connection("wss://gql-realtime-2.reddit.com/query")
+    ws.send(json.dumps({"type":"connection_init","payload":{"Authorization":"Bearer "+ access_token_in}}))
+    ws.recv()
+    ws.send(json.dumps({"id":"1","type":"start","payload":{"variables":{"input":{"channel":{"teamOwner":"AFD2022","category":"CONFIG"}}},"extensions":{},"operationName":"configuration","query":"subscription configuration($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on ConfigurationMessageData {\n          colorPalette {\n            colors {\n              hex\n              index\n              __typename\n            }\n            __typename\n          }\n          canvasConfigurations {\n            index\n            dx\n            dy\n            __typename\n          }\n          canvasWidth\n          canvasHeight\n          __typename\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}}))
+    ws.recv()
+    ws.send(json.dumps({"id":"2","type":"start","payload":{"variables":{"input":{"channel":{"teamOwner":"AFD2022","category":"CANVAS","tag":"0"}}},"extensions":{},"operationName":"replace","query":"subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}}))
+
+    file = ""
+    while True:
+        temp = json.loads(ws.recv())
+        if temp['type'] == 'data':
+            msg = temp['payload']['data']['subscribe']
+            if msg['data']['__typename'] == 'FullFrameMessageData':
+                file = msg['data']['name']
+                break;
+
+
+    ws.close()
+
+    boardimg = BytesIO(requests.get(file, stream = True).content)
+    print("Got image:", file)
+
+    return boardimg
+
+def get_unset_pixel(boardimg, x, y):
+    x = 0
+    y= 0
+    pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
+    pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
+    pix2 = Image.open(boardimg).convert('RGB').load()
+    while True:
+        x += 1
+
+        if x >= image_width:
+            y += 1
+            x = 0
+
+        if y >= image_height:
+            break;
+
+        print(x+pixel_x_start,y+pixel_y_start)
+        print(x, y,"boardimg",image_width,image_height)
+        target_rgb = pix[x, y]
+        new_rgb = closest_color(target_rgb, rgb_colors_array)
+        if pix2[x+pixel_x_start,y+pixel_y_start] != new_rgb:
+            print(pix2[x+pixel_x_start,y+pixel_y_start], new_rgb,new_rgb != (69,42,0), pix2[x,y] != new_rgb)
+            if new_rgb != (69,42,0):
+                print("Different Pixel found at:",x+pixel_x_start,y+pixel_y_start,"With Color:",pix2[x+pixel_x_start,y+pixel_y_start],"Replacing with:",new_rgb)
+                break;
+            else:
+                print("TransparrentPixel")
+    return x,y
 
 # method to define the color palette array
 def init_rgb_colors_array():
@@ -220,6 +276,8 @@ def task(credentials_index):
             # draw pixel onto screen
             if access_tokens[credentials_index] is not None and (current_timestamp >= last_time_placed_pixel
                                                                  + pixel_place_frequency or first_run):
+                
+                
                 # place pixel immediately
                 first_run = False
 
@@ -230,6 +288,10 @@ def task(credentials_index):
                 new_rgb = closest_color(target_rgb, rgb_colors_array)
                 new_rgb_hex = rgb_to_hex(new_rgb)
                 pixel_color_index = color_map[new_rgb_hex]
+
+                # get current pixel position from input image
+                current_r, current_c = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + current_r,
+                          pixel_y_start + current_c)
 
                 # draw the pixel onto r/place
                 set_pixel(access_tokens[credentials_index], pixel_x_start + current_r,
