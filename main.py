@@ -329,7 +329,6 @@ class PlaceClient:
                 boardimg = self.get_board(self.access_tokens[index])
                 pix2 = boardimg.convert("RGB").load()
                 y = 0
-             
 
             logging.debug(f"{x+self.pixel_x_start}, {y+self.pixel_y_start}")
             logging.debug(
@@ -488,7 +487,7 @@ class PlaceClient:
                         self.get_board(self.access_tokens[index]),
                         current_r,
                         current_c,
-                        index
+                        index,
                     )
 
                     # get converted color
