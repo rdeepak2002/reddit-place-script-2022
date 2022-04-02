@@ -129,7 +129,7 @@ class PlaceClient:
             "Attempting to place {} pixel at {}, {}",
             self.color_id_to_name(color_index_in),
             x + (1000 * canvas_index),
-            y
+            y,
         )
 
         url = "https://gql-realtime-2.reddit.com/query"
@@ -168,18 +168,14 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logger.error(
-                "Failed placing pixel: rate limited"
-            )
+            logger.error("Failed placing pixel: rate limited")
         else:
             waitTime = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
                     "nextAvailablePixelTimestamp"
                 ]
             )
-            logger.info(
-                "Succeeded placing pixel"
-            )
+            logger.info("Succeeded placing pixel")
 
         # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
         # Works perfect with one thread.
@@ -332,11 +328,7 @@ class PlaceClient:
 
             logger.debug("{}, {}", x + self.pixel_x_start, y + self.pixel_y_start)
             logger.debug(
-                "{}, {}, boardimg, {}, {}",
-                x,
-                y,
-                self.image_size[0],
-                self.image_size[1]
+                "{}, {}, boardimg, {}, {}", x, y, self.image_size[0], self.image_size[1]
             )
 
             target_rgb = self.pix[x, y][:3]
@@ -356,7 +348,7 @@ class PlaceClient:
                         pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                         x + self.pixel_x_start,
                         y + self.pixel_y_start,
-                        new_rgb
+                        new_rgb,
                     )
                     break
                 else:
@@ -385,9 +377,7 @@ class PlaceClient:
                 current_r = worker["start_coords"][0]
                 current_c = worker["start_coords"][1]
             except Exception:
-                logger.info(
-                    "You need to provide start_coords to worker '{}'", name
-                )
+                logger.info("You need to provide start_coords to worker '{}'", name)
                 exit(1)
 
             # Time until next pixel is drawn
@@ -406,7 +396,7 @@ class PlaceClient:
 
                 new_update_str = (
                     "{} seconds until next pixel is drawn",
-                    time_until_next_draw
+                    time_until_next_draw,
                 )
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
                     update_str = new_update_str
@@ -415,14 +405,15 @@ class PlaceClient:
 
                 # refresh access token if necessary
                 if (
-                    len(self.access_tokens) == 0 or
-                    len(self.access_token_expires_at_timestamp) == 0 or
+                    len(self.access_tokens) == 0
+                    or len(self.access_token_expires_at_timestamp) == 0
+                    or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp or
-                    (
-                        self.access_token_expires_at_timestamp.get(index) and
-                        current_timestamp >=
+                    index not in self.access_token_expires_at_timestamp
+                    or (
                         self.access_token_expires_at_timestamp.get(index)
+                        and current_timestamp
+                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
                     logger.info("Thread #{} :: Refreshing access token", index)
@@ -436,7 +427,8 @@ class PlaceClient:
                         secret_key = worker["client_secret"]
                     except Exception:
                         logger.info(
-                            "You need to provide all required fields to worker '{}'", name
+                            "You need to provide all required fields to worker '{}'",
+                            name,
                         )
                         exit(1)
 
@@ -460,7 +452,7 @@ class PlaceClient:
                     if "error" in response_data:
                         logger.info(
                             "An error occured. Make sure you have the correct credentials. Response data: {}",
-                            response_data
+                            response_data,
                         )
                         exit(1)
 
@@ -478,13 +470,13 @@ class PlaceClient:
 
                     logger.info(
                         "Received new access token: {}************",
-                        self.access_tokens.get(index)[:5]
+                        self.access_tokens.get(index)[:5],
                     )
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time or
-                    self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time
+                    or self.first_run_counter <= index
                 ):
 
                     # place pixel immediately
