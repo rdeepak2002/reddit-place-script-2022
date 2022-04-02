@@ -57,6 +57,8 @@ Edit the values to replace with actual credentials and values
 
 ```json
 {
+  //Where the image's path is
+  "image_path":"image.png",
   // [x,y] where you want the top left pixel of the local image to be drawn on canvas
   "image_start_coords": [741, 610],
   // delay between starting threads (can be 0)
@@ -104,6 +106,7 @@ Just create multiple child arrays to "workers" in the .json
 
 ```json
 {
+  "image_path":"image.png",
   "image_start_coords": [741, 610],
   "thread_delay": 2,
 
@@ -133,10 +136,12 @@ This is useful if you want different threads drawing different parts of the imag
 ```text
 {
     "thread_delay": 2,
+    "unverified_place_frequency": False,
 }
 ```
 
-- thread_delay Adds a delay between starting a new thread. Can be used to avoid ratelimiting
+- thread_delay - Adds a delay between starting a new thread. Can be used to avoid ratelimiting
+- unverified_place_frequency - Sets the pixel place frequency to the unverified account limit
 
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
