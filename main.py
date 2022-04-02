@@ -54,7 +54,7 @@ first_run_counter = 0
 
 # function to convert rgb tuple to hexadecimal string
 def rgb_to_hex(rgb):
-    return ('#%02x%02x%02x' % rgb).upper()
+    return ("#%02x%02x%02x" % rgb).upper()
 
 
 # function to find the closest rgb color from palette to a target rgb color
@@ -69,39 +69,68 @@ def closest_color(target_rgb, rgb_colors_array_in):
 
 
 # method to draw a pixel at an x, y coordinate in r/place with a specific color
-def set_pixel(access_token_in, x, y, color_index_in=18, canvas_index=0):
-    print("placing pixel with color index " + str(color_index_in) + " at " + str((x, y)))
+def set_pixel_and_check_ratelimit(
+    access_token_in, x, y, color_index_in=18, canvas_index=0
+):
+    print(
+        "placing pixel with color index " + str(color_index_in) + " at " + str((x, y))
+    )
 
     url = "https://gql-realtime-2.reddit.com/query"
 
-    payload = json.dumps({
-        "operationName": "setPixel",
-        "variables": {
-            "input": {
-                "actionName": "r/replace:set_pixel",
-                "PixelMessageData": {
-                    "coordinate": {
-                        "x": x,
-                        "y": y
+    payload = json.dumps(
+        {
+            "operationName": "setPixel",
+            "variables": {
+                "input": {
+                    "actionName": "r/replace:set_pixel",
+                    "PixelMessageData": {
+                        "coordinate": {"x": x, "y": y},
+                        "colorIndex": color_index_in,
+                        "canvasIndex": canvas_index,
                     },
-                    "colorIndex": color_index_in,
-                    "canvasIndex": canvas_index
                 }
-            }
-        },
-        "query": "mutation setPixel($input: ActInput!) {\n  act(input: $input) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetUserCooldownResponseMessageData {\n            nextAvailablePixelTimestamp\n            __typename\n          }\n          ... on SetPixelResponseMessageData {\n            timestamp\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
-    })
+            },
+            "query": "mutation setPixel($input: ActInput!) {\n  act(input: $input) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetUserCooldownResponseMessageData {\n            nextAvailablePixelTimestamp\n            __typename\n          }\n          ... on SetPixelResponseMessageData {\n            timestamp\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+        }
+    )
     headers = {
-        'origin': 'https://hot-potato.reddit.com',
-        'referer': 'https://hot-potato.reddit.com/',
-        'apollographql-client-name': 'mona-lisa',
-        'Authorization': 'Bearer ' + access_token_in,
-        'Content-Type': 'application/json'
+        "origin": "https://hot-potato.reddit.com",
+        "referer": "https://hot-potato.reddit.com/",
+        "apollographql-client-name": "mona-lisa",
+        "Authorization": "Bearer " + access_token_in,
+        "Content-Type": "application/json",
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print("received response: ", response.text)
+    # There are 2 different JSON keys for responses to get the next timestamp.
+    # If we don't get data, it means we've been rate limited.
+    # If we do, a pixel has been successfully placed.
+    if response.json()["data"] == None:
+        waitTime = math.floor(
+            response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
+        )
+        print("placing failed: rate limited")
+    else:
+        waitTime = math.floor(
+            response.json()["data"]["act"]["data"][0]["data"][
+                "nextAvailablePixelTimestamp"
+            ]
+        )
+        print("placing succeeded")
+
+    # LETS YOU DEBUG THREADS FOR TESTING
+    # Works perfect with one thread.
+    # With multiple threads, every time you press Enter you move to the next one.
+    # import code
+
+    # code.interact(local=locals())
+
+    # We don't need a global variable for this, just return it. It is a function after all.
+    # Reddit returns time in ms and we need seconds
+    return waitTime / 1000
 
 def get_board(access_token_in):
     print("Getting board")
@@ -176,10 +205,12 @@ def load_image():
     global image_width
     global image_height
     # read and load the image to draw and get its dimensions
-    image_path = os.path.join(os.path.abspath(os.getcwd()), 'image.jpg')
+    image_path = os.path.join(os.path.abspath(os.getcwd()), "image.jpg")
     im = Image.open(image_path)
     pix = im.load()
-    print("image size: ", im.size)  # Get the width and height of the image for iterating over
+    print(
+        "image size: ", im.size
+    )  # Get the width and height of the image for iterating over
     image_width, image_height = im.size
 
 
@@ -195,15 +226,16 @@ def task(credentials_index):
 
         # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
         # 5 minutes and 30 seconds per pixel
+        # pixel_place_frequency = 330
         pixel_place_frequency = 330
 
         # pixel drawing preferences
-        pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
-        pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
+        pixel_x_start = int(os.getenv("ENV_DRAW_X_START"))
+        pixel_y_start = int(os.getenv("ENV_DRAW_Y_START"))
 
         # current pixel row and pixel column being drawn
-        current_r = int(json.loads(os.getenv('ENV_R_START'))[credentials_index])
-        current_c = int(json.loads(os.getenv('ENV_C_START'))[credentials_index])
+        current_r = int(json.loads(os.getenv("ENV_R_START"))[credentials_index])
+        current_c = int(json.loads(os.getenv("ENV_C_START"))[credentials_index])
 
         # string for time until next pixel is drawn
         update_str = ""
@@ -225,61 +257,85 @@ def task(credentials_index):
             current_timestamp = math.floor(time.time())
 
             # log next time until drawing
-            time_until_next_draw = last_time_placed_pixel + pixel_place_frequency - current_timestamp
-            new_update_str = str(time_until_next_draw) + " seconds until next pixel is drawn"
+            time_until_next_draw = (
+                last_time_placed_pixel + pixel_place_frequency - current_timestamp
+            )
+            new_update_str = (
+                str(time_until_next_draw) + " seconds until next pixel is drawn"
+            )
             if update_str != new_update_str:
                 update_str = new_update_str
-                print("__________________")
-                print("Thread #" + str(credentials_index))
-                print(update_str)
-                print("__________________")
+                print(
+                    "-------Thread #"
+                    + str(credentials_index)
+                    + "-------\n"
+                    + update_str
+                )
 
             # refresh access token if necessary
-            if access_tokens[credentials_index] is None or current_timestamp >= access_token_expires_at_timestamp[
-                credentials_index]:
-                print("__________________")
-                print("Thread #" + str(credentials_index))
-                print("refreshing access token...")
+            if (
+                access_tokens[credentials_index] is None
+                or current_timestamp
+                >= access_token_expires_at_timestamp[credentials_index]
+            ):
+                print(
+                    "-------Thread #"
+                    + str(credentials_index)
+                    + "-------\n"
+                    + "Refreshing access token..."
+                )
 
                 # developer's reddit username and password
-                username = json.loads(os.getenv('ENV_PLACE_USERNAME'))[credentials_index]
-                password = json.loads(os.getenv('ENV_PLACE_PASSWORD'))[credentials_index]
+                username = json.loads(os.getenv("ENV_PLACE_USERNAME"))[
+                    credentials_index
+                ]
+                password = json.loads(os.getenv("ENV_PLACE_PASSWORD"))[
+                    credentials_index
+                ]
                 # note: use https://www.reddit.com/prefs/apps
-                app_client_id = json.loads(os.getenv('ENV_PLACE_APP_CLIENT_ID'))[credentials_index]
-                secret_key = json.loads(os.getenv('ENV_PLACE_SECRET_KEY'))[credentials_index]
+                app_client_id = json.loads(os.getenv("ENV_PLACE_APP_CLIENT_ID"))[
+                    credentials_index
+                ]
+                secret_key = json.loads(os.getenv("ENV_PLACE_SECRET_KEY"))[
+                    credentials_index
+                ]
 
                 data = {
-                    'grant_type': 'password',
-                    'username': username,
-                    'password': password
+                    "grant_type": "password",
+                    "username": username,
+                    "password": password,
                 }
 
-                r = requests.post("https://ssl.reddit.com/api/v1/access_token",
-                                  data=data,
-                                  auth=HTTPBasicAuth(app_client_id, secret_key),
-                                  headers={'User-agent': f'placebot{random.randint(1, 100000)}'})
+                r = requests.post(
+                    "https://ssl.reddit.com/api/v1/access_token",
+                    data=data,
+                    auth=HTTPBasicAuth(app_client_id, secret_key),
+                    headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
+                )
 
                 print("received response: ", r.text)
 
                 response_data = r.json()
                 access_tokens[credentials_index] = response_data["access_token"]
                 # access_token_type = response_data["token_type"]  # this is just "bearer"
-                access_token_expires_in_seconds = response_data["expires_in"]  # this is usually "3600"
+                access_token_expires_in_seconds = response_data[
+                    "expires_in"
+                ]  # this is usually "3600"
                 # access_token_scope = response_data["scope"]  # this is usually "*"
 
                 # ts stores the time in seconds
-                access_token_expires_at_timestamp[credentials_index] = current_timestamp \
-                                                                       + int(access_token_expires_in_seconds)
+                access_token_expires_at_timestamp[
+                    credentials_index
+                ] = current_timestamp + int(access_token_expires_in_seconds)
 
                 print("received new access token: ", access_tokens[credentials_index])
-                print("__________________")
 
             # draw pixel onto screen
-            if access_tokens[credentials_index] is not None and (current_timestamp >= last_time_placed_pixel
-                                                                 + pixel_place_frequency
-                                                                 or first_run_counter <= credentials_index):
-                
-                
+            if access_tokens[credentials_index] is not None and (
+                current_timestamp >= last_time_placed_pixel + pixel_place_frequency
+                or first_run_counter <= credentials_index
+            ):
+
                 # place pixel immediately
                 # first_run = False
                 first_run_counter += 1
@@ -297,9 +353,12 @@ def task(credentials_index):
 
 
                 # draw the pixel onto r/place
-                set_pixel(access_tokens[credentials_index], pixel_x_start + current_r,
-                          pixel_y_start + current_c, pixel_color_index)
-                last_time_placed_pixel = math.floor(time.time())
+                last_time_placed_pixel = set_pixel_and_check_ratelimit(
+                    access_tokens[credentials_index],
+                    pixel_x_start + current_r,
+                    pixel_y_start + current_c,
+                    pixel_color_index,
+                )
 
                 current_r += 1
 
@@ -310,10 +369,12 @@ def task(credentials_index):
 
                 # exit when all pixels drawn
                 if current_c >= image_height:
-                    print("__________________")
-                    print("Thread #" + str(credentials_index))
-                    print("done drawing image to r/place")
-                    print("__________________")
+                    print(
+                        "--------Thread #"
+                        + str(credentials_index)
+                        + "--------\n"
+                        + "done drawing image to r/place\n"
+                    )
                     break
         # except:
         #     print("__________________")
@@ -334,7 +395,7 @@ init_rgb_colors_array()
 load_image()
 
 # get number of concurrent threads to start
-num_credentials = len(json.loads(os.getenv('ENV_PLACE_USERNAME')))
+num_credentials = len(json.loads(os.getenv("ENV_PLACE_USERNAME")))
 
 # define delay between starting new threads
 delay_between_launches_seconds = 0

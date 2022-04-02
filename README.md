@@ -1,12 +1,14 @@
 # Reddit Place Script 2022
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 ## About
 
-Script to draw an image onto r/place (https://www.reddit.com/r/place/)
+Script to draw an image onto r/place (<https://www.reddit.com/r/place/>)
 
 ## Requirements
 
-Python 3 (https://www.python.org/downloads/)
+Python 3 (<https://www.python.org/downloads/>)
 
 ## How to Get App Client ID and App Secret Key
 
@@ -14,8 +16,8 @@ You need to generate an app client id and app secret key in order to use this sc
 
 Steps:
 
-1. Visit https://www.reddit.com/prefs/apps
-2. Click "create (another) app" button at very bottom 
+1. Visit <https://www.reddit.com/prefs/apps>
+2. Click "create (another) app" button at very bottom
 3. Select the "script" option and fill in the fields with anything
 
 ## Python Package Requirements
@@ -43,15 +45,14 @@ ENV_R_START='["0"]'
 ENV_C_START='["0"]'
 ```
 
-- ENV_PLACE_USERNAME is the username of the developer account
-- ENV_PLACE_PASSWORD is the password of the developer account
-- ENV_PLACE_APP_CLIENT_ID is the client id for the app / script registered with Reddit
-- ENV_PLACE_SECRET_KEY is the secret key for the app / script registered with Reddit
+- ENV_PLACE_USERNAME is an array of usernames of developer accounts
+- ENV_PLACE_PASSWORD is an array of the passwords of developer accounts
+- ENV_PLACE_APP_CLIENT_ID is an array of the client ids for the app / script registered with Reddit
+- ENV_PLACE_SECRET_KEY is an array of the secret keys for the app / script registered with Reddit
 - ENV_DRAW_X_START specifies the x position to draw the image on the r/place canvas
 - ENV_DRAW_Y_START specifies the y position to draw the image on the r/place canvas
-- ENV_R_START specifies which x position of the original image to start at while drawing it
-- ENV_C_START specifies which y position of the original image to start at while drawing it
-
+- ENV_R_START is an array which specifies which x position of the original image to start at while drawing it
+- ENV_C_START is an array which specifies which y position of the original image to start at while drawing it
 
 Note: Multiple fields can be passed into the arrays to spawn a thread for each one.
 
@@ -59,7 +60,7 @@ Change image.jpg to specify what image to draw. One pixel is drawn every 5 minut
 
 ## Run the Script
 
-```
+```python
 python3 main.py
 ```
 
@@ -87,6 +88,6 @@ ENV_R_START='["0", "0"]'
 ENV_C_START='["0", "50"]'
 ```
 
-In this case, the first worker will start drawing from (0, 0) and the second worker will start drawing from (0, 50) from the input image.jpg file. 
+In this case, the first worker will start drawing from (0, 0) and the second worker will start drawing from (0, 50) from the input image.jpg file.
 
-This is useful if you want different threads drawing different parts of the image with different accounts. 
+This is useful if you want different threads drawing different parts of the image with different accounts.
