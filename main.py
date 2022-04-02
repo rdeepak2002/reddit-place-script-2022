@@ -496,17 +496,17 @@ class PlaceClient:
                     # draw the pixel onto r/place
                     # There's a better way to do this
                     canvas = 0
-                    self.pixel_x_start += current_r
-                    self.pixel_y_start += current_c
-                    while self.pixel_x_start > 999:
-                        self.pixel_x_start -= 1000
+                    pixel_x_start = self.pixel_x_start + current_r
+                    pixel_y_start = self.pixel_y_start + current_c
+                    while pixel_x_start > 999:
+                        pixel_x_start -= 1000
                         canvas += 1
 
                     # draw the pixel onto r/place
                     next_pixel_placement_time = self.set_pixel_and_check_ratelimit(
                         self.access_tokens[index],
-                        self.pixel_x_start,
-                        self.pixel_y_start,
+                        pixel_x_start,
+                        pixel_y_start,
                         pixel_color_index,
                         canvas,
                     )
