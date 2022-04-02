@@ -268,7 +268,7 @@ def task(credentials_index):
         # note: reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
         # 5 minutes and 30 seconds per pixel
         # pixel_place_frequency = 330
-        if os.getenv("ENV_UNVERIFIED_PLACE_FREQUENCY") != None:
+        if os.getenv("ENV_UNVERIFIED_PLACE_FREQUENCY") is not None:
             if bool(os.getenv("ENV_UNVERIFIED_PLACE_FREQUENCY")):
                 pixel_place_frequency = 1230
             else:

@@ -113,3 +113,8 @@ ENV_UNVERIFIED_PLACE_FREQUENCY='True'
 
 - ENV_THREAD_DELAY Adds a delay between starting a new thread. Can be used to avoid ratelimiting
 - ENV_UNVERIFIED_PLACE_FREQUENCY is for setting the pixel place frequency to the unverified account frequency (20 minutes)
+
+
+## Developing
+The nox CI job will run flake8 on the code. You can also do this locally by pip installing nox on your system and running 
+`nox` in the repository directory.
