@@ -6,9 +6,9 @@ name: Format with Black
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,4 +28,9 @@ jobs:
       # Runs the code through Black
       - uses: piotrpawlaczek/python-blacken@release/stable
         with:
-          only-check: 'no'
+          only-check: "no"
+
+      # Pushes changes made by Black
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automatically format with Black
