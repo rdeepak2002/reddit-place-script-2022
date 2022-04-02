@@ -8,7 +8,6 @@ import json
 import logging
 import time
 import threading
-import logging
 import sys
 import argparse
 import random
@@ -18,7 +17,7 @@ from websocket import create_connection
 from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
-import random
+import colorama
 from loguru import logger
 
 
