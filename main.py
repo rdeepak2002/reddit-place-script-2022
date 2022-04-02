@@ -10,18 +10,12 @@ import threading
 import logging
 import colorama
 import argparse
-import sys
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
-from dotenv import load_dotenv
 from PIL import ImageColor
 from PIL import Image
 import random
-import json
-import logging
-import colorama
-import argparse
 
 from mappings import color_map, name_map
 
