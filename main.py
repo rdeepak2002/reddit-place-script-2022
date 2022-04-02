@@ -253,8 +253,9 @@ def load_image():
     global image_height
     global image_extension
 
-
-    image_path = os.path.join(os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png")
+    image_path = os.path.join(
+        os.path.abspath(os.getcwd()), "GloriousOfficialFinal52x80FlatTux.png"
+    )
 
     image_extension = ".png"
 
