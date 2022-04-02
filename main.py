@@ -20,7 +20,23 @@ if os.path.exists("./.env"):
     # load env variables
     load_dotenv()
 else:
-    exit("No .env file found. Read the README")
+    envfile = open(".env", "w")
+    envfile.write(
+        """ENV_PLACE_USERNAME='["developer_username"]'
+ENV_PLACE_PASSWORD='["developer_password"]'
+ENV_PLACE_APP_CLIENT_ID='["app_client_id"]'
+ENV_PLACE_SECRET_KEY='["app_secret_key"]'
+ENV_DRAW_X_START="x_position_start_integer"
+ENV_DRAW_Y_START="y_position_start_integer"
+ENV_R_START='["0"]'
+ENV_C_START='["0"]\'"""
+    )
+    print(
+        "No .env file found. A template has been created for you.",
+        "Read the README and configure it properly.",
+        "Right now, it's full of example data, so you ABSOLUTELY MUST edit it.",
+    )
+    exit("Error: No .env file found")
 
 # map of colors for pixels you can place
 color_map = {
