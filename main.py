@@ -156,7 +156,7 @@ def get_unset_pixel(boardimg, x, y):
                 break;
             else:
                 print("TransparrentPixel")
-    return x,y
+    return x,y,new_rgb
 
 # method to define the color palette array
 def init_rgb_colors_array():
@@ -276,7 +276,8 @@ def task(credentials_index):
 
             # draw pixel onto screen
             if access_tokens[credentials_index] is not None and (current_timestamp >= last_time_placed_pixel
-                                                                 + pixel_place_frequency or first_run):
+                                                                 + pixel_place_frequency
+                                                                 or first_run_counter <= credentials_index):
                 
                 
                 # place pixel immediately
@@ -284,16 +285,16 @@ def task(credentials_index):
                 first_run_counter += 1
 
                 # get target color
-                target_rgb = pix[current_r, current_c]
+                #target_rgb = pix[current_r, current_c]
 
-                # get converted color
-                new_rgb = closest_color(target_rgb, rgb_colors_array)
+                # get current pixel position from input image and replacement color
+                current_r, current_c, new_rgb = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + current_r,
+                          pixel_y_start + current_c)
+
+                # get converted color                          
                 new_rgb_hex = rgb_to_hex(new_rgb)
                 pixel_color_index = color_map[new_rgb_hex]
 
-                # get current pixel position from input image
-                current_r, current_c = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + current_r,
-                          pixel_y_start + current_c)
 
                 # draw the pixel onto r/place
                 set_pixel(access_tokens[credentials_index], pixel_x_start + current_r,
