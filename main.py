@@ -237,7 +237,7 @@ def task(credentials_index):
 
                     # current_r += 1
 
-                    current_r = random.randint(0, image_height)
+                    current_r = random.randint(0, image_width)
                     current_c = random.randint(0, image_height)
 
                     # # go back to first column when reached end of a row while drawing
