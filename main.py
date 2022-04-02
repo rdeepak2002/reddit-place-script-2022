@@ -234,11 +234,11 @@ def task(credentials_index):
                     last_time_placed_pixel = math.floor(time.time())
 
                     current_r += 1
-                    current_c += 1
 
                     # go back to first column when reached end of a row while drawing
                     if current_r >= image_width:
                         current_r = 0
+                        current_c += 1
 
                     # exit when all pixels drawn
                     if current_c >= image_height:
