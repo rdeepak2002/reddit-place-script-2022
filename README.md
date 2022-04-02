@@ -64,9 +64,10 @@ ENV_C_START='["0"]'
 - ENV_R_START is an array which specifies which x position of the original image to start at while drawing it
 - ENV_C_START is an array which specifies which y position of the original image to start at while drawing it
 
-Note: Multiple fields can be passed into the arrays to spawn a thread for each one.
-
-Change image.jpg to specify what image to draw. One pixel is drawn every 5 minutes and only jpeg images are supported.
+### Notes: 
+- Multiple fields can be passed into the arrays to spawn a thread for each one.
+- Change image.png/.jpg to specify what image to draw. One pixel is drawn every 5 minutes and only jpeg images are supported.
+- PNG has priority over JPG
 
 ## Run the Script
 
