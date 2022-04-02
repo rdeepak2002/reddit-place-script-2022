@@ -272,7 +272,7 @@ class PlaceClient:
             logging.debug(
                 f"{x}, {y}, boardimg, {self.image_size[0]}, {self.image_size[1]}")
 
-            print(self.pix[x, y])
+            # print(self.pix[x, y])
             target_rgb = self.pix[x, y]
 
             new_rgb = self.closest_color(target_rgb)
@@ -295,11 +295,13 @@ class PlaceClient:
         repeat_forever = True
 
         while True:
-            last_time_placed_pixel = math.floor(time.time())
+            # last_time_placed_pixel = math.floor(time.time())
 
             # note: Reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
             # 5 minutes and 30 seconds per pixel
             pixel_place_frequency = 330
+
+            next_pixel_placement_time = math.floor(time.time()) + pixel_place_frequency
 
             try:
                 # Current pixel row and pixel column being drawn
@@ -311,7 +313,6 @@ class PlaceClient:
                 )
                 exit(1)
 
-            print("CR:", current_r)
             # Time until next pixel is drawn
             update_str = ""
 
@@ -325,10 +326,8 @@ class PlaceClient:
 
                 # log next time until drawing
                 time_until_next_draw = (
-                    last_time_placed_pixel + pixel_place_frequency - current_timestamp
+                    next_pixel_placement_time + pixel_place_frequency
                 )
-
-                # print(time_until_next_draw)
 
                 new_update_str = f"{time_until_next_draw} seconds until next pixel is drawn"
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
@@ -400,7 +399,7 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= last_time_placed_pixel + pixel_place_frequency or
+                    current_timestamp >= next_pixel_placement_time + pixel_place_frequency or
                     self.first_run_counter <= index
                 ):
 
@@ -423,7 +422,7 @@ class PlaceClient:
                     pixel_color_index = color_map[new_rgb_hex]
 
                     # draw the pixel onto r/place
-                    last_time_placed_pixel = self.set_pixel_and_check_ratelimit(
+                    next_pixel_placement_time = self.set_pixel_and_check_ratelimit(
                         self.access_tokens[index],
                         self.pixel_x_start + current_r,
                         self.pixel_y_start + current_c,
