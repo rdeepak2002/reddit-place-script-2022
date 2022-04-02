@@ -112,4 +112,4 @@ ENV_UNVERIFIED_PLACE_FREQUENCY='True'
 ```
 
 - ENV_THREAD_DELAY Adds a delay between starting a new thread. Can be used to avoid ratelimiting
-- ENV_UNVERIFIED_PLACE_FREQUENCY is for setting the pixel place frequency to the unverified frequency (20 minutes)
+- ENV_UNVERIFIED_PLACE_FREQUENCY is for setting the pixel place frequency to the unverified account frequency (20 minutes)
