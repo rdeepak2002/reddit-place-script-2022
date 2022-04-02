@@ -40,8 +40,9 @@ class PlaceClient:
         )
 
         self.unverified_place_frequency = (
-            self.json_data["unverified_place_frequency"]
-            if self.json_data["unverified_place_frequency"] is not None
+            
+            if self.json_data["unverified_place_frequency"] is not None:
+                self.json_data["unverified_place_frequency"]
             else False
         )
 
