@@ -10,7 +10,6 @@ import time
 import threading
 import logging
 import sys
-import colorama
 import argparse
 import random
 import sys
@@ -542,7 +541,6 @@ class PlaceClient:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    colorama.init()
     parser.add_argument(
         "-v",
         "--verbose",
