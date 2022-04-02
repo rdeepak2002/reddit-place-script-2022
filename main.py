@@ -159,8 +159,6 @@ def get_board(access_token_in):
     return boardimg
 
 def get_unset_pixel(boardimg, x, y):
-    x = 0
-    y= 0
     pixel_x_start = int(os.getenv('ENV_DRAW_X_START'))
     pixel_y_start = int(os.getenv('ENV_DRAW_Y_START'))
     pix2 = Image.open(boardimg).convert('RGB').load()
@@ -344,8 +342,8 @@ def task(credentials_index):
                 #target_rgb = pix[current_r, current_c]
 
                 # get current pixel position from input image and replacement color
-                current_r, current_c, new_rgb = get_unset_pixel(get_board(access_tokens[credentials_index]), pixel_x_start + current_r,
-                          pixel_y_start + current_c)
+                current_r, current_c, new_rgb = get_unset_pixel(get_board(access_tokens[credentials_index]), current_r,
+                        current_c)
 
                 # get converted color                          
                 new_rgb_hex = rgb_to_hex(new_rgb)
