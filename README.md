@@ -4,7 +4,7 @@
 
 ## About
 
-This is a script to draw a image onto r/place (<https://www.reddit.com/r/place/>).
+This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/>).
 
 ## Features
 
@@ -12,6 +12,7 @@ This is a script to draw a image onto r/place (<https://www.reddit.com/r/place/>
 - Determines the cooldown time remaining for each account
 - Detects existing matching pixels on the r/place map and skips them
 - Automatically converts colors to the r/place color palette
+- Easy(ish) to read output with colors
 
 ## Requirements
 
@@ -20,7 +21,7 @@ This is a script to draw a image onto r/place (<https://www.reddit.com/r/place/>
 
 ## How to Get App Client ID and App Secret Key
 
-You need to generate an app client id and app secret key for each account in order to use this script.
+You need to generate an app client id and app secret key for each account in order to use this script. Or, just create one, and add each username as a developer in the developer app settings. You will need to duplicate the client ID and secret in .env, though.
 
 Steps:
 
@@ -28,17 +29,18 @@ Steps:
 2. Click "create (another) app" button at very bottom
 3. Select the "script" option and fill in the fields with anything
 
-If you don't want to create a development app for each account, you can add each username as a developer in the developer app settings. You will need to duplicate the client ID and secret in .env, though.
-
 ## Python Package Requirements
 
 Install requirements from 'requirements.txt' file.
 
 ### Windows
+
 ```shell
 pip install -r requirements.txt
 ```
+
 ### Other OS
+
 ```shell
 pip3 install -r requirements.txt
 ```
@@ -47,17 +49,44 @@ pip3 install -r requirements.txt
 
 Move the file 'config_example.json' to config.json
 
-Change the values to what its supposed to be
+Edit the values to replace with actual credentials and values
 
-- username Username of accounts
-- passsword Passwords for account
-- client_id Workers client id for the app / script registered with Reddit
-- client_secret Workers secret keys for the app / script registered with Reddit
-- image_start_coords Specifies the root position (x,y) to draw the image on the r/place canvas
-- start_coords Specifies which x/y position of the original image to start at while drawing it
+```json
+{
+    // [x,y] where you want the top left pixel of the local image to be drawn on canvas
+    "image_start_coords": [741, 610],
+    // delay between starting threads (can be 0)
+    "thread_delay": 2,
+    // array of accounts to use
+    "workers": {
+        // username of account 1
+        "worker1username": {
+            // password of account 1
+            "password": "password",
+            // appid and secret (see How To Get App Client ID And App Secret Key)
+            "client_id": "clientid",
+            "client_secret": "clientsecret",
+            // which pixel of the image to draw first
+            "start_coords": [0, 0]
+        },
+        // username of account 2
+        "worker1username": {
+            // password of account 2
+            "password": "password",
+            // appid and secret (see How To Get App Client ID And App Secret Key)
+            "client_id": "clientid",
+            "client_secret": "clientsecret",
+            // which pixel of the image to draw first
+            "start_coords": [0, 0]
+        }
+        // etc... add as many accounts as you want (but reddit may detect you the more you add)
+    }
+}
+```
 
-### Notes: 
-- Change image.jpg to specify what image to draw. One pixel is drawn every 5 minutes
+### Notes
+
+- Change image.jpg/png to specify what image to draw. One pixel is drawn every 5 minutes. PNG takes priority over JPG.
 
 ## Run the Script
 
@@ -71,23 +100,23 @@ Just create multiple child arrays to "workers" in the .json
 
 ```json
 {
-    "image_start_coords": [741, 610],
-    "thread_delay": 2,
+  "image_start_coords": [741, 610],
+  "thread_delay": 2,
 
-    "workers": {
-        "worker1username": {
-            "password": "password",
-            "client_id": "clientid",
-            "client_secret": "clientsecret",
-            "start_coords": [0, 0]
-        },
-        "worker2username": {
-            "password": "password",
-            "client_id": "clientid",
-            "client_secret": "clientsecret",
-            "start_coords": [0, 50]
-        }
+  "workers": {
+    "worker1username": {
+      "password": "password",
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      "start_coords": [0, 0]
+    },
+    "worker2username": {
+      "password": "password",
+      "client_id": "clientid",
+      "client_secret": "clientsecret",
+      "start_coords": [0, 50]
     }
+  }
 }
 ```
 
@@ -109,5 +138,5 @@ This is useful if you want different threads drawing different parts of the imag
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
 
 ## Developing
-The nox CI job will run flake8 on the code. You can also do this locally by pip installing nox on your system and running 
-`nox` in the repository directory.
+
+The nox CI job will run flake8 and black on the code. You can also do this locally by pip installing nox on your system and running `nox` in the repository directory.
