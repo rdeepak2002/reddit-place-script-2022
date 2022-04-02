@@ -33,8 +33,11 @@ class PlaceClient:
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
         # In seconds
-        self.delay_between_launches = self.json_data[
-            "thread_delay"] if self.json_data["thread_delay"] != None else 3
+        self.delay_between_launches = (
+            self.json_data["thread_delay"]
+            if self.json_data["thread_delay"] != None
+            else 3
+        )
 
         # Color palette
         self.rgb_colors_array = self.generate_rgb_colors_array()
@@ -71,15 +74,16 @@ class PlaceClient:
         color_diffs = []
         for color in self.rgb_colors_array:
             cr, cg, cb = color
-            color_diff = math.sqrt(
-                (r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
+            color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
             color_diffs.append((color_diff, color))
         return min(color_diffs)[1]
 
     # Define the color palette array
     def generate_rgb_colors_array(self):
         # Generate array of available rgb colors to be used
-        return [ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in color_map.items()]
+        return [
+            ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in color_map.items()
+        ]
 
     def get_json_data(self):
         if not os.path.exists("config.json"):
@@ -96,8 +100,7 @@ class PlaceClient:
 
     def load_image(self):
         # Read and load the image to draw and get its dimensions
-        im = Image.open(os.path.join(
-            os.path.abspath(os.getcwd()), "image.jpg"))
+        im = Image.open(os.path.join(os.path.abspath(os.getcwd()), "image.jpg"))
         self.pix = im.load()
         logging.info(f"Loaded image size: {im.size}")
         self.image_size = im.size
@@ -106,8 +109,7 @@ class PlaceClient:
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self,
-        access_token_in, x, y, color_index_in=18, canvas_index=0
+        self, access_token_in, x, y, color_index_in=18, canvas_index=0
     ):
         logging.info(
             f"Attempting to place {self.color_id_to_name(color_index_in)} pixel at {x}, {y}"
@@ -147,8 +149,7 @@ class PlaceClient:
         # If we do, a pixel has been successfully placed.
         if response.json()["data"] is None:
             waitTime = math.floor(
-                response.json()[
-                    "errors"][0]["extensions"]["nextAvailablePixelTs"]
+                response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
             logging.info(
                 f"{colorama.Fore.RED}Failed placing pixel: rate limited {colorama.Style.RESET_ALL}"
@@ -178,7 +179,8 @@ class PlaceClient:
     def get_board(self, access_token_in):
         logging.info("Getting board")
         ws = create_connection(
-            "wss://gql-realtime-2.reddit.com/query", origin="https://hot-potato.reddit.com"
+            "wss://gql-realtime-2.reddit.com/query",
+            origin="https://hot-potato.reddit.com",
         )
         ws.send(
             json.dumps(
@@ -270,7 +272,8 @@ class PlaceClient:
 
             logging.debug(f"{x+self.pixel_x_start}, {y+self.pixel_y_start}")
             logging.debug(
-                f"{x}, {y}, boardimg, {self.image_size[0]}, {self.image_size[1]}")
+                f"{x}, {y}, boardimg, {self.image_size[0]}, {self.image_size[1]}"
+            )
 
             # print(self.pix[x, y])
             target_rgb = self.pix[x, y]
@@ -325,25 +328,29 @@ class PlaceClient:
                 current_timestamp = math.floor(time.time())
 
                 # log next time until drawing
-                time_until_next_draw = (
-                    next_pixel_placement_time + pixel_place_frequency
-                )
+                time_until_next_draw = next_pixel_placement_time + pixel_place_frequency
 
-                new_update_str = f"{time_until_next_draw} seconds until next pixel is drawn"
+                new_update_str = (
+                    f"{time_until_next_draw} seconds until next pixel is drawn"
+                )
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
                     update_str = new_update_str
-  
+
                 logging.info(f"Thread #{index} :: {update_str}")
 
                 # refresh access token if necessary
                 # print("TEST:", self.access_token_expires_at_timestamp, "INDEX:", index)
                 if (
-                    len(self.access_tokens) == 0 or
-                    len(self.access_token_expires_at_timestamp) == 0 or
+                    len(self.access_tokens) == 0
+                    or len(self.access_token_expires_at_timestamp) == 0
+                    or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp or
-                    (self.access_token_expires_at_timestamp.get(index) and current_timestamp >=
-                     self.access_token_expires_at_timestamp.get(index))
+                    index not in self.access_token_expires_at_timestamp
+                    or (
+                        self.access_token_expires_at_timestamp.get(index)
+                        and current_timestamp
+                        >= self.access_token_expires_at_timestamp.get(index)
+                    )
                 ):
                     logging.info(f"Thread #{index} :: Refreshing access token")
 
@@ -370,8 +377,7 @@ class PlaceClient:
                         "https://ssl.reddit.com/api/v1/access_token",
                         data=data,
                         auth=HTTPBasicAuth(app_client_id, secret_key),
-                        headers={
-                            "User-agent": f"placebot{random.randint(1, 100000)}"},
+                        headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
                     )
 
                     logging.debug(f"Received response: {r.text}")
@@ -380,7 +386,8 @@ class PlaceClient:
 
                     if "error" in response_data:
                         print(
-                            f"An error occured. Make sure you have the correct credentials. Response data: {response_data}")
+                            f"An error occured. Make sure you have the correct credentials. Response data: {response_data}"
+                        )
                         exit(1)
 
                     self.access_tokens[index] = response_data["access_token"]
@@ -395,12 +402,15 @@ class PlaceClient:
                         index
                     ] = current_timestamp + int(access_token_expires_in_seconds)
 
-                    logging.info(f"Received new access token: {self.access_tokens.get(index)[:5]}************")
+                    logging.info(
+                        f"Received new access token: {self.access_tokens.get(index)[:5]}************"
+                    )
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time + pixel_place_frequency or
-                    self.first_run_counter <= index
+                    current_timestamp
+                    >= next_pixel_placement_time + pixel_place_frequency
+                    or self.first_run_counter <= index
                 ):
 
                     # place pixel immediately
@@ -446,8 +456,10 @@ class PlaceClient:
 
     def start(self):
         for index, worker in enumerate(self.json_data["workers"]):
-            threading.Thread(target=self.task, args=[
-                             index, worker, self.json_data["workers"][worker]]).start()
+            threading.Thread(
+                target=self.task,
+                args=[index, worker, self.json_data["workers"][worker]],
+            ).start()
             # exit(1)
             time.sleep(self.delay_between_launches)
 

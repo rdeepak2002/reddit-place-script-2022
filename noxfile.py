@@ -2,6 +2,7 @@ import nox
 
 locations = "main.py", "noxfile.py", "mappings.py"
 
+
 @nox.session
 def black(session):
     args = session.posargs or locations
