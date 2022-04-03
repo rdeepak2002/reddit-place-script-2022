@@ -44,8 +44,7 @@ class PlaceClient:
             )
             self.proxies = (
                 self.GetProxies(self.json_data["proxies"])
-                if "proxies" in self.json_data is not None
-                else None
+                if "proxies" in self.json_data else None
             )
         except:
             logger.error(
