@@ -58,7 +58,7 @@ def Init(self):
 
     # tor connection
     if self.using_tor:
-        self.proxies = GetProxies(self, ["127.0.0.1:" + str(self.tor_port)])
+        self.proxies = get_proxies(self, ["127.0.0.1:" + str(self.tor_port)])
         if self.use_builtin_tor:
             subprocess.Popen(
                 '"'
@@ -93,7 +93,7 @@ def get_proxies_text(self):
         self.logger.debug("loaded proxies {} from file {}", i, path_proxies)
 
 
-def GetProxies(self, proxies):
+def get_proxies(self, proxies):
     proxies_list = []
     for i in proxies:
         proxies_list.append({"https": i, "http": i})
@@ -103,7 +103,7 @@ def GetProxies(self, proxies):
     return proxies_list
 
 
-def GetRandomProxy(self):
+def get_random_proxy(self):
     if not self.using_tor:
         random_proxy = None
         if self.proxies is not None:
