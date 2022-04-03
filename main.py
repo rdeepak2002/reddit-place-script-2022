@@ -48,6 +48,12 @@ class PlaceClient:
                 if "proxies" in self.json_data
                 else None
             )
+
+            self.compactlogging = (
+                self.json_data["compacy_logging"]
+                if "compacy_logging" in self.json_data
+                else True
+            )
         except:
             logger.error(
                 "Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue"
@@ -430,7 +436,8 @@ class PlaceClient:
                     update_str = ""
 
                 if len(update_str) > 0:
-                    logger.info("Thread #{} :: {}", index, update_str)
+                    if not self.compactlogging:
+                        logger.info("Thread #{} :: {}", index, update_str)
 
                 # refresh access token if necessary
                 if (
@@ -445,7 +452,8 @@ class PlaceClient:
                         >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
-                    logger.info("Thread #{} :: Refreshing access token", index)
+                    if not self.compactlogging:
+                        logger.info("Thread #{} :: Refreshing access token", index)
 
                     # developer's reddit username and password
                     try:
@@ -510,11 +518,11 @@ class PlaceClient:
                     self.access_token_expires_at_timestamp[
                         index
                     ] = current_timestamp + int(access_token_expires_in_seconds)
-
-                    logger.info(
-                        "Received new access token: {}************",
-                        self.access_tokens.get(index)[:5],
-                    )
+                    if not self.compactlogging:
+                        logger.info(
+                            "Received new access token: {}************",
+                            self.access_tokens.get(index)[:5],
+                        )
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
