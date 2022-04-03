@@ -491,11 +491,11 @@ class PlaceClient:
                     "{}, {}, {}, {}",
                     pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                     new_rgb,
-                    new_rgb != (69, 42, 0),
+                    target_rgb[:3] != (69, 42, 0),
                     pix2[x, y] != new_rgb,
                 )
 
-                if new_rgb != (69, 42, 0):
+                if target_rgb[:3] != (69, 42, 0):
                     logger.debug(
                         "Thread #{} : Replacing {} pixel at: {},{} with {} color",
                         index,
@@ -506,7 +506,11 @@ class PlaceClient:
                     )
                     break
                 else:
-                    logger.info("TransparrentPixel")
+                    logger.info(
+                        "Transparent Pixel at {}, {} skipped",
+                        x + self.pixel_x_start,
+                        y + self.pixel_y_start,
+                    )
             x += 1
             loopedOnce = True
         return x, y, new_rgb
