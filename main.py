@@ -26,7 +26,7 @@ from mappings import color_map, name_map
 class PlaceClient:
     def __init__(self):
         # Data
-        self.get_json()
+        self.load_json()
 
         # Color palette
         self.rgb_colors_array = self.generate_rgb_colors_array()
@@ -44,9 +44,9 @@ class PlaceClient:
         self.load_image()
 
     """ Utils """
-    # retreive data from .json
+    # load data from .json file
 
-    def get_json(self):
+    def load_json(self):
         self.json_data = self.get_json_data()
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
