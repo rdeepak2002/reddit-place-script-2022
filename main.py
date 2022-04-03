@@ -166,7 +166,7 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logger.error("Failed placing pixel: rate limited")
+            logger.error("{}: Failed placing pixel: rate limited", name)
         else:
             waitTime = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
@@ -397,7 +397,7 @@ class PlaceClient:
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
                     update_str = new_update_str
 
-                logger.info("Thread #{} :: {}", index, update_str)
+                logger.info("Thread #{} ::{}: {}", index, name, update_str)
 
                 # refresh access token if necessary
                 if (
@@ -412,7 +412,7 @@ class PlaceClient:
                         >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
-                    logger.info("Thread #{} :: Refreshing access token", index)
+                    logger.info("Thread #{} ::{}: Refreshing access token", name, index)
 
                     # developer's reddit username and password
                     try:
