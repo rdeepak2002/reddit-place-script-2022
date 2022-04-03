@@ -266,7 +266,6 @@ class PlaceClient:
                 canvas_details = canvas_payload["payload"]["data"]["subscribe"]["data"]
                 logger.debug("Canvas config: {}", canvas_payload)
                 break
-        #logger.debug("Canvas Details: {}", canvas_details)
 
         canvas_sockets = []
 
@@ -347,8 +346,6 @@ class PlaceClient:
             
         logger.debug("Saving image to disk as board.png")
         
-        #Uncomment the line below to save the canvas image to disk
-        #new_img.save("board.png")
         return new_img
 
     def get_unset_pixel(self, boardimg, x, y, index):
