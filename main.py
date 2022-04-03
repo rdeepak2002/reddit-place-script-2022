@@ -200,10 +200,19 @@ class PlaceClient:
 
     def get_board(self, access_token_in):
         logger.debug("Connecting and obtaining board images")
-        ws = create_connection(
-            "wss://gql-realtime-2.reddit.com/query",
-            origin="https://hot-potato.reddit.com",
-        )
+        while True:
+            try:
+                ws = create_connection(
+                    "wss://gql-realtime-2.reddit.com/query",
+                    origin="https://hot-potato.reddit.com",
+                )
+                break
+            except Exception:
+                logger.error(
+                    "Failed to connect to websocket, trying again in 30 seconds..."
+                )
+                time.sleep(30)
+
         ws.send(
             json.dumps(
                 {
@@ -492,29 +501,38 @@ class PlaceClient:
                         )
                         exit(1)
 
-                    client = requests.Session()
-                    client.headers.update(
-                        {
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
-                        }
-                    )
-                    r = client.get("https://www.reddit.com/login")
-                    login_get_soup = BeautifulSoup(r.content, "html.parser")
-                    csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
-                        "value"
-                    ]
-                    data = {
-                        "username": username,
-                        "password": password,
-                        "dest": "https://www.reddit.com/",
-                        "csrf_token": csrf_token,
-                    }
+                    while True:
+                        try:
+                            client = requests.Session()
+                            client.headers.update(
+                                {
+                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
+                                }
+                            )
+                            r = client.get("https://www.reddit.com/login")
+                            login_get_soup = BeautifulSoup(r.content, "html.parser")
+                            csrf_token = login_get_soup.find(
+                                "input", {"name": "csrf_token"}
+                            )["value"]
+                            data = {
+                                "username": username,
+                                "password": password,
+                                "dest": "https://www.reddit.com/",
+                                "csrf_token": csrf_token,
+                            }
 
-                    r = client.post(
-                        "https://www.reddit.com/login",
-                        data=data,
-                        proxies=self.GetRandomProxy(),
-                    )
+                            r = client.post(
+                                "https://www.reddit.com/login",
+                                data=data,
+                                proxies=self.GetRandomProxy(),
+                            )
+                            break
+                        except Exception:
+                            logger.error(
+                                "Failed to connect to websocket, trying again in 30 seconds..."
+                            )
+                            time.sleep(30)
+
                     if r.status_code != HTTPStatus.OK.value:
                         # password is probably invalid
                         logger.exception("Authorization failed!")
