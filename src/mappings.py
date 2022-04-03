@@ -25,7 +25,7 @@ class ColorMapper:
         "#811E9F": 18,  # dark purple
         "#B44AC0": 19,  # purple
         "#E4ABFF": 20,  # pale purple
-        "#DE107F": 21,  #magenta
+        "#DE107F": 21,  # magenta
         "#FF3881": 22,  # pink
         "#FF99AA": 23,  # light pink
         "#6D482F": 24,  # dark brown
