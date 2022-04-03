@@ -24,7 +24,7 @@ from src.mappings import ColorMapper
 class PlaceClient:
     def __init__(self, config_path):
         # Data
-        self.load_json()
+        self.load_json(config_path)
 
         # Color palette
         self.rgb_colors_array = ColorMapper.generate_rgb_colors_array()
