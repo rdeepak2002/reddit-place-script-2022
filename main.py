@@ -131,9 +131,13 @@ class PlaceClient:
             im = im.convert("RGBA")
             logger.info("Converted to rgba")
         self.pix = im.load()
+<<<<<<< HEAD
 
         logger.info("Loaded image size: {}", im.size)
 
+=======
+        logger.success("Loaded image size: {}", im.size)
+>>>>>>> a6973d6 (Makes loading image a success.)
         self.image_size = im.size
 
     """ Main """
