@@ -198,7 +198,9 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logger.error("Thread #{} : Failed placing pixel: rate limited", thread_index)
+            logger.error(
+                "Thread #{} : Failed placing pixel: rate limited", thread_index
+            )
         else:
             waitTime = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
@@ -347,7 +349,10 @@ class PlaceClient:
                 x = 0
 
             if y >= self.image_size[1]:
-                logging.info("Thread #{} : All pixels correct, trying again in 10 seconds... ", index)
+                logging.info(
+                    "Thread #{} : All pixels correct, trying again in 10 seconds... ",
+                    index,
+                )
 
                 time.sleep(10)
 
