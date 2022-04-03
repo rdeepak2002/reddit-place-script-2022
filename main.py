@@ -156,29 +156,34 @@ class PlaceClient:
     """ Utils """
 
     def get_proxies_text(self):
-        pathproxies = os.path.join(os.getcwd(), "proxies.txt")
-        f = open(pathproxies)
+        path_proxies = os.path.join(os.getcwd(), "proxies.txt")
+        f = open(path_proxies)
         file = f.read()
         f.close()
-        proxieslist = file.splitlines()
+        proxies_list = file.splitlines()
         self.proxies = []
-        for i in proxieslist:
+        for i in proxies_list:
             self.proxies.append({"https": i, "http": i})
+            logger.debug("loaded proxies {} from file {}", i, path_proxies)
 
     def GetProxies(self, proxies):
-        proxieslist = []
+        proxies_list = []
         for i in proxies:
-            proxieslist.append({"https": i, "http": i})
-        return proxieslist
+            proxies_list.append({"https": i, "http": i})
+
+        logger.debug("Loaded proxies: {}", str(proxies_list))
+        return proxies_list
 
     def GetRandomProxy(self):
         if not self.using_tor:
-            randomproxy = None
+            random_proxy = None
             if self.proxies is not None:
-                randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
-            return randomproxy
+                random_proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
+            logger.debug("Using proxy: {}", str(random_proxy))
+            return random_proxy
         else:
             self.tor_reconnect()
+            logger.debug("Using Tor. Selecting first proxy: {}.", str(self.proxies[0]))
             return self.proxies[0]
 
     def get_json_data(self, config_path):
