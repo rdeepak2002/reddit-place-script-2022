@@ -184,12 +184,13 @@ class PlaceClient:
     # Periodically redownload and reload resources
     def auto_update_resources(self):
         while self.auto_update_enabled:
-            time.sleep(self.delay_between_updates)
+            logger.info("Thread #0 ::  auto update thread running")
             self.download_resouce(self.config_source, "config.json")
             self.download_resouce(self.image_source, self.image_path)
             time.sleep(5)
             self.load_json()
             self.load_image()
+            time.sleep(self.delay_between_updates)
     
 
     """ Main """
@@ -623,10 +624,16 @@ class PlaceClient:
                 break
 
     def start(self):
+        if self.auto_update_enabled:
+            threading.Thread(
+                target=self.auto_update_resources,
+                args=[]
+            ).start()
+
         for index, worker in enumerate(self.json_data["workers"]):
             threading.Thread(
                 target=self.task,
-                args=[index, worker, self.json_data["workers"][worker]],
+                args=[index+1, worker, self.json_data["workers"][worker]]
             ).start()
             # exit(1)
             time.sleep(self.delay_between_launches)
