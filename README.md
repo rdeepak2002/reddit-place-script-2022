@@ -121,7 +121,7 @@ If any JSON decoders errors are found, the `config.json` needs a fix. Make sure 
 {
     "thread_delay": 2,
     "unverified_place_frequency": false,
-    "proxies": ["1.1.1.1:8080","2.2.2.2:1234"],
+    "proxies": ["socks5://<username>:<password>@<ip>:<port>","2.2.2.2:1234"],
     "compact_logging": true
 }
 ```
