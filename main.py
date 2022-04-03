@@ -47,7 +47,7 @@ class PlaceClient:
             else False
         )
         self.proxies = (
-            self.GetProxies(self.json_data["proxies"])
+            self.get_proxies(self.json_data["proxies"])
             if "proxies" in self.json_data and self.json_data["proxies"] is not None
             else None
         )
@@ -97,7 +97,7 @@ class PlaceClient:
 
         # tor connection
         if self.using_tor:
-            self.proxies = self.GetProxies(["127.0.0.1:" + str(self.tor_port)])
+            self.proxies = self.get_proxies(["127.0.0.1:" + str(self.tor_port)])
             if self.use_builtin_tor:
                 subprocess.call(
                     "start "
@@ -162,13 +162,13 @@ class PlaceClient:
         for i in proxieslist:
             self.proxies.append({"https": i, "http": i})
 
-    def GetProxies(self, proxies):
+    def get_proxies(self, proxies):
         proxieslist = []
         for i in proxies:
             proxieslist.append({"https": i, "http": i})
         return proxieslist
 
-    def GetRandomProxy(self):
+    def get_random_proxy(self):
         if not self.using_tor:
             randomproxy = None
             if self.proxies is not None:
@@ -179,13 +179,13 @@ class PlaceClient:
             return self.proxies[0]
 
     def get_json_data(self, config_path):
-        configFilePath = os.path.join(os.getcwd(), config_path)
+        config_file_path = os.path.join(os.getcwd(), config_path)
 
-        if not os.path.exists(configFilePath):
+        if not os.path.exists(config_file_path):
             exit("No config.json file found. Read the README")
 
         # To not keep file open whole execution time
-        f = open(configFilePath)
+        f = open(config_file_path)
         json_data = json.load(f)
         f.close()
 
@@ -255,7 +255,7 @@ class PlaceClient:
         }
 
         response = requests.request(
-            "POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy()
+            "POST", url, headers=headers, data=payload, proxies=self.get_random_proxy()
         )
         logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
@@ -265,14 +265,14 @@ class PlaceClient:
         # If we don't get data, it means we've been rate limited.
         # If we do, a pixel has been successfully placed.
         if response.json()["data"] is None:
-            waitTime = math.floor(
+            wait_time = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
             logger.error(
                 "Thread #{} : Failed placing pixel: rate limited", thread_index
             )
         else:
-            waitTime = math.floor(
+            wait_time = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
                     "nextAvailablePixelTimestamp"
                 ]
@@ -285,7 +285,7 @@ class PlaceClient:
         # Move the code anywhere you want, I put it here to inspect the API responses.
 
         # Reddit returns time in ms and we need seconds, so divide by 1000
-        return waitTime / 1000
+        return wait_time / 1000
 
     def get_board(self, access_token_in):
         logger.debug("Connecting and obtaining board images")
@@ -401,7 +401,7 @@ class PlaceClient:
                                         requests.get(
                                             msg["data"]["name"],
                                             stream=True,
-                                            proxies=self.GetRandomProxy(),
+                                            proxies=self.get_random_proxy(),
                                         ).content
                                     )
                                 ),
@@ -438,24 +438,24 @@ class PlaceClient:
         return new_img
 
     def get_unset_pixel(self, x, y, index):
-        originalX = x
-        originalY = y
-        loopedOnce = False
-        imgOutdated = True
-        wasWaiting = False
+        original_x = x
+        original_y = y
+        looped_once = False
+        img_outdated = True
+        was_aiting = False
 
         while True:
             if self.waiting_thread_index != -1 and self.waiting_thread_index != index:
-                x = originalX
-                y = originalY
-                loopedOnce = False
-                imgOutdated = True
-                wasWaiting = True
+                x = original_x
+                y = original_y
+                looped_once = False
+                img_outdated = True
+                was_aiting = True
                 continue
 
             # Stagger reactivation of threads after wait
-            if wasWaiting:
-                wasWaiting = False
+            if was_aiting:
+                was_aiting = False
                 time.sleep(index * self.delay_between_launches)
 
             if x >= self.image_size[0]:
@@ -466,19 +466,19 @@ class PlaceClient:
 
                 y = 0
 
-            if x == originalX and y == originalY and loopedOnce:
+            if x == original_x and y == original_y and looped_once:
                 logger.info(
                     "Thread #{} : All pixels correct, trying again in 10 seconds... ",
                     index,
                 )
                 self.waiting_thread_index = index
                 time.sleep(10)
-                imgOutdated = True
+                img_outdated = True
 
-            if imgOutdated:
+            if img_outdated:
                 boardimg = self.get_board(self.access_tokens[index])
                 pix2 = boardimg.convert("RGB").load()
-                imgOutdated = False
+                img_outdated = False
 
             logger.debug("{}, {}", x + self.pixel_x_start, y + self.pixel_y_start)
             logger.debug(
@@ -514,7 +514,7 @@ class PlaceClient:
                         y + self.pixel_y_start,
                     )
             x += 1
-            loopedOnce = True
+            looped_once = True
         return x, y, new_rgb
 
     # Draw the input image
@@ -523,8 +523,6 @@ class PlaceClient:
         repeat_forever = True
 
         while True:
-            # last_time_placed_pixel = math.floor(time.time())
-
             # note: Reddit limits us to place 1 pixel every 5 minutes, so I am setting it to
             # 5 minutes and 30 seconds per pixel
             if self.unverified_place_frequency:
@@ -570,9 +568,8 @@ class PlaceClient:
                 else:
                     update_str = ""
 
-                if len(update_str) > 0:
-                    if not self.compactlogging:
-                        logger.info("Thread #{} :: {}", index, update_str)
+                if len(update_str) > 0 and not self.compactlogging:
+                    logger.info("Thread #{} :: {}", index, update_str)
 
                 # refresh access token if necessary
                 if (
@@ -624,7 +621,7 @@ class PlaceClient:
                             r = client.post(
                                 "https://www.reddit.com/login",
                                 data=data,
-                                proxies=self.GetRandomProxy(),
+                                proxies=self.get_random_proxy(),
                             )
                             break
                         except Exception:
@@ -657,11 +654,9 @@ class PlaceClient:
                         exit(1)
 
                     self.access_tokens[index] = response_data["accessToken"]
-                    # access_token_type = data["user"]["session"]["accessToken"]  # this is just "bearer"
                     access_token_expires_in_seconds = response_data[
                         "expiresIn"
                     ]  # this is usually "3600"
-                    # access_token_scope = response_data["scope"]  # this is usually "*"
 
                     # ts stores the time in seconds
                     self.access_token_expires_at_timestamp[

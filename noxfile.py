@@ -18,4 +18,4 @@ def lint(session):
     session.run("flake8", *args)
 
 
-nox.options.sessions = ["lint"]
+nox.options.sessions = ["black", "lint"]
