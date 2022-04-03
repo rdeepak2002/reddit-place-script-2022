@@ -2,7 +2,7 @@
     "image_path": "image.jpg",
     "image_start_coords": [741, 610],
     "thread_delay": 2,
-    "unverified_place_frequency": "False",
+    "unverified_place_frequency": false,
     "workers": {
         "worker1username": {
             "password": "password",
