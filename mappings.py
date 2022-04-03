@@ -1,5 +1,4 @@
 color_map = {
-    "#452A00": 0,  # transparent
     "#BE0039": 1,  # dark red
     "#FF4500": 2,  # red
     "#FFA800": 3,  # orange
