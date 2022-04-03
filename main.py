@@ -74,10 +74,6 @@ class PlaceClient:
 
         self.waiting_thread_index = -1
 
-    
-
-    
-
     """ Main """
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
