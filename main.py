@@ -93,7 +93,7 @@ class PlaceClient:
     def GetProxies(self, proxies):
         proxieslist = []
         for i in proxies:
-            proxieslist[len(proxieslist)] = {"https": i}
+            proxieslist.append({"https": i})
         return proxieslist
 
     def GetRandomProxy(self):
@@ -150,10 +150,11 @@ class PlaceClient:
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self, access_token_in, x, y, color_index_in=18, canvas_index=0
+        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1
     ):
         logger.info(
-            "Attempting to place {} pixel at {}, {}",
+            "Thread #{} : Attempting to place {} pixel at {}, {}",
+            thread_index,
             self.color_id_to_name(color_index_in),
             x + (1000 * canvas_index),
             y,
@@ -188,7 +189,7 @@ class PlaceClient:
         response = requests.request(
             "POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy()
         )
-        logger.debug("Received response: {}", response.text)
+        logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
         self.waiting_thread_index = -1
 
@@ -199,14 +200,14 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logger.error("Failed placing pixel: rate limited")
+            logger.error("Thread #{} : Failed placing pixel: rate limited", thread_index)
         else:
             waitTime = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
                     "nextAvailablePixelTimestamp"
                 ]
             )
-            logger.info("Succeeded placing pixel")
+            logger.info("Thread #{} : Succeeded placing pixel", thread_index)
 
         # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
         # Works perfect with one thread.
@@ -408,7 +409,8 @@ class PlaceClient:
 
                 if target_rgb != (69, 42, 0):
                     logger.debug(
-                        "Replacing {} pixel at: {},{} with {} color",
+                        "Thread #{} : Replacing {} pixel at: {},{} with {} color",
+                        index,
                         pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                         x + self.pixel_x_start,
                         y + self.pixel_y_start,
@@ -555,7 +557,6 @@ class PlaceClient:
                     self.access_token_expires_at_timestamp[
                         index
                     ] = current_timestamp + int(access_token_expires_in_seconds)
-
                     if not self.compactlogging:
                         logger.info(
                             "Received new access token: {}************",
@@ -604,6 +605,7 @@ class PlaceClient:
                         pixel_y_start,
                         pixel_color_index,
                         canvas,
+                        index
                     )
 
                     current_r += 1
