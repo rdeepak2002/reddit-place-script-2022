@@ -33,12 +33,14 @@ class PlaceClient:
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data and self.json_data["thread_delay"] is not None
+            if "thread_delay" in self.json_data
+            and self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
             self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data and self.json_data["unverified_place_frequency"] is not None
+            if "unverified_place_frequency" in self.json_data
+            and self.json_data["unverified_place_frequency"] is not None
             else False
         )
         self.proxies = (
@@ -57,7 +59,11 @@ class PlaceClient:
         # Image information
         self.pix = None
         self.image_size = None
-        self.image_path = self.json_data["image_path"] if "image_path" in self.json_data else "image.jpg"
+        self.image_path = (
+            self.json_data["image_path"]
+            if "image_path" in self.json_data
+            else "image.jpg"
+        )
         self.first_run_counter = 0
 
         # Initialize-functions
@@ -409,7 +415,7 @@ class PlaceClient:
 
                 # log next time until drawing
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
-                
+
                 if time_until_next_draw > 10000:
                     logger.info(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
                     exit(1)
@@ -422,7 +428,7 @@ class PlaceClient:
                     update_str = new_update_str
                 else:
                     update_str = ""
-                    
+
                 if len(update_str) > 0:
                     logger.info("Thread #{} :: {}", index, update_str)
 
