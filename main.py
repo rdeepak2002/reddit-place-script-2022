@@ -19,7 +19,7 @@ import click
 from bs4 import BeautifulSoup
 
 
-from mappings import color_map, name_map
+from src.mappings import ColorMapper
 
 
 class PlaceClient:
@@ -83,8 +83,8 @@ class PlaceClient:
 
     # More verbose color indicator from a pixel color ID
     def color_id_to_name(self, color_id):
-        if color_id in name_map.keys():
-            return "{} ({})".format(name_map[color_id], str(color_id))
+        if color_id in ColorMapper.NAME_MAP.keys():
+            return "{} ({})".format(ColorMapper.NAME_MAP[color_id], str(color_id))
         return "Invalid Color ({})".format(str(color_id))
 
     # Find the closest rgb color from palette to a target rgb color
@@ -114,7 +114,7 @@ class PlaceClient:
     def generate_rgb_colors_array(self):
         # Generate array of available rgb colors to be used
         return [
-            ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in color_map.items()
+            ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in ColorMapper.COLOR_MAP.items()
         ]
 
     def get_json_data(self, config_path):
@@ -554,7 +554,7 @@ class PlaceClient:
 
                     # get converted color
                     new_rgb_hex = self.rgb_to_hex(new_rgb)
-                    pixel_color_index = color_map[new_rgb_hex]
+                    pixel_color_index = ColorMapper.COLOR_MAP[new_rgb_hex]
 
                     logger.info("\nAccount Placing: ", name, "\n")
 
