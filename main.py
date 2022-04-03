@@ -216,7 +216,7 @@ class PlaceClient:
         return waitTime / 1000
 
     def get_board(self, access_token_in):
-        logger.info("Connecting and obtaining board images")
+        logger.debug("Connecting and obtaining board images")
         ws = create_connection(
             "wss://gql-realtime-2.reddit.com/query",
             origin="https://hot-potato.reddit.com",
@@ -313,7 +313,7 @@ class PlaceClient:
                     img_id = int(temp["id"])
                     logger.debug("Image ID: {}", img_id)
                     if img_id in canvas_sockets:
-                        logger.info("Getting image: {}", msg["data"]["name"])
+                        logger.debug("Getting image: {}", msg["data"]["name"])
                         imgs.append(
                             Image.open(
                                 BytesIO(
