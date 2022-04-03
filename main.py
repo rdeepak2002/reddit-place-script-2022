@@ -352,6 +352,7 @@ class PlaceClient:
         originalY = y
         loopedOnce = False
         imgOutdated = True
+        wasWaiting = False
 
         while True:
             if self.waiting_thread_index != -1 and self.waiting_thread_index != index:
@@ -359,7 +360,13 @@ class PlaceClient:
                 y = originalY
                 loopedOnce = False
                 imgOutdated = True
+                wasWaiting = True
                 continue
+            
+            # Stagger reactivation of threads after wait
+            if wasWaiting:
+                wasWaiting = False
+                time.sleep(index * self.delay_between_launches)
 
             if x >= self.image_size[0]:
                 y += 1
