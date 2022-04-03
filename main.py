@@ -207,7 +207,7 @@ class PlaceClient:
         return waitTime / 1000
 
     def get_board(self, access_token_in):
-        logger.info("Getting board")
+        logger.debug("Connecting and obtaining board images")
         ws = create_connection(
             "wss://gql-realtime-2.reddit.com/query",
             origin="https://hot-potato.reddit.com",
@@ -220,7 +220,15 @@ class PlaceClient:
                 }
             )
         )
-        ws.recv()
+        while True:
+            msg = ws.recv()
+            if msg is None:
+                logger.error("Reddit failed to acknowledge connection_init")
+                exit()
+            if msg.startswith("{\"type\":\"connection_ack\"}"):
+                logger.debug("Connected to WebSocket server")
+                break
+        logger.debug("Obtaining Canvas information")
         ws.send(
             json.dumps(
                 {
@@ -242,37 +250,24 @@ class PlaceClient:
                 }
             )
         )
-        ws.recv()
-        ws.send(
-            json.dumps(
-                {
-                    "id": "2",
-                    "type": "start",
-                    "payload": {
-                        "variables": {
-                            "input": {
-                                "channel": {
-                                    "teamOwner": "AFD2022",
-                                    "category": "CANVAS",
-                                    "tag": "0",
-                                }
-                            }
-                        },
-                        "extensions": {},
-                        "operationName": "replace",
-                        "query": "subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
-                    },
-                }
-            )
-        )
-        ws.recv()
 
-        image_sizex = 2
-        image_sizey = 1
+        while True:
+            canvas_payload = json.loads(ws.recv())
+            if canvas_payload["type"] == "data":
+                canvas_details = canvas_payload["payload"]["data"]["subscribe"]["data"]
+                logger.debug("Canvas config: {}", canvas_payload)
+                break
 
-        imgs = []
-        already_added = []
-        for i in range(0, image_sizex * image_sizey):
+        canvas_sockets = []
+
+
+        canvas_count = len(canvas_details["canvasConfigurations"])
+
+
+        for i in range(0, canvas_count):
+            canvas_sockets.append(2+i)
+            logger.debug("Creating canvas socket {}", canvas_sockets[i])
+
             ws.send(
                 json.dumps(
                     {
@@ -295,39 +290,52 @@ class PlaceClient:
                     }
                 )
             )
-            ws.recv()
-            while True:
-                temp = json.loads(ws.recv())
-                if temp["type"] == "data":
-                    msg = temp["payload"]["data"]["subscribe"]
-                    if msg["data"]["__typename"] == "FullFrameMessageData":
-                        if not temp["id"] in already_added:
-                            imgs.append(
-                                Image.open(
-                                    BytesIO(
-                                        requests.get(
-                                            msg["data"]["name"],
-                                            stream=True,
-                                            proxies=self.GetRandomProxy(),
-                                        ).content
-                                    )
+
+
+        imgs = []       
+        logger.debug("A total of {} canvas sockets opened", len(canvas_sockets))
+        while len(canvas_sockets) > 0:
+            temp = json.loads(ws.recv())
+            logger.debug("Waiting for WebSocket message")
+            if temp["type"] == "data":
+                logger.debug("Received WebSocket data type message")
+                msg = temp["payload"]["data"]["subscribe"]
+                if msg["data"]["__typename"] == "FullFrameMessageData":
+                    logger.debug("Received full frame message")
+                    img_id = int(temp["id"])
+                    logger.debug("Image ID: {}", img_id)
+                    if img_id in canvas_sockets:
+                        logger.debug("Getting image: {}", msg["data"]["name"])
+                        imgs.append(
+                            Image.open(
+                                BytesIO(
+                                    requests.get(
+                                        msg["data"]["name"], stream=True
+                                    ).content
                                 )
                             )
-                            already_added.append(temp["id"])
-                        break
+                        )
+                        canvas_sockets.remove(img_id)
+                        logger.debug("Canvas sockets remaining: {}", len(canvas_sockets))
+
+        for i in range(0, canvas_count-1):
             ws.send(json.dumps({"id": str(2 + i), "type": "stop"}))
 
         ws.close()
 
-        new_img = Image.new("RGB", (1000 * 2, 1000))
-
-        x_offset = 0
-        for img in imgs:
-            new_img.paste(img, (x_offset, 0))
-            x_offset += img.size[0]
-
-        logger.info("Got image.")
-        # new_img.show()
+        #TODO: Multiply by canvas_details["canvasConfigurations"][i]["dx"] and canvas_details["canvasConfigurations"][i]["dy"] instead of hardcoding it
+        new_img_width = int(canvas_details["canvasWidth"]) * 2
+        logger.debug("New image width: {}", new_img_width)
+        new_img_height = int(canvas_details["canvasHeight"])
+        logger.debug("New image height: {}", new_img_height) 
+        
+        new_img = Image.new("RGB", (new_img_width, new_img_height))
+        dx_offset = 0
+        for idx, img in enumerate(imgs):
+            logger.debug("Adding image: {}", img)
+            dx_offset = int(canvas_details["canvasConfigurations"][idx]["dx"])
+            new_img.paste(img, (dx_offset, 0))
+        
         return new_img
 
     def get_unset_pixel(self, boardimg, x, y, index):
