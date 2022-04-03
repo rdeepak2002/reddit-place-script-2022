@@ -11,6 +11,8 @@ import threading
 import sys
 import random
 from io import BytesIO
+
+from bs4 import BeautifulSoup
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
