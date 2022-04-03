@@ -12,11 +12,13 @@ import sys
 import random
 from io import BytesIO
 from websocket import create_connection
+from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
 from bs4 import BeautifulSoup
+
 
 from mappings import color_map, name_map
 
@@ -29,34 +31,21 @@ class PlaceClient:
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
         # In seconds
-        try:
-            self.delay_between_launches = (
-                self.json_data["thread_delay"]
-                if self.json_data["thread_delay"] is not None
-                else 3
-            )
-
-            self.unverified_place_frequency = (
-                self.json_data["unverified_place_frequency"]
-                if self.json_data["unverified_place_frequency"] is not None
-                else False
-            )
-            self.proxies = (
-                self.GetProxies(self.json_data["proxies"])
-                if "proxies" in self.json_data
-                else None
-            )
-
-            self.compactlogging = (
-                self.json_data["compacy_logging"]
-                if "compacy_logging" in self.json_data
-                else True
-            )
-        except Exception:
-            logger.error(
-                "Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue"
-            )
-            exit()
+        self.delay_between_launches = (
+            self.json_data["thread_delay"]
+            if "thread_delay" in self.json_data and self.json_data["thread_delay"] is not None
+            else 3
+        )
+        self.unverified_place_frequency = (
+            self.json_data["unverified_place_frequency"]
+            if "unverified_place_frequency" in self.json_data and self.json_data["unverified_place_frequency"] is not None
+            else False
+        )
+        self.proxies = (
+            self.GetProxies(self.json_data["proxies"])
+            if "proxies" in self.json_data
+            else None
+        )
 
         # Color palette
         self.rgb_colors_array = self.generate_rgb_colors_array()
@@ -68,7 +57,7 @@ class PlaceClient:
         # Image information
         self.pix = None
         self.image_size = None
-        self.image_path = self.json_data["image_path"]
+        self.image_path = self.json_data["image_path"] if "image_path" in self.json_data else "image.jpg"
         self.first_run_counter = 0
 
         # Initialize-functions
@@ -148,11 +137,10 @@ class PlaceClient:
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1
+        self, access_token_in, x, y, color_index_in=18, canvas_index=0
     ):
         logger.info(
-            "Thread #{} : Attempting to place {} pixel at {}, {}",
-            thread_index,
+            "Attempting to place {} pixel at {}, {}",
             self.color_id_to_name(color_index_in),
             x + (1000 * canvas_index),
             y,
@@ -187,7 +175,7 @@ class PlaceClient:
         response = requests.request(
             "POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy()
         )
-        logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
+        logger.debug("Received response: {}", response.text)
 
         # There are 2 different JSON keys for responses to get the next timestamp.
         # If we don't get data, it means we've been rate limited.
@@ -196,16 +184,14 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logger.error(
-                "Thread #{} : Failed placing pixel: rate limited", thread_index
-            )
+            logger.error("Failed placing pixel: rate limited")
         else:
             waitTime = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
                     "nextAvailablePixelTimestamp"
                 ]
             )
-            logger.info("Thread #{} : Succeeded placing pixel", thread_index)
+            logger.info("Succeeded placing pixel")
 
         # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
         # Works perfect with one thread.
@@ -281,7 +267,7 @@ class PlaceClient:
 
         imgs = []
         already_added = []
-        for i in range(1, image_sizex * image_sizey + 1):
+        for i in range(0, image_sizex * image_sizey):
             ws.send(
                 json.dumps(
                     {
@@ -347,10 +333,7 @@ class PlaceClient:
                 x = 0
 
             if y >= self.image_size[1]:
-                logging.info(
-                    "Thread #{} : All pixels correct, trying again in 10 seconds... ",
-                    index,
-                )
+                logging.info("All pixels correct, trying again in 10 seconds... ")
 
                 time.sleep(10)
 
@@ -376,8 +359,7 @@ class PlaceClient:
                 )
                 if target_rgb != (69, 42, 0):
                     logger.debug(
-                        "Thread #{} : Replacing {} pixel at: {},{} with {} color",
-                        index,
+                        "Replacing {} pixel at: {},{} with {} color",
                         pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                         x + self.pixel_x_start,
                         y + self.pixel_y_start,
@@ -427,7 +409,7 @@ class PlaceClient:
 
                 # log next time until drawing
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
-
+                
                 if time_until_next_draw > 10000:
                     logger.info(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
                     exit(1)
@@ -440,10 +422,9 @@ class PlaceClient:
                     update_str = new_update_str
                 else:
                     update_str = ""
-
+                    
                 if len(update_str) > 0:
-                    if not self.compactlogging:
-                        logger.info("Thread #{} :: {}", index, update_str)
+                    logger.info("Thread #{} :: {}", index, update_str)
 
                 # refresh access token if necessary
                 if (
@@ -458,8 +439,7 @@ class PlaceClient:
                         >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
-                    if not self.compactlogging:
-                        logger.info("Thread #{} :: Refreshing access token", index)
+                    logger.info("Thread #{} :: Refreshing access token", index)
 
                     # developer's reddit username and password
                     try:
@@ -524,11 +504,11 @@ class PlaceClient:
                     self.access_token_expires_at_timestamp[
                         index
                     ] = current_timestamp + int(access_token_expires_in_seconds)
-                    if not self.compactlogging:
-                        logger.info(
-                            "Received new access token: {}************",
-                            self.access_tokens.get(index)[:5],
-                        )
+
+                    logger.info(
+                        "Received new access token: {}************",
+                        self.access_tokens.get(index)[:5],
+                    )
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
@@ -573,7 +553,6 @@ class PlaceClient:
                         pixel_y_start,
                         pixel_color_index,
                         canvas,
-                        index,
                     )
 
                     current_r += 1
