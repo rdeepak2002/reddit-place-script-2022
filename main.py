@@ -320,13 +320,16 @@ class PlaceClient:
                     if img_id in canvas_sockets:
                         logger.debug("Getting image: {}", msg["data"]["name"])
                         imgs.append(
-                            Image.open(
-                                BytesIO(
-                                    requests.get(
-                                        msg["data"]["name"], stream=True
-                                    ).content
-                                )
-                            )
+                            [
+                                img_id,
+                                Image.open(
+                                    BytesIO(
+                                        requests.get(
+                                            msg["data"]["name"], stream=True
+                                        ).content
+                                    )
+                                ),
+                            ]
                         )
                         canvas_sockets.remove(img_id)
                         logger.debug(
@@ -346,10 +349,10 @@ class PlaceClient:
 
         new_img = Image.new("RGB", (new_img_width, new_img_height))
         dx_offset = 0
-        for idx, img in enumerate(imgs):
-            logger.debug("Adding image: {}", img)
+        for idx, img in enumerate(sorted(imgs, key=lambda x: x[0])):
+            logger.debug("Adding image (ID {}): {}", img[0], img[1])
             dx_offset = int(canvas_details["canvasConfigurations"][idx]["dx"])
-            new_img.paste(img, (dx_offset, 0))
+            new_img.paste(img[1], (dx_offset, 0))
 
         return new_img
 
