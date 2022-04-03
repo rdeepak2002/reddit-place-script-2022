@@ -24,7 +24,34 @@ from src.mappings import ColorMapper
 class PlaceClient:
     def __init__(self, config_path):
         # Data
-        self.load_json(config_path)
+        self.json_data = self.get_json_data(config_path)
+        self.pixel_x_start: int = self.json_data["image_start_coords"][0]
+        self.pixel_y_start: int = self.json_data["image_start_coords"][1]
+
+        # In seconds
+        self.delay_between_launches = (
+            self.json_data["thread_delay"]
+            if "thread_delay" in self.json_data
+            and self.json_data["thread_delay"] is not None
+            else 3
+        )
+        self.unverified_place_frequency = (
+            self.json_data["unverified_place_frequency"]
+            if "unverified_place_frequency" in self.json_data
+            and self.json_data["unverified_place_frequency"] is not None
+            else False
+        )
+        self.proxies = (
+            self.GetProxies(self.json_data["proxies"])
+            if "proxies" in self.json_data and self.json_data["proxies"] is not None
+            else None
+        )
+        self.compactlogging = (
+            self.json_data["compact_logging"]
+            if "compact_logging" in self.json_data
+            and self.json_data["compact_logging"] is not None
+            else True
+        )
 
         # Color palette
         self.rgb_colors_array = ColorMapper.generate_rgb_colors_array()
@@ -36,6 +63,11 @@ class PlaceClient:
         # Image information
         self.pix = None
         self.image_size = None
+        self.image_path = (
+            self.json_data["image_path"]
+            if "image_path" in self.json_data
+            else "image.jpg"
+        )
         self.first_run_counter = 0
 
         # Initialize-functions
@@ -44,72 +76,6 @@ class PlaceClient:
         self.waiting_thread_index = -1
 
     """ Utils """
-    # load data from .json file
-
-    def load_json(self,config_path):
-        self.json_data = self.get_json_data(config_path)
-        self.pixel_x_start: int = self.json_data["image_start_coords"][0]
-        self.pixel_y_start: int = self.json_data["image_start_coords"][1]
-
-        # In seconds
-        self.delay_between_launches = (
-            self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data 
-            and self.json_data["thread_delay"] is not None
-            else 3
-        )
-        self.unverified_place_frequency = (
-            self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data 
-            and self.json_data["unverified_place_frequency"] is not None
-            else False
-        )
-        self.proxies = (
-            self.GetProxies(self.json_data["proxies"])
-            if "proxies" in self.json_data
-            else None
-        )
-
-        # Auto update settings
-        self.auto_update = (
-            self.json_data["auto_update"]
-            if "auto_update" in self.json_data
-            else None
-        )
-        print(self.auto_update)
-        if self.auto_update is not None:
-            self.auto_update_enabled = (
-                self.auto_update["is_enabled"]
-                if "is_enabled" in self.auto_update 
-                and self.auto_update["is_enabled"] is not None
-                else False
-            )
-        if self.auto_update is not None and self.auto_update_enabled:
-            self.config_source = (
-                self.auto_update["config_source"]
-                if "config_source" in self.auto_update
-                else None
-            )
-            self.image_source = (
-                self.auto_update["image_source"]
-                if "image_source" in self.auto_update
-                else None
-            )
-            self.delay_between_updates = (
-                self.auto_update["update_delay"]
-                if "update_delay" in self.auto_update 
-                and self.auto_update["update_delay"] is not None
-                else 600
-            )
-            print(self.image_source)
-            if self.config_source is None or self.image_source is None:
-                self.auto_update_enabled = False
-
-        # Image information
-        self.image_path = self.json_data["image_path"]
-
-
-    # Convert rgb tuple to hexadecimal string
 
     def GetProxies(self, proxies):
         proxieslist = []
@@ -129,19 +95,10 @@ class PlaceClient:
         if not os.path.exists(configFilePath):
             exit("No config.json file found. Read the README")
 
-        workersFilePath = os.path.join(os.getcwd(), "workers.json")
-
-        if not os.path.exists("workers.json"):
-            exit("No workers.json file found. Read the README")
-
         # To not keep file open whole execution time
-        configFile = open(configFilePath)
-        json_data = json.load(configFile)
-        configFile.close()
-        
-        workersFile = open(workersFilePath)
-        json_data.update(json.load(workersFile))
-        workersFile.close()
+        f = open(configFilePath)
+        json_data = json.load(f)
+        f.close()
 
         return json_data
 
@@ -167,23 +124,6 @@ class PlaceClient:
         logger.info("Loaded image size: {}", im.size)
 
         self.image_size = im.size
-
-    # Download file from url over http
-    def download_resouce(self, url, destination):
-        r = requests.get(url, allow_redirects=True)
-        open(destination, 'wb').write(r.content)
-
-    # Periodically redownload and reload resources
-    def auto_update_resources(self):
-        while self.auto_update is not None and self.auto_update_enabled:
-            logger.info("Thread #0 ::  auto update thread running")
-            self.download_resouce(self.config_source, "config.json")
-            self.download_resouce(self.image_source, self.image_path)
-            time.sleep(5)
-            self.load_json()
-            self.load_image()
-            time.sleep(self.delay_between_updates)
-    
 
     """ Main """
     # Draw a pixel at an x, y coordinate in r/place with a specific color
@@ -517,8 +457,9 @@ class PlaceClient:
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
 
                 if time_until_next_draw > 10000:
-                    logger.info(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
-                    exit(1)
+                    logger.warning(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
+                    repeat_forever = False
+                    break
 
                 new_update_str = (
                     f"{time_until_next_draw} seconds until next pixel is drawn"
@@ -694,17 +635,10 @@ class PlaceClient:
                 break
 
     def start(self):
-        if self.auto_update is not None and self.auto_update_enabled:
-            threading.Thread(
-                target=self.auto_update_resources,
-                args=[]
-            ).start()
-            time.sleep(self.delay_between_launches)
-
         for index, worker in enumerate(self.json_data["workers"]):
             threading.Thread(
                 target=self.task,
-                args=[index+1, worker, self.json_data["workers"][worker]]
+                args=[index, worker, self.json_data["workers"][worker]],
             ).start()
             # exit(1)
             time.sleep(self.delay_between_launches)
