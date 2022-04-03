@@ -11,6 +11,7 @@ import threading
 import sys
 import random
 from io import BytesIO
+from http import HTTPStatus
 from websocket import create_connection
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
@@ -463,7 +464,7 @@ class PlaceClient:
                         data=data,
                         proxies=self.GetRandomProxy(),
                     )
-                    if r.status_code != 200:
+                    if r.status_code != HTTPStatus.OK.value:
                         # password is probably invalid
                         logger.exception("Authorization failed!")
                         return
