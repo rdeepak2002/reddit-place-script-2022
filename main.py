@@ -11,7 +11,6 @@ import sys
 import random
 from io import BytesIO
 from websocket import create_connection
-from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
@@ -31,14 +30,14 @@ class PlaceClient:
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data
-            and self.json_data["thread_delay"] is not None
+            if "thread_delay" in self.json_data and
+            self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
             self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data
-            and self.json_data["unverified_place_frequency"] is not None
+            if "unverified_place_frequency" in self.json_data and
+            self.json_data["unverified_place_frequency"] is not None
             else False
         )
         self.proxies = (
@@ -48,13 +47,13 @@ class PlaceClient:
         )
         self.compactlogging = (
             self.json_data["compact_logging"]
-            if "compact_logging" in self.json_data
-            and self.json_data["compact_logging"] is not None
+            if "compact_logging" in self.json_data and
+            self.json_data["compact_logging"] is not None
             else True
         )
 
         # Color palette
-        self.rgb_colors_array = self.generate_rgb_colors_array()
+        self.rgb_colors_array = ColorMapper.generate_rgb_colors_array()
 
         # Auth
         self.access_tokens = {}
@@ -76,18 +75,6 @@ class PlaceClient:
         self.waiting_thread_index = -1
 
     """ Utils """
-    # Convert rgb tuple to hexadecimal string
-
-    def rgb_to_hex(self, rgb):
-        return ("#%02x%02x%02x" % rgb).upper()
-
-    # More verbose color indicator from a pixel color ID
-    def color_id_to_name(self, color_id):
-        if color_id in ColorMapper.NAME_MAP.keys():
-            return "{} ({})".format(ColorMapper.NAME_MAP[color_id], str(color_id))
-        return "Invalid Color ({})".format(str(color_id))
-
-    # Find the closest rgb color from palette to a target rgb color
 
     def GetProxies(self, proxies):
         proxieslist = []
@@ -100,25 +87,6 @@ class PlaceClient:
         if self.proxies is not None:
             randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
         return randomproxy
-
-    def closest_color(self, target_rgb):
-        r, g, b = target_rgb[:3]
-        if target_rgb[3] != 0:
-            color_diffs = []
-            for color in self.rgb_colors_array:
-                cr, cg, cb = color
-                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-                color_diffs.append((color_diff, color))
-            return min(color_diffs)[1]
-        else:
-            return (69, 42, 0)
-
-    # Define the color palette array
-    def generate_rgb_colors_array(self):
-        # Generate array of available rgb colors to be used
-        return [
-            ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in ColorMapper.COLOR_MAP.items()
-        ]
 
     def get_json_data(self, config_path):
         configFilePath = os.path.join(os.getcwd(), config_path)
@@ -496,15 +464,14 @@ class PlaceClient:
 
                 # refresh access token if necessary
                 if (
-                    len(self.access_tokens) == 0
-                    or len(self.access_token_expires_at_timestamp) == 0
-                    or
+                    len(self.access_tokens) == 0 or
+                    len(self.access_token_expires_at_timestamp) == 0 or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp
-                    or (
+                    index not in self.access_token_expires_at_timestamp or
+                    (
+                        self.access_token_expires_at_timestamp.get(index) and
+                        current_timestamp >=
                         self.access_token_expires_at_timestamp.get(index)
-                        and current_timestamp
-                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
                     if not self.compactlogging:
@@ -555,7 +522,7 @@ class PlaceClient:
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
-                        .contents[0][len("window.__r = ") : -1]
+                        .contents[0][len("window.__r = "): -1]
                     )
                     data = json.loads(data_str)
                     response_data = data["user"]["session"]
@@ -586,8 +553,8 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time
-                    or self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time or
+                    self.first_run_counter <= index
                 ):
 
                     # place pixel immediately

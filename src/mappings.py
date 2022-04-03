@@ -1,3 +1,7 @@
+import math
+from PIL import ImageColor
+
+
 class ColorMapper:
     COLOR_MAP = {
         "#BE0039": 1,  # dark red
@@ -53,3 +57,36 @@ class ColorMapper:
         30: "Light Gray",
         31: "White",
     }
+
+    @staticmethod
+    def rgb_to_hex(rgb: tuple):
+        """ Convert rgb tuple to hexadecimal string. """
+        return ("#%02x%02x%02x" % rgb).upper()
+
+    @staticmethod
+    def color_id_to_name(color_id: int):
+        """ More verbose color indicator from a pixel color id. """
+        if color_id in ColorMapper.NAME_MAP.keys():
+            return "{} ({})".format(ColorMapper.NAME_MAP[color_id], str(color_id))
+        return "Invalid Color ({})".format(str(color_id))
+
+    @staticmethod
+    def closest_color(target_rgb: tuple, rgb_colors_array: list):
+        """ Find the closest rgb color from palette to a target rgb color"""
+        r, g, b = target_rgb[:3]
+        if target_rgb[3] != 0:
+            color_diffs = []
+            for color in self.rgb_colors_array:
+                cr, cg, cb = color
+                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
+                color_diffs.append((color_diff, color))
+            return min(color_diffs)[1]
+        else:
+            return (69, 42, 0)
+
+    @staticmethod
+    def generate_rgb_colors_array():
+        """ Generate array of available rgb colors to be used"""
+        return [
+            ImageColor.getcolor(color_hex, "RGB") for color_hex in list(ColorMapper.COLOR_MAP.keys())
+        ]
