@@ -8,6 +8,7 @@ __pycache__/
 test.py
 *.old
 workers.json
+config.json
 
 # C extensions
 *.so
