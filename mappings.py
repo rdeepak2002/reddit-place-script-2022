@@ -1,4 +1,5 @@
 color_map = {
+    "#452A00": 0,  # transparent
     "#BE0039": 1,  # dark red
     "#FF4500": 2,  # red
     "#FFA800": 3,  # orange
@@ -27,6 +28,7 @@ color_map = {
 
 # map of pixel color ids to verbose name (for debugging)
 name_map = {
+    0: "Transparent",
     1: "Dark Red",
     2: "Bright Red",
     3: "Orange",
