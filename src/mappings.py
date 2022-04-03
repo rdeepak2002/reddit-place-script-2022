@@ -1,8 +1,21 @@
 import math
 from PIL import ImageColor
+from loguru import logger
+
+
+class InvalidColorIdException(Exception):
+    def __init__(self, color_id: str):
+        self.message = f"Invalid ColorId: {color_id}"
+
+
+class InvalidRGBException(Exception):
+    def __init__(self, rgb: tuple):
+        self.message = f"Invalid RGB: {rgb}"
 
 
 class ColorMapper:
+    COLOR_SKIP = (69, 42, 0)
+
     COLOR_MAP = {
         "#6D001A": 0,  # Darkest red
         "#BE0039": 1,  # dark red
@@ -81,23 +94,33 @@ class ColorMapper:
     @staticmethod
     def color_id_to_name(color_id: int):
         """More verbose color indicator from a pixel color id."""
-        if color_id in ColorMapper.NAME_MAP.keys():
-            return "{} ({})".format(ColorMapper.NAME_MAP[color_id], str(color_id))
-        return "Invalid Color ({})".format(str(color_id))
+        if color_id not in ColorMapper.NAME_MAP.keys():
+            logger.error(f"Unknown color id: {color_id}")
+            raise InvalidColorIdException(color_id)
+
+        return f"{ColorMapper.NAME_MAP[color_id]} ({color_id})"
 
     @staticmethod
     def closest_color(target_rgb: tuple, rgb_colors_array: list):
         """Find the closest rgb color from palette to a target rgb color"""
-        r, g, b = target_rgb[:3]
+        if len(target_rgb) != 4:
+            raise InvalidRGBException(target_rgb)
+
+        target_red, target_green, target_blue = target_rgb[:3]
+
         if target_rgb[3] != 0:
             color_diffs = []
             for color in rgb_colors_array:
-                cr, cg, cb = color
-                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-                color_diffs.append((color_diff, color))
+                color_red, color_green, color_blue = color
+                curr_diff = math.sqrt((target_red - color_red) ** 2 +
+                                      (target_green - color_green) ** 2 +
+                                      (target_blue - color_blue) ** 2)
+                color_diffs.append((curr_diff, color))
+
+            print("Debug: ", color_diffs)
             return min(color_diffs)[1]
-        else:
-            return (69, 42, 0)
+
+        return ColorMapper.COLOR_SKIP
 
     @staticmethod
     def generate_rgb_colors_array():

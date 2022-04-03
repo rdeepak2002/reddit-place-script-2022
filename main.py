@@ -36,14 +36,14 @@ class PlaceClient:
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data and
-            self.json_data["thread_delay"] is not None
+            if "thread_delay" in self.json_data
+            and self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
             self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data and
-            self.json_data["unverified_place_frequency"] is not None
+            if "unverified_place_frequency" in self.json_data
+            and self.json_data["unverified_place_frequency"] is not None
             else False
         )
         self.proxies = ProxyManager(self.json_data.get("proxies", []))
@@ -53,8 +53,8 @@ class PlaceClient:
             self.proxies = self.get_proxies_text()
         self.compactlogging = (
             self.json_data["compact_logging"]
-            if "compact_logging" in self.json_data and
-            self.json_data["compact_logging"] is not None
+            if "compact_logging" in self.json_data
+            and self.json_data["compact_logging"] is not None
             else True
         )
         self.using_tor = (
@@ -554,14 +554,15 @@ class PlaceClient:
 
                 # refresh access token if necessary
                 if (
-                    len(self.access_tokens) == 0 or
-                    len(self.access_token_expires_at_timestamp) == 0 or
+                    len(self.access_tokens) == 0
+                    or len(self.access_token_expires_at_timestamp) == 0
+                    or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp or
-                    (
-                        self.access_token_expires_at_timestamp.get(index) and
-                        current_timestamp >=
+                    index not in self.access_token_expires_at_timestamp
+                    or (
                         self.access_token_expires_at_timestamp.get(index)
+                        and current_timestamp
+                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
                     if not self.compactlogging:
@@ -621,7 +622,7 @@ class PlaceClient:
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
-                        .contents[0][len("window.__r = "): -1]
+                        .contents[0][len("window.__r = ") : -1]
                     )
                     data = json.loads(data_str)
                     response_data = data["user"]["session"]
@@ -652,8 +653,8 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time or
-                    self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time
+                    or self.first_run_counter <= index
                 ):
 
                     # place pixel immediately

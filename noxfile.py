@@ -20,7 +20,7 @@ def lint(session):
 
 @nox.session
 def tests(session):
-    session.install("pytest", "Faker", "loguru")
+    session.install("pytest", "Faker", "pillow", "loguru")
     session.run("pytest")
 
 
