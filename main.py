@@ -513,12 +513,13 @@ class PlaceClient:
                         proxies=self.GetRandomProxy(),
                     )
                     if r.status_code != 200:
-                        print("Authorization failed!")  # password is probably invalid
+                        # password is probably invalid
+                        logger.exception("Authorization failed!")
                         return
                     else:
-                        print("Authorization successful!")
-                    print("Obtaining access token...")
-                    r = client.get("https://new.reddit.com/")
+                        logger.success("Authorization successful!")
+                    logger.info("Obtaining access token...")
+                    r = client.get("https://www.reddit.com/")
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
