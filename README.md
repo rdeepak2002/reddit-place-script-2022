@@ -71,6 +71,7 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 
 - Change image.jpg/png to specify what image to draw. One pixel is drawn every 5 minutes. PNG takes priority over JPG.
 - Pixels with color (69, 42, 0) in the image will be skipped over, useful for non-rectangular drawings.
+- If you use 2 factor authentication (2FA) in your account, then change "password" to "password:XXXXXX" where XXXXXX is your 2FA code.
 
 ## Run the Script
 
