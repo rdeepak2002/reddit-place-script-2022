@@ -1,8 +1,9 @@
 import nox
 
-locations = "main.py", "noxfile.py", "mappings.py"
+locations = "main.py", "noxfile.py", "src/mappings.py"
 
 
+# This is not run automatically
 @nox.session
 def black(session):
     args = session.posargs or locations
@@ -13,5 +14,8 @@ def black(session):
 @nox.session
 def lint(session):
     args = session.posargs or locations
-    session.install("flake8")
+    session.install("flake8", "flake8-black")
     session.run("flake8", *args)
+
+
+nox.options.sessions = ["lint"]
