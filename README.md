@@ -16,24 +16,11 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 - Automatically converts colors to the r/place color palette
 - Easy(ish) to read output with colors
 - SOCKS proxy support
+- No client id and secret needed
 
 ## Requirements
 
 - [Latest Version of Python 3](https://www.python.org/downloads/)
-- [A Reddit App Client ID and App Secret Key](https://www.reddit.com/prefs/apps)
-
-## How to Get App Client ID and App Secret Key
-
-You need to generate an app client id and app secret key for each account in order to use this script. Or, just create one, and add each username as a developer in the developer app settings. You will need to duplicate the client ID and secret in .env, though.
-
-Steps:
-
-1. Visit <https://www.reddit.com/prefs/apps>
-2. Click "create (another) app" button at very bottom
-3. Select the "script" option and fill in the fields with anything
-
-<img width="383" alt="App ID Screenshot" src="https://user-images.githubusercontent.com/19873803/161398668-0705f122-51d3-4785-8bd9-d6700b586634.png">
-
 
 ## MacOSX
 If you are using MacOSX and encounter an SSL_CERTIFICATE error. Please apply the fix detailed https://stackoverflow.com/questions/42098126/mac-osx-python-ssl-sslerror-ssl-certificate-verify-failed-certificate-verify  
@@ -61,9 +48,6 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
     "worker1username": {
       // password of account 1
       "password": "password",
-      // appid and secret (see How To Get App Client ID And App Secret Key)
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       // which pixel of the image to draw first
       "start_coords": [0, 0]
     },
@@ -71,9 +55,6 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
     "worker1username": {
       // password of account 2
       "password": "password",
-      // appid and secret (see How To Get App Client ID And App Secret Key)
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       // which pixel of the image to draw first
       "start_coords": [0, 0]
     }
@@ -118,14 +99,10 @@ Just create multiple child arrays to "workers" in the .json
   "workers": {
     "worker1username": {
       "password": "password",
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       "start_coords": [0, 0]
     },
     "worker2username": {
       "password": "password",
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       "start_coords": [0, 50]
     }
   }
