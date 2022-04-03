@@ -85,7 +85,7 @@ class PlaceClient:
     def GetProxies(self, proxies):
         proxieslist = []
         for i in proxies:
-            proxieslist[len(proxieslist)] = {"https": i}
+            proxieslist.append({"https": i})
         return proxieslist
 
     def GetRandomProxy(self):
