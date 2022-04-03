@@ -144,15 +144,15 @@ class PlaceClient:
             exit()
         except UnidentifiedImageError:
             logger.fatal("File found, but couldn't identify image format")
-            
+
         # Convert all images to RGBA - Transparency should only be supported with PNG
         if im.mode != "RGBA":
             im = im.convert("RGBA")
             logger.info("Converted to rgba")
         self.pix = im.load()
-       
+
         logger.info("Loaded image size: {}", im.size)
-        
+
         self.image_size = im.size
 
     """ Main """
