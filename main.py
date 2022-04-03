@@ -113,7 +113,7 @@ class PlaceClient:
         except UnidentifiedImageError:
             logger.fatal("File found, but couldn't identify image format")
         self.pix = im.load()
-        logger.info("Loaded image size: {}", im.size)
+        logger.success("Loaded image size: {}", im.size)
         self.image_size = im.size
 
     """ Main """
