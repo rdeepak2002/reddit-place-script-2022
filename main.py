@@ -101,13 +101,16 @@ class PlaceClient:
         return randomproxy
 
     def closest_color(self, target_rgb):
-        r, g, b = target_rgb
-        color_diffs = []
-        for color in self.rgb_colors_array:
-            cr, cg, cb = color
-            color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-            color_diffs.append((color_diff, color))
-        return min(color_diffs)[1]
+        r, g, b = target_rgb[:3]
+        if target_rgb[3] != 0:
+            color_diffs = []
+            for color in self.rgb_colors_array:
+                cr, cg, cb = color
+                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
+                color_diffs.append((color_diff, color))
+            return min(color_diffs)[1]
+        else:
+            return (69, 42, 0)
 
     # Define the color palette array
     def generate_rgb_colors_array(self):
@@ -252,29 +255,6 @@ class PlaceClient:
             )
         )
         ws.recv()
-        ws.send(
-            json.dumps(
-                {
-                    "id": "2",
-                    "type": "start",
-                    "payload": {
-                        "variables": {
-                            "input": {
-                                "channel": {
-                                    "teamOwner": "AFD2022",
-                                    "category": "CANVAS",
-                                    "tag": "0",
-                                }
-                            }
-                        },
-                        "extensions": {},
-                        "operationName": "replace",
-                        "query": "subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
-                    },
-                }
-            )
-        )
-        ws.recv()
 
         image_sizex = 2
         image_sizey = 1
@@ -363,7 +343,7 @@ class PlaceClient:
                 "{}, {}, boardimg, {}, {}", x, y, self.image_size[0], self.image_size[1]
             )
 
-            target_rgb = self.pix[x, y][:3]
+            target_rgb = self.pix[x, y]
 
             new_rgb = self.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
