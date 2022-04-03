@@ -12,7 +12,6 @@ import sys
 import random
 from io import BytesIO
 from websocket import create_connection
-from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
@@ -56,7 +55,7 @@ class PlaceClient:
         )
 
         # Color palette
-        self.rgb_colors_array = self.generate_rgb_colors_array()
+        self.rgb_colors_array = ColorMapper.generate_rgb_colors_array()
 
         # Auth
         self.access_tokens = {}
@@ -76,19 +75,8 @@ class PlaceClient:
         self.load_image()
 
     """ Utils """
-    # Convert rgb tuple to hexadecimal string
 
     def rgb_to_hex(self, rgb):
-        return ("#%02x%02x%02x" % rgb).upper()
-
-    # More verbose color indicator from a pixel color ID
-    def color_id_to_name(self, color_id):
-        if color_id in ColorMapper.NAME_MAP.keys():
-            return "{} ({})".format(ColorMapper.NAME_MAP[color_id], str(color_id))
-        return "Invalid Color ({})".format(str(color_id))
-
-    # Find the closest rgb color from palette to a target rgb color
-
     def GetProxies(self, proxies):
         proxieslist = []
         for i in proxies:
@@ -100,22 +88,6 @@ class PlaceClient:
         if self.proxies is not None:
             randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
         return randomproxy
-
-    def closest_color(self, target_rgb):
-        r, g, b = target_rgb
-        color_diffs = []
-        for color in self.rgb_colors_array:
-            cr, cg, cb = color
-            color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-            color_diffs.append((color_diff, color))
-        return min(color_diffs)[1]
-
-    # Define the color palette array
-    def generate_rgb_colors_array(self):
-        # Generate array of available rgb colors to be used
-        return [
-            ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in ColorMapper.COLOR_MAP.items()
-        ]
 
     def get_json_data(self, config_path):
         configFilePath = os.path.join(os.getcwd(), config_path)
