@@ -31,28 +31,21 @@ class PlaceClient:
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
         # In seconds
-        try:
-            self.delay_between_launches = (
-                self.json_data["thread_delay"]
-                if self.json_data["thread_delay"] is not None
-                else 3
-            )
-
-            self.unverified_place_frequency = (
-                self.json_data["unverified_place_frequency"]
-                if self.json_data["unverified_place_frequency"] is not None
-                else False
-            )
-            self.proxies = (
-                self.GetProxies(self.json_data["proxies"])
-                if "proxies" in self.json_data
-                else None
-            )
-        except:
-            logger.error(
-                "Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue"
-            )
-            exit()
+        self.delay_between_launches = (
+            self.json_data["thread_delay"]
+            if "thread_delay" in self.json_data and ["thread_delay"] is not None
+            else 3
+        )
+        self.unverified_place_frequency = (
+            self.json_data["unverified_place_frequency"]
+            if "unverified_place_frequency" in self.json_data and self.json_data["unverified_place_frequency"] is not None
+            else False
+        )
+        self.proxies = (
+            self.GetProxies(self.json_data["proxies"])
+            if "proxies" in self.json_data
+            else None
+        )
 
         # Color palette
         self.rgb_colors_array = self.generate_rgb_colors_array()
