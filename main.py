@@ -17,7 +17,6 @@ from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
-from bs4 import BeautifulSoup
 
 
 from mappings import color_map, name_map
