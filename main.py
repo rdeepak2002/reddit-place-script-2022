@@ -5,24 +5,21 @@ import os.path
 import math
 import requests
 import json
+import logging
 import time
 import threading
-import logging
-import colorama
-import argparse
+import sys
+import random
 from io import BytesIO
 from websocket import create_connection
 from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
-import random
+from loguru import logger
+import click
+from bs4 import BeautifulSoup
 
 from mappings import color_map, name_map
-
-# Option remains for legacy usage
-# equal to running
-# python main.py --verbose
-verbose_mode = False
 
 
 class PlaceClient:
@@ -33,17 +30,34 @@ class PlaceClient:
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
         # In seconds
-        self.delay_between_launches = (
-            self.json_data["thread_delay"]
-            if self.json_data["thread_delay"] is not None
-            else 3
-        )
+        try:
+            self.delay_between_launches = (
+                self.json_data["thread_delay"]
+                if self.json_data["thread_delay"] is not None
+                else 3
+            )
 
-        self.unverified_place_frequency = (
-            self.json_data["unverified_place_frequency"]
-            if self.json_data["unverified_place_frequency"] is not None
-            else False
-        )
+            self.unverified_place_frequency = (
+                self.json_data["unverified_place_frequency"]
+                if self.json_data["unverified_place_frequency"] is not None
+                else False
+            )
+            self.proxies = (
+                self.GetProxies(self.json_data["proxies"])
+                if "proxies" in self.json_data
+                else None
+            )
+
+            self.compactlogging = (
+                self.json_data["compacy_logging"]
+                if "compacy_logging" in self.json_data
+                else True
+            )
+        except Exception:
+            logger.error(
+                "Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue"
+            )
+            exit()
 
         # Color palette
         self.rgb_colors_array = self.generate_rgb_colors_array()
@@ -77,6 +91,18 @@ class PlaceClient:
 
     # Find the closest rgb color from palette to a target rgb color
 
+    def GetProxies(self, proxies):
+        proxieslist = []
+        for i in proxies:
+            proxieslist[len(proxieslist)] = {"https": i}
+        return proxieslist
+
+    def GetRandomProxy(self):
+        randomproxy = None
+        if self.proxies is not None:
+            randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
+        return randomproxy
+
     def closest_color(self, target_rgb):
         r, g, b = target_rgb
         color_diffs = []
@@ -94,11 +120,13 @@ class PlaceClient:
         ]
 
     def get_json_data(self):
-        if not os.path.exists("config.json"):
+        configFilePath = os.path.join(os.getcwd(), "config.json")
+
+        if not os.path.exists(configFilePath):
             exit("No config.json file found. Read the README")
 
         # To not keep file open whole execution time
-        f = open("config.json")
+        f = open(configFilePath)
         json_data = json.load(f)
         f.close()
 
@@ -111,22 +139,26 @@ class PlaceClient:
         try:
             im = Image.open(self.image_path)
         except FileNotFoundError:
-            logging.fatal("Failed to load image")
+            logger.fatal("Failed to load image")
             exit()
         except UnidentifiedImageError:
-            logging.fatal("File found, but couldn't identify image format")
+            logger.fatal("File found, but couldn't identify image format")
         self.pix = im.load()
-        logging.info(f"Loaded image size: {im.size}")
+        logger.info("Loaded image size: {}", im.size)
         self.image_size = im.size
 
     """ Main """
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self, access_token_in, x, y, color_index_in=18, canvas_index=0
+        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1
     ):
-        logging.info(
-            f"Attempting to place {self.color_id_to_name(color_index_in)} pixel at {x + (1000 * canvas_index)}, {y}"
+        logger.info(
+            "Thread #{} : Attempting to place {} pixel at {}, {}",
+            thread_index,
+            self.color_id_to_name(color_index_in),
+            x + (1000 * canvas_index),
+            y,
         )
 
         url = "https://gql-realtime-2.reddit.com/query"
@@ -155,8 +187,10 @@ class PlaceClient:
             "Content-Type": "application/json",
         }
 
-        response = requests.request("POST", url, headers=headers, data=payload)
-        logging.debug(f"Received response: {response.text}")
+        response = requests.request(
+            "POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy()
+        )
+        logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
         # There are 2 different JSON keys for responses to get the next timestamp.
         # If we don't get data, it means we've been rate limited.
@@ -165,8 +199,8 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logging.info(
-                f"{colorama.Fore.RED}Failed placing pixel: rate limited {colorama.Style.RESET_ALL}"
+            logger.error(
+                "Thread #{} : Failed placing pixel: rate limited", thread_index
             )
         else:
             waitTime = math.floor(
@@ -174,24 +208,18 @@ class PlaceClient:
                     "nextAvailablePixelTimestamp"
                 ]
             )
-            logging.info(
-                f"{colorama.Fore.GREEN}Succeeded placing pixel {colorama.Style.RESET_ALL}"
-            )
+            logger.info("Thread #{} : Succeeded placing pixel", thread_index)
 
         # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
         # Works perfect with one thread.
         # With multiple threads, every time you press Enter you move to the next one.
         # Move the code anywhere you want, I put it here to inspect the API responses.
 
-        # import code
-
-        # code.interact(local=locals())
-
         # Reddit returns time in ms and we need seconds, so divide by 1000
         return waitTime / 1000
 
     def get_board(self, access_token_in):
-        logging.info("Getting board")
+        logger.info("Getting board")
         ws = create_connection(
             "wss://gql-realtime-2.reddit.com/query",
             origin="https://hot-potato.reddit.com",
@@ -249,6 +277,7 @@ class PlaceClient:
                 }
             )
         )
+        ws.recv()
 
         image_sizex = 2
         image_sizey = 1
@@ -278,10 +307,9 @@ class PlaceClient:
                     }
                 )
             )
-            file = ""
+            ws.recv()
             while True:
                 temp = json.loads(ws.recv())
-                # print("\n",temp)
                 if temp["type"] == "data":
                     msg = temp["payload"]["data"]["subscribe"]
                     if msg["data"]["__typename"] == "FullFrameMessageData":
@@ -290,7 +318,9 @@ class PlaceClient:
                                 Image.open(
                                     BytesIO(
                                         requests.get(
-                                            msg["data"]["name"], stream=True
+                                            msg["data"]["name"],
+                                            stream=True,
+                                            proxies=self.GetRandomProxy(),
                                         ).content
                                     )
                                 )
@@ -308,22 +338,21 @@ class PlaceClient:
             new_img.paste(img, (x_offset, 0))
             x_offset += img.size[0]
 
-        print("Got image:", file)
-
+        logger.info("Got image.")
+        # new_img.show()
         return new_img
 
     def get_unset_pixel(self, boardimg, x, y, index):
         pix2 = boardimg.convert("RGB").load()
         while True:
-            x += 1
-
             if x >= self.image_size[0]:
                 y += 1
                 x = 0
 
             if y >= self.image_size[1]:
                 logging.info(
-                    f"{colorama.Fore.GREEN} All pixels correct, trying again in 10 seconds... {colorama.Style.RESET_ALL}"
+                    "Thread #{} : All pixels correct, trying again in 10 seconds... ",
+                    index,
                 )
                 self.is_painting_disabled = True
 
@@ -333,28 +362,38 @@ class PlaceClient:
                 pix2 = boardimg.convert("RGB").load()
                 y = 0
 
-            logging.debug(f"{x+self.pixel_x_start}, {y+self.pixel_y_start}")
-            logging.debug(
-                f"{x}, {y}, boardimg, {self.image_size[0]}, {self.image_size[1]}"
+            logger.debug("{}, {}", x + self.pixel_x_start, y + self.pixel_y_start)
+            logger.debug(
+                "{}, {}, boardimg, {}, {}", x, y, self.image_size[0], self.image_size[1]
             )
 
-            # print(self.pix[x, y])
             target_rgb = self.pix[x, y][:3]
 
             new_rgb = self.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
-                logging.debug(
-                    f"{pix2[x + self.pixel_x_start, y + self.pixel_y_start]}, {new_rgb}, {new_rgb != (69, 42, 0)}, {pix2[x, y] != new_rgb,}"
+                logger.debug(
+                    "{}, {}, {}, {}",
+                    pix2[x + self.pixel_x_start, y + self.pixel_y_start],
+                    new_rgb,
+                    target_rgb != (69, 42, 0),
+                    pix2[x, y] != new_rgb,
                 )
-                self.is_painting_disabled = False
                 
-                if new_rgb != (69, 42, 0):
-                    logging.debug(
-                        f"Replacing {pix2[x+self.pixel_x_start, y+self.pixel_y_start]} pixel at: {x+self.pixel_x_start},{y+self.pixel_y_start} with {new_rgb} color"
+                self.is_painting_disabled = False
+
+                if target_rgb != (69, 42, 0):
+                    logger.debug(
+                        "Thread #{} : Replacing {} pixel at: {},{} with {} color",
+                        index,
+                        pix2[x + self.pixel_x_start, y + self.pixel_y_start],
+                        x + self.pixel_x_start,
+                        y + self.pixel_y_start,
+                        new_rgb,
                     )
                     break
                 else:
-                    print("TransparrentPixel")
+                    logger.info("TransparrentPixel")
+            x += 1
         return x, y, new_rgb
 
     # Draw the input image
@@ -379,9 +418,7 @@ class PlaceClient:
                 current_r = worker["start_coords"][0]
                 current_c = worker["start_coords"][1]
             except Exception:
-                print(
-                    f"You need to provide start_coords to worker '{name}'",
-                )
+                logger.info("You need to provide start_coords to worker '{}'", name)
                 exit(1)
 
             # Time until next pixel is drawn
@@ -401,16 +438,24 @@ class PlaceClient:
                 # log next time until drawing
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
 
+                if time_until_next_draw > 10000:
+                    logger.info(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
+                    exit(1)
+
                 new_update_str = (
                     f"{time_until_next_draw} seconds until next pixel is drawn"
                 )
+
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
                     update_str = new_update_str
+                else:
+                    update_str = ""
 
-                logging.info(f"Thread #{index} :: {update_str}")
+                if len(update_str) > 0:
+                    if not self.compactlogging:
+                        logger.info("Thread #{} :: {}", index, update_str)
 
                 # refresh access token if necessary
-                # print("TEST:", self.access_token_expires_at_timestamp, "INDEX:", index)
                 if (
                     len(self.access_tokens) == 0
                     or len(self.access_token_expires_at_timestamp) == 0
@@ -423,48 +468,65 @@ class PlaceClient:
                         >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
-                    logging.info(f"Thread #{index} :: Refreshing access token")
+                    if not self.compactlogging:
+                        logger.info("Thread #{} :: Refreshing access token", index)
 
                     # developer's reddit username and password
                     try:
                         username = name
                         password = worker["password"]
                         # note: use https://www.reddit.com/prefs/apps
-                        app_client_id = worker["client_id"]
-                        secret_key = worker["client_secret"]
                     except Exception:
-                        print(
-                            f"You need to provide all required fields to worker '{name}'",
+                        logger.info(
+                            "You need to provide all required fields to worker '{}'",
+                            name,
                         )
                         exit(1)
 
+                    client = requests.Session()
+                    r = client.get("https://www.reddit.com/login")
+                    login_get_soup = BeautifulSoup(r.content, "html.parser")
+                    csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
+                        "value"
+                    ]
                     data = {
-                        "grant_type": "password",
                         "username": username,
                         "password": password,
+                        "dest": "https://www.reddit.com/",
+                        "csrf_token": csrf_token,
                     }
 
-                    r = requests.post(
-                        "https://ssl.reddit.com/api/v1/access_token",
+                    r = client.post(
+                        "https://www.reddit.com/login",
                         data=data,
-                        auth=HTTPBasicAuth(app_client_id, secret_key),
-                        headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
+                        proxies=self.GetRandomProxy(),
                     )
-
-                    logging.debug(f"Received response: {r.text}")
-
-                    response_data = r.json()
+                    if r.status_code != 200:
+                        print("Authorization failed!")  # password is probably invalid
+                        return
+                    else:
+                        print("Authorization successful!")
+                    print("Obtaining access token...")
+                    r = client.get("https://www.reddit.com/")
+                    data_str = (
+                        BeautifulSoup(r.content, features="html.parser")
+                        .find("script", {"id": "data"})
+                        .contents[0][len("window.__r = ") : -1]
+                    )
+                    data = json.loads(data_str)
+                    response_data = data["user"]["session"]
 
                     if "error" in response_data:
-                        print(
-                            f"An error occured. Make sure you have the correct credentials. Response data: {response_data}"
+                        logger.info(
+                            "An error occured. Make sure you have the correct credentials. Response data: {}",
+                            response_data,
                         )
                         exit(1)
 
-                    self.access_tokens[index] = response_data["access_token"]
-                    # access_token_type = response_data["token_type"]  # this is just "bearer"
+                    self.access_tokens[index] = response_data["accessToken"]
+                    # access_token_type = data["user"]["session"]["accessToken"]  # this is just "bearer"
                     access_token_expires_in_seconds = response_data[
-                        "expires_in"
+                        "expiresIn"
                     ]  # this is usually "3600"
                     # access_token_scope = response_data["scope"]  # this is usually "*"
 
@@ -472,10 +534,11 @@ class PlaceClient:
                     self.access_token_expires_at_timestamp[
                         index
                     ] = current_timestamp + int(access_token_expires_in_seconds)
-
-                    logging.info(
-                        f"Received new access token: {self.access_tokens.get(index)[:5]}************"
-                    )
+                    if not self.compactlogging:
+                        logger.info(
+                            "Received new access token: {}************",
+                            self.access_tokens.get(index)[:5],
+                        )
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
@@ -502,7 +565,7 @@ class PlaceClient:
                     new_rgb_hex = self.rgb_to_hex(new_rgb)
                     pixel_color_index = color_map[new_rgb_hex]
 
-                    print("\nAccount Placing: ", name, "\n")
+                    logger.info("\nAccount Placing: ", name, "\n")
 
                     # draw the pixel onto r/place
                     # There's a better way to do this
@@ -520,6 +583,7 @@ class PlaceClient:
                         pixel_y_start,
                         pixel_color_index,
                         canvas,
+                        index,
                     )
 
                     current_r += 1
@@ -531,7 +595,7 @@ class PlaceClient:
 
                     # exit when all pixels drawn
                     if current_c >= self.image_size[1]:
-                        logging.info(f"Thread #{index} :: image completed")
+                        logger.info("Thread #{} :: image completed", index)
                         break
 
             if not repeat_forever:
@@ -547,27 +611,24 @@ class PlaceClient:
             time.sleep(self.delay_between_launches)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    colorama.init()
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        help="Be verbose",
-        action="store_const",
-        dest="loglevel",
-        const=logging.DEBUG,
-        default=logging.INFO,
-    )
-    args = parser.parse_args()
+@click.command()
+@click.option(
+    "-d",
+    "--debug",
+    is_flag=True,
+    help="Enable debug mode. Prints debug messages to the console.",
+)
+def main(debug: bool):
 
-    logging.basicConfig(
-        level=(logging.DEBUG if verbose_mode else args.loglevel),
-        format="[%(asctime)s] :: [%(levelname)s] - %(message)s",
-        datefmt="%d-%b-%y %H:%M:%S",
-    )
-    logging.info("place-script started")
+    if not debug:
+        # default loguru level is DEBUG
+        logger.remove()
+        logger.add(sys.stderr, level="INFO")
 
     client = PlaceClient()
     # Start everything
     client.start()
+
+
+if __name__ == "__main__":
+    main()

@@ -15,41 +15,14 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 - Detects existing matching pixels on the r/place map and skips them
 - Automatically converts colors to the r/place color palette
 - Easy(ish) to read output with colors
+- SOCKS proxy support
+- No client id and secret needed
 
 ## Requirements
 
 - [Latest Version of Python 3](https://www.python.org/downloads/)
-- [A Reddit App Client ID and App Secret Key](https://www.reddit.com/prefs/apps)
 
-## How to Get App Client ID and App Secret Key
-
-You need to generate an app client id and app secret key for each account in order to use this script. Or, just create one, and add each username as a developer in the developer app settings. You will need to duplicate the client ID and secret in .env, though.
-
-Steps:
-
-1. Visit <https://www.reddit.com/prefs/apps>
-2. Click "create (another) app" button at very bottom
-3. Select the "script" option and fill in the fields with anything
-
-<img width="383" alt="App ID Screenshot" src="https://user-images.githubusercontent.com/19873803/161398668-0705f122-51d3-4785-8bd9-d6700b586634.png">
-
-## Python Package Requirements
-
-Install requirements from 'requirements.txt' file.
-
-### Windows
-
-```shell
-pip install -r requirements.txt
-```
-
-### Other OS
-
-```shell
-pip3 install -r requirements.txt
-```
-
-### MacOSX
+## MacOSX
 If you are using MacOSX and encounter an SSL_CERTIFICATE error. Please apply the fix detailed https://stackoverflow.com/questions/42098126/mac-osx-python-ssl-sslerror-ssl-certificate-verify-failed-certificate-verify  
 
 
@@ -58,6 +31,8 @@ If you are using MacOSX and encounter an SSL_CERTIFICATE error. Please apply the
 Move the file 'config_example.json' to config.json
 
 Edit the values to replace with actual credentials and values
+
+Note: Please use https://jsonlint.com/ to check that your JSON file is correctly formatted
 
 ```json
 {
@@ -73,9 +48,6 @@ Edit the values to replace with actual credentials and values
     "worker1username": {
       // password of account 1
       "password": "password",
-      // appid and secret (see How To Get App Client ID And App Secret Key)
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       // which pixel of the image to draw first
       "start_coords": [0, 0]
     },
@@ -83,9 +55,6 @@ Edit the values to replace with actual credentials and values
     "worker1username": {
       // password of account 2
       "password": "password",
-      // appid and secret (see How To Get App Client ID And App Secret Key)
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       // which pixel of the image to draw first
       "start_coords": [0, 0]
     }
@@ -100,9 +69,22 @@ Edit the values to replace with actual credentials and values
 
 ## Run the Script
 
-```python
-python3 main.py
+### Windows
+
+```shell
+start.bat or startverbose.bat
 ```
+
+### Other OS
+
+```shell
+chmod +x start.sh startverbose.sh
+./start.sh or ./startverbose.sh
+```
+
+### You can get more logs (`DEBUG`) by running the script with `-d` flag
+
+`python3 main.py -d` or `python3 main.py --debug`
 
 ## Multiple Workers
 
@@ -117,14 +99,10 @@ Just create multiple child arrays to "workers" in the .json
   "workers": {
     "worker1username": {
       "password": "password",
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       "start_coords": [0, 0]
     },
     "worker2username": {
       "password": "password",
-      "client_id": "clientid",
-      "client_secret": "clientsecret",
       "start_coords": [0, 50]
     }
   }
@@ -143,11 +121,15 @@ If any JSON decoders errors are found, the `config.json` needs a fix. Make sure 
 {
     "thread_delay": 2,
     "unverified_place_frequency": false,
+    "proxies": ["1.1.1.1:8080","2.2.2.2:1234"],
+    "compact_logging": true
 }
 ```
 
 - thread_delay - Adds a delay between starting a new thread. Can be used to avoid ratelimiting
 - unverified_place_frequency - Sets the pixel place frequency to the unverified account limit
+- proxies - Sets proxies to use for sending requests to reddit. The proxy used is randomly selected for each request. Can be used to avoid ratelimiting
+- compact_logging - Disables timer text until next pixel
 
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
