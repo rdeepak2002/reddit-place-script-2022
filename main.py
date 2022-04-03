@@ -247,7 +247,7 @@ class PlaceClient:
 
         imgs = []
         already_added = []
-        for i in range(0, image_sizex * image_sizey):
+        for i in range(1, image_sizex * image_sizey + 1):
             ws.send(
                 json.dumps(
                     {
