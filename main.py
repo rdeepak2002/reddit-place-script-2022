@@ -5,7 +5,6 @@ import os.path
 import math
 import requests
 import json
-import logging
 import time
 import threading
 import sys
