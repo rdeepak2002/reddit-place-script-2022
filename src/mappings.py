@@ -112,12 +112,13 @@ class ColorMapper:
             color_diffs = []
             for color in rgb_colors_array:
                 color_red, color_green, color_blue = color
-                curr_diff = math.sqrt((target_red - color_red) ** 2 +
-                                      (target_green - color_green) ** 2 +
-                                      (target_blue - color_blue) ** 2)
+                curr_diff = math.sqrt(
+                    (target_red - color_red) ** 2 +
+                    (target_green - color_green) ** 2 +
+                    (target_blue - color_blue) ** 2
+                )
                 color_diffs.append((curr_diff, color))
 
-            print("Debug: ", color_diffs)
             return min(color_diffs)[1]
 
         return ColorMapper.COLOR_SKIP
@@ -125,7 +126,9 @@ class ColorMapper:
     @staticmethod
     def generate_rgb_colors_array():
         """Generate array of available rgb colors to be used"""
-        return [
-            ImageColor.getcolor(color_hex, "RGB")
-            for color_hex in list(ColorMapper.COLOR_MAP.keys())
-        ]
+        colors = []
+
+        for hex in ColorMapper.COLOR_MAP.keys():
+            colors.append(ImageColor.getrgb(hex))
+
+        return colors
