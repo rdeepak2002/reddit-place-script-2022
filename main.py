@@ -31,7 +31,7 @@ class PlaceClient:
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data and ["thread_delay"] is not None
+            if "thread_delay" in self.json_data and self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
