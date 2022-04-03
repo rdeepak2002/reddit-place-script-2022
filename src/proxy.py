@@ -5,12 +5,13 @@ import time
 from stem import Signal, InvalidArguments, SocketError, ProtocolError
 from stem.control import Controller
 
+
 def Init(self):
     self.proxies = (
-            self.GetProxies(self.json_data["proxies"])
-            if "proxies" in self.json_data and self.json_data["proxies"] is not None
-            else None
-        )
+        self.GetProxies(self.json_data["proxies"])
+        if "proxies" in self.json_data and self.json_data["proxies"] is not None
+        else None
+    )
     if self.proxies is None and os.path.exists(
         os.path.join(os.getcwd(), "proxies.txt")
     ):
@@ -79,6 +80,7 @@ def Init(self):
             self.logger.error("connection to tor failed, disabling tor")
             self.using_tor = False
 
+
 def get_proxies_text(self):
     path_proxies = os.path.join(os.getcwd(), "proxies.txt")
     f = open(path_proxies)
@@ -90,6 +92,7 @@ def get_proxies_text(self):
         self.proxies.append({"https": i, "http": i})
         self.logger.debug("loaded proxies {} from file {}", i, path_proxies)
 
+
 def GetProxies(self, proxies):
     proxies_list = []
     for i in proxies:
@@ -98,6 +101,7 @@ def GetProxies(self, proxies):
         self.logger.debug("Loaded proxies: {}", str(proxies_list))
         return proxies_list
     return proxies_list
+
 
 def GetRandomProxy(self):
     if not self.using_tor:
@@ -111,6 +115,7 @@ def GetRandomProxy(self):
         tor_reconnect()
         self.logger.debug("Using Tor. Selecting first proxy: {}.", str(self.proxies[0]))
         return self.proxies[0]
+
 
 def tor_reconnect(self):
     if self.using_tor:

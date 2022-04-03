@@ -2,6 +2,7 @@ import json
 import os
 from PIL import Image, UnidentifiedImageError
 
+
 def get_json_data(self, config_path):
     configFilePath = os.path.join(os.getcwd(), config_path)
 
@@ -16,6 +17,7 @@ def get_json_data(self, config_path):
     return json_data
 
     # Read the input image.jpg file
+
 
 def load_image(self):
     # Read and load the image to draw and get its dimensions
