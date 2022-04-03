@@ -102,13 +102,16 @@ class PlaceClient:
         return randomproxy
 
     def closest_color(self, target_rgb):
-        r, g, b = target_rgb
-        color_diffs = []
-        for color in self.rgb_colors_array:
-            cr, cg, cb = color
-            color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-            color_diffs.append((color_diff, color))
-        return min(color_diffs)[1]
+        r, g, b = target_rgb[:3]
+        if target_rgb[3] != 0:
+            color_diffs = []
+            for color in self.rgb_colors_array:
+                cr, cg, cb = color
+                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
+                color_diffs.append((color_diff, color))
+            return min(color_diffs)[1]
+        else:
+            return (69, 42, 0)
 
     # Define the color palette array
     def generate_rgb_colors_array(self):
@@ -397,7 +400,7 @@ class PlaceClient:
                 "{}, {}, boardimg, {}, {}", x, y, self.image_size[0], self.image_size[1]
             )
 
-            target_rgb = self.pix[x, y][:3]
+            target_rgb = self.pix[x, y]
 
             new_rgb = self.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
@@ -405,11 +408,11 @@ class PlaceClient:
                     "{}, {}, {}, {}",
                     pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                     new_rgb,
-                    target_rgb != (69, 42, 0),
+                    new_rgb != (69, 42, 0),
                     pix2[x, y] != new_rgb,
                 )
 
-                if target_rgb != (69, 42, 0):
+                if new_rgb != (69, 42, 0):
                     logger.debug(
                         "Thread #{} : Replacing {} pixel at: {},{} with {} color",
                         index,
