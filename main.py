@@ -513,7 +513,11 @@ class PlaceClient:
                         exit(1)
 
                     client = requests.Session()
-                    client.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36'})
+                    client.headers.update(
+                        {
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
+                        }
+                    )
                     r = client.get("https://www.reddit.com/login")
                     login_get_soup = BeautifulSoup(r.content, "html.parser")
                     csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
