@@ -17,6 +17,7 @@ from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
+from bs4 import BeautifulSoup
 
 
 from mappings import color_map, name_map
@@ -44,7 +45,7 @@ class PlaceClient:
             )
             self.proxies = (
                 self.GetProxies(self.json_data["proxies"])
-                if "proxies" in self.json_data
+                if "proxies" in self.json_data 
                 else None
             )
         except:
@@ -59,6 +60,7 @@ class PlaceClient:
         # Auth
         self.access_tokens = {}
         self.access_token_expires_at_timestamp = {}
+        
 
         # Image information
         self.pix = None
@@ -445,8 +447,6 @@ class PlaceClient:
                         username = name
                         password = worker["password"]
                         # note: use https://www.reddit.com/prefs/apps
-                        app_client_id = worker["client_id"]
-                        secret_key = worker["client_secret"]
                     except Exception:
                         logger.info(
                             "You need to provide all required fields to worker '{}'",
@@ -454,22 +454,29 @@ class PlaceClient:
                         )
                         exit(1)
 
+                    
+                    client = requests.Session()
+                    r = client.get("https://www.reddit.com/login")
+                    login_get_soup = BeautifulSoup(r.content, "html.parser")
+                    csrf_token = login_get_soup.find("input", {"name": "csrf_token"})["value"]
                     data = {
-                        "grant_type": "password",
                         "username": username,
                         "password": password,
+                        "dest": "https://www.reddit.com/",
+                        "csrf_token": csrf_token
                     }
-                    r = requests.post(
-                        "https://ssl.reddit.com/api/v1/access_token",
-                        data=data,
-                        auth=HTTPBasicAuth(app_client_id, secret_key),
-                        headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
-                        proxies=self.GetRandomProxy(),
-                    )
 
-                    logger.debug("Received response: {}", r.text)
-
-                    response_data = r.json()
+                    r = client.post("https://www.reddit.com/login", data=data, proxies=self.GetRandomProxy())
+                    if r.status_code != 200:
+                        print("Authorization failed!")  # password is probably invalid
+                        return
+                    else:
+                        print("Authorization successful!")
+                    print("Obtaining access token...")
+                    r = client.get("https://www.reddit.com/")
+                    data_str = BeautifulSoup(r.content, features="html.parser").find("script", {"id": "data"}).contents[0][len("window.__r = "):-1]
+                    data = json.loads(data_str)
+                    response_data = data["user"]["session"]
 
                     if "error" in response_data:
                         logger.info(
@@ -478,10 +485,10 @@ class PlaceClient:
                         )
                         exit(1)
 
-                    self.access_tokens[index] = response_data["access_token"]
-                    # access_token_type = response_data["token_type"]  # this is just "bearer"
+                    self.access_tokens[index] = response_data["accessToken"]
+                    # access_token_type = data["user"]["session"]["accessToken"]  # this is just "bearer"
                     access_token_expires_in_seconds = response_data[
-                        "expires_in"
+                        "expiresIn"
                     ]  # this is usually "3600"
                     # access_token_scope = response_data["scope"]  # this is usually "*"
 
