@@ -22,29 +22,36 @@ from mappings import color_map, name_map
 
 
 class PlaceClient:
-    def __init__(self):
+    def __init__(self, config_path):
         # Data
-        self.json_data = self.get_json_data()
+        self.json_data = self.get_json_data(config_path)
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data
-            and self.json_data["thread_delay"] is not None
+            if "thread_delay" in self.json_data and
+            self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
             self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data
-            and self.json_data["unverified_place_frequency"] is not None
+            if "unverified_place_frequency" in self.json_data and
+            self.json_data["unverified_place_frequency"] is not None
             else False
         )
         self.proxies = (
             self.GetProxies(self.json_data["proxies"])
-            if "proxies" in self.json_data
+            if "proxies" in self.json_data and
+            self.json_data["proxies"] is not None
             else None
+        )
+        self.compactlogging = (
+            self.json_data["compact_logging"]
+            if "compact_logging" in self.json_data and
+            self.json_data["compact_logging"] is not None
+            else True
         )
 
         # Color palette
@@ -111,8 +118,8 @@ class PlaceClient:
             ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in color_map.items()
         ]
 
-    def get_json_data(self):
-        configFilePath = os.path.join(os.getcwd(), "config.json")
+    def get_json_data(self, config_path):
+        configFilePath = os.path.join(os.getcwd(), config_path)
 
         if not os.path.exists(configFilePath):
             exit("No config.json file found. Read the README")
@@ -460,22 +467,23 @@ class PlaceClient:
                     update_str = ""
 
                 if len(update_str) > 0:
-                    logger.info("Thread #{} :: {}", index, update_str)
+                    if not self.compactlogging:
+                        logger.info("Thread #{} :: {}", index, update_str)
 
                 # refresh access token if necessary
                 if (
-                    len(self.access_tokens) == 0
-                    or len(self.access_token_expires_at_timestamp) == 0
-                    or
+                    len(self.access_tokens) == 0 or
+                    len(self.access_token_expires_at_timestamp) == 0 or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp
-                    or (
+                    index not in self.access_token_expires_at_timestamp or
+                    (
+                        self.access_token_expires_at_timestamp.get(index) and
+                        current_timestamp >=
                         self.access_token_expires_at_timestamp.get(index)
-                        and current_timestamp
-                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
-                    logger.info("Thread #{} :: Refreshing access token", index)
+                    if not self.compactlogging:
+                        logger.info("Thread #{} :: Refreshing access token", index)
 
                     # developer's reddit username and password
                     try:
@@ -517,7 +525,7 @@ class PlaceClient:
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
-                        .contents[0][len("window.__r = ") : -1]
+                        .contents[0][len("window.__r = "): -1]
                     )
                     data = json.loads(data_str)
                     response_data = data["user"]["session"]
@@ -541,15 +549,16 @@ class PlaceClient:
                         index
                     ] = current_timestamp + int(access_token_expires_in_seconds)
 
-                    logger.info(
-                        "Received new access token: {}************",
-                        self.access_tokens.get(index)[:5],
-                    )
+                    if not self.compactlogging:
+                        logger.info(
+                            "Received new access token: {}************",
+                            self.access_tokens.get(index)[:5],
+                        )
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time
-                    or self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time or
+                    self.first_run_counter <= index
                 ):
 
                     # place pixel immediately
@@ -622,14 +631,20 @@ class PlaceClient:
     is_flag=True,
     help="Enable debug mode. Prints debug messages to the console.",
 )
-def main(debug: bool):
+@click.option(
+    "-c",
+    "--config",
+    default="config.json",
+    help="Location of config.json",
+)
+def main(debug: bool, config: str):
 
     if not debug:
         # default loguru level is DEBUG
         logger.remove()
         logger.add(sys.stderr, level="INFO")
 
-    client = PlaceClient()
+    client = PlaceClient(config_path=config)
     # Start everything
     client.start()
 
