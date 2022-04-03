@@ -109,10 +109,11 @@ class PlaceClient:
         try:
             im = Image.open(self.image_path)
         except FileNotFoundError:
-            logger.fatal("Failed to load image")
+            logger.exception("Failed to load image")
             exit()
         except UnidentifiedImageError:
             logger.fatal("File found, but couldn't identify image format")
+            logger.exception("File found, but couldn't identify image format")
 
         # Convert all images to RGBA - Transparency should only be supported with PNG
         if im.mode != "RGBA":
