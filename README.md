@@ -15,6 +15,7 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 - Detects existing matching pixels on the r/place map and skips them
 - Automatically converts colors to the r/place color palette
 - Easy(ish) to read output with colors
+- SOCKS proxy support
 
 ## Requirements
 
@@ -143,11 +144,13 @@ If any JSON decoders errors are found, the `config.json` needs a fix. Make sure 
 {
     "thread_delay": 2,
     "unverified_place_frequency": false,
+    "proxies": ["1.1.1.1:8080","2.2.2.2:1234"]
 }
 ```
 
 - thread_delay - Adds a delay between starting a new thread. Can be used to avoid ratelimiting
 - unverified_place_frequency - Sets the pixel place frequency to the unverified account limit
+- proxies - Sets proxies to use for sending requests to reddit. The proxy used is randomly selected for each request. Can be used to avoid ratelimiting
 
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.

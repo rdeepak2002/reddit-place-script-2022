@@ -30,17 +30,26 @@ class PlaceClient:
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
         # In seconds
-        self.delay_between_launches = (
-            self.json_data["thread_delay"]
-            if self.json_data["thread_delay"] is not None
-            else 3
-        )
-
-        self.unverified_place_frequency = (
-            self.json_data["unverified_place_frequency"]
-            if self.json_data["unverified_place_frequency"] is not None
-            else False
-        )
+        try:
+            self.delay_between_launches = (
+                self.json_data["thread_delay"]
+                if self.json_data["thread_delay"] is not None
+                else 3
+            )
+        
+            self.unverified_place_frequency = (
+                self.json_data["unverified_place_frequency"]
+                if self.json_data["unverified_place_frequency"] is not None
+                else False
+            )
+            self.proxies = (
+                self.GetProxies(self.json_data["proxies"])
+                if self.json_data["proxies"] is not None
+                else None
+            )
+        except:
+            logger.error("Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue")
+            exit()
 
         # Color palette
         self.rgb_colors_array = self.generate_rgb_colors_array()
@@ -71,6 +80,18 @@ class PlaceClient:
         return "Invalid Color ({})".format(str(color_id))
 
     # Find the closest rgb color from palette to a target rgb color
+
+    def GetProxies(self, proxies):
+        proxieslist = []
+        for i in proxies:
+            proxieslist[len(proxieslist)] = {"https": i}
+        return proxieslist
+    
+    def GetRandomProxy(self):
+        randomproxy = None
+        if self.proxies is not None:
+            randomproxy = self.proxies[random.randint(0,len(self.proxies) - 1)]
+        return randomproxy
 
     def closest_color(self, target_rgb):
         r, g, b = target_rgb
@@ -154,8 +175,8 @@ class PlaceClient:
             "Authorization": "Bearer " + access_token_in,
             "Content-Type": "application/json",
         }
-
-        response = requests.request("POST", url, headers=headers, data=payload)
+        
+        response = requests.request("POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy())
         logger.debug("Received response: {}", response.text)
 
         # There are 2 different JSON keys for responses to get the next timestamp.
@@ -281,7 +302,7 @@ class PlaceClient:
                                 Image.open(
                                     BytesIO(
                                         requests.get(
-                                            msg["data"]["name"], stream=True
+                                            msg["data"]["name"], stream=True, proxies=self.GetRandomProxy()
                                         ).content
                                     )
                                 )
@@ -432,12 +453,12 @@ class PlaceClient:
                         "username": username,
                         "password": password,
                     }
-
                     r = requests.post(
                         "https://ssl.reddit.com/api/v1/access_token",
                         data=data,
                         auth=HTTPBasicAuth(app_client_id, secret_key),
                         headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
+                        proxies=self.GetRandomProxy()
                     )
 
                     logger.debug("Received response: {}", r.text)
