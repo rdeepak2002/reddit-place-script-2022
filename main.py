@@ -326,9 +326,15 @@ class PlaceClient:
 
         ws.close()
 
-        new_img_width = max(map(lambda x: x["dx"], canvas_details["canvasConfigurations"])) + canvas_details["canvasWidth"]
+        new_img_width = (
+            max(map(lambda x: x["dx"], canvas_details["canvasConfigurations"]))
+            + canvas_details["canvasWidth"]
+        )
         logger.debug("New image width: {}", new_img_width)
-        new_img_height = max(map(lambda x: x["dy"], canvas_details["canvasConfigurations"])) + canvas_details["canvasHeight"]
+        new_img_height = (
+            max(map(lambda x: x["dy"], canvas_details["canvasConfigurations"]))
+            + canvas_details["canvasHeight"]
+        )
         logger.debug("New image height: {}", new_img_height)
 
         new_img = Image.new("RGB", (new_img_width, new_img_height))
