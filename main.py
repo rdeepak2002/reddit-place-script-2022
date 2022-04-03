@@ -145,10 +145,19 @@ class PlaceClient:
         if not os.path.exists(configFilePath):
             exit("No config.json file found. Read the README")
 
+        workersFilePath = os.path.join(os.getcwd(), "workers.json")
+
+        if not os.path.exists("workers.json"):
+            exit("No workers.json file found. Read the README")
+
         # To not keep file open whole execution time
-        f = open(configFilePath)
-        json_data = json.load(f)
-        f.close()
+        configFile = open(configFilePath)
+        json_data = json.load(configFile)
+        configFile.close()
+        
+        workersFile = open(workersFilePath)
+        json_data.update(json.load(workersFile))
+        workersFile.close()
 
         return json_data
 
