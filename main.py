@@ -318,16 +318,18 @@ class PlaceClient:
                     logger.debug("Image ID: {}", img_id)
                     if img_id in canvas_sockets:
                         logger.debug("Getting image: {}", msg["data"]["name"])
-                        imgs.append([
-                            img_id,
-                            Image.open(
-                                BytesIO(
-                                    requests.get(
-                                        msg["data"]["name"], stream=True
-                                    ).content
-                                )
-                            )
-                        ])
+                        imgs.append(
+                            [
+                                img_id,
+                                Image.open(
+                                    BytesIO(
+                                        requests.get(
+                                            msg["data"]["name"], stream=True
+                                        ).content
+                                    )
+                                ),
+                            ]
+                        )
                         canvas_sockets.remove(img_id)
                         logger.debug(
                             "Canvas sockets remaining: {}", len(canvas_sockets)
