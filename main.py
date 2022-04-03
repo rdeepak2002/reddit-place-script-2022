@@ -225,7 +225,7 @@ class PlaceClient:
             if msg is None:
                 logger.error("Reddit failed to acknowledge connection_init")
                 exit()
-            if msg.startswith("{\"type\":\"connection_ack\"}"):
+            if msg.startswith('{"type":"connection_ack"}'):
                 logger.debug("Connected to WebSocket server")
                 break
         logger.debug("Obtaining Canvas information")
@@ -260,12 +260,10 @@ class PlaceClient:
 
         canvas_sockets = []
 
-
         canvas_count = len(canvas_details["canvasConfigurations"])
 
-
         for i in range(0, canvas_count):
-            canvas_sockets.append(2+i)
+            canvas_sockets.append(2 + i)
             logger.debug("Creating canvas socket {}", canvas_sockets[i])
 
             ws.send(
@@ -291,8 +289,7 @@ class PlaceClient:
                 )
             )
 
-
-        imgs = []       
+        imgs = []
         logger.debug("A total of {} canvas sockets opened", len(canvas_sockets))
         while len(canvas_sockets) > 0:
             temp = json.loads(ws.recv())
@@ -316,26 +313,28 @@ class PlaceClient:
                             )
                         )
                         canvas_sockets.remove(img_id)
-                        logger.debug("Canvas sockets remaining: {}", len(canvas_sockets))
+                        logger.debug(
+                            "Canvas sockets remaining: {}", len(canvas_sockets)
+                        )
 
-        for i in range(0, canvas_count-1):
+        for i in range(0, canvas_count - 1):
             ws.send(json.dumps({"id": str(2 + i), "type": "stop"}))
 
         ws.close()
 
-        #TODO: Multiply by canvas_details["canvasConfigurations"][i]["dx"] and canvas_details["canvasConfigurations"][i]["dy"] instead of hardcoding it
+        # TODO: Multiply by canvas_details["canvasConfigurations"][i]["dx"] and canvas_details["canvasConfigurations"][i]["dy"] instead of hardcoding it
         new_img_width = int(canvas_details["canvasWidth"]) * 2
         logger.debug("New image width: {}", new_img_width)
         new_img_height = int(canvas_details["canvasHeight"])
-        logger.debug("New image height: {}", new_img_height) 
-        
+        logger.debug("New image height: {}", new_img_height)
+
         new_img = Image.new("RGB", (new_img_width, new_img_height))
         dx_offset = 0
         for idx, img in enumerate(imgs):
             logger.debug("Adding image: {}", img)
             dx_offset = int(canvas_details["canvasConfigurations"][idx]["dx"])
             new_img.paste(img, (dx_offset, 0))
-        
+
         return new_img
 
     def get_unset_pixel(self, boardimg, x, y, index):
