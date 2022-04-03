@@ -343,8 +343,6 @@ class PlaceClient:
             logger.debug("Adding image: {}", img)
             dx_offset = int(canvas_details["canvasConfigurations"][idx]["dx"])
             new_img.paste(img, (dx_offset, 0))
-            
-        logger.debug("Saving image to disk as board.png")
         
         return new_img
 
