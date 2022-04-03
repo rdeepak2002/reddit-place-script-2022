@@ -241,6 +241,7 @@ class PlaceClient:
                 }
             )
         )
+        ws.recv()
 
         image_sizex = 2
         image_sizey = 1
@@ -270,7 +271,7 @@ class PlaceClient:
                     }
                 )
             )
-            file = ""
+            ws.recv()
             while True:
                 temp = json.loads(ws.recv())
                 if temp["type"] == "data":
@@ -299,7 +300,7 @@ class PlaceClient:
             new_img.paste(img, (x_offset, 0))
             x_offset += img.size[0]
 
-        logger.info("Got image: {}", file)
+        logger.info("Got image.")
 
         return new_img
 
