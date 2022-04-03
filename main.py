@@ -131,13 +131,7 @@ class PlaceClient:
             im = im.convert("RGBA")
             logger.info("Converted to rgba")
         self.pix = im.load()
-<<<<<<< HEAD
-
-        logger.info("Loaded image size: {}", im.size)
-
-=======
         logger.success("Loaded image size: {}", im.size)
->>>>>>> a6973d6 (Makes loading image a success.)
         self.image_size = im.size
 
     """ Main """
@@ -203,7 +197,9 @@ class PlaceClient:
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
             logger.error(
-                "Thread #{} : Failed placing pixel: rate limited", thread_index
+                "Thread #{} - {} : Failed placing pixel: rate limited",
+                thread_index,
+                name,
             )
         else:
             waitTime = math.floor(
@@ -495,7 +491,7 @@ class PlaceClient:
 
                 if len(update_str) > 0:
                     if not self.compactlogging:
-                        logger.info("Thread #{} :: {}", index, update_str)
+                        logger.info("Thread #{} - {} :: {}", index, name, update_str)
 
                 # refresh access token if necessary
                 if (
@@ -511,7 +507,9 @@ class PlaceClient:
                     )
                 ):
                     if not self.compactlogging:
-                        logger.info("Thread #{} :: Refreshing access token", index)
+                        logger.info(
+                            "Thread #{} - {} :: Refreshing access token", index, name
+                        )
 
                     # developer's reddit username and password
                     try:
