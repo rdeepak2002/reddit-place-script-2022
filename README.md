@@ -30,19 +30,6 @@ If you are using MacOSX and encounter an SSL_CERTIFICATE error. Please apply the
 
 Move the file 'config_example.json' to config.json
 
-<<<<<<< HEAD
-Change the values to what its supposed to be
-
-- username Username of accounts
-- passsword Passwords for account
-- client_id Workers client id for the app / script registered with Reddit
-- client_secret Workers secret keys for the app / script registered with Reddit
-- image_start_coords Specifies the root position (x,y) to draw the image on the r/place canvas
-- start_coords Specifies which x/y position of the original image to start at while drawing it
-
-### Notes: 
-- Change image.jpg to specify what image to draw. One pixel is drawn every 5 minutes
-=======
 Edit the values to replace with actual credentials and values
 
 Note: Please use https://jsonlint.com/ to check that your JSON file is correctly formatted
@@ -79,7 +66,6 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 ### Notes
 
 - Change image.jpg/png to specify what image to draw. One pixel is drawn every 5 minutes. PNG takes priority over JPG.
->>>>>>> c312857020e586884ec7f399e743bca3ec00806d
 
 ## Run the Script
 
