@@ -138,7 +138,8 @@ class PlaceClient:
     def load_image(self):
         # Read and load the image to draw and get its dimensions
         try:
-            im = Image.open(self.image_path)
+            # to handle PNG opacity
+            im = Image.open(self.image_path).convert("RGB")
         except FileNotFoundError:
             logger.fatal("Failed to load image")
             exit()
