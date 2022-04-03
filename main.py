@@ -5,7 +5,6 @@ import os.path
 import math
 import requests
 import json
-import logging
 import time
 import threading
 import sys
@@ -73,6 +72,8 @@ class PlaceClient:
 
         # Initialize-functions
         self.load_image()
+
+        self.waiting_thread_index = -1
 
     """ Utils """
     # Convert rgb tuple to hexadecimal string
@@ -188,6 +189,8 @@ class PlaceClient:
             "POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy()
         )
         logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
+
+        self.waiting_thread_index = -1
 
         # There are 2 different JSON keys for responses to get the next timestamp.
         # If we don't get data, it means we've been rate limited.
@@ -346,24 +349,54 @@ class PlaceClient:
 
         return new_img
 
-    def get_unset_pixel(self, boardimg, x, y, index):
-        pix2 = boardimg.convert("RGB").load()
+    def get_unset_pixel(self, x, y, index):
+        originalX = x
+        originalY = y
+        loopedOnce = False
+        imgOutdated = True
+        wasWaiting = False
+
         while True:
+            if self.waiting_thread_index != -1 and self.waiting_thread_index != index:
+                x = originalX
+                y = originalY
+                loopedOnce = False
+                imgOutdated = True
+                wasWaiting = True
+                continue
+            
+            # Stagger reactivation of threads after wait
+            if wasWaiting:
+                wasWaiting = False
+                time.sleep(index * self.delay_between_launches)
+
             if x >= self.image_size[0]:
                 y += 1
                 x = 0
 
             if y >= self.image_size[1]:
+
                 logging.info(
                     "Thread #{} : All pixels correct, trying again in 10 seconds... ",
                     index,
                 )
 
-                time.sleep(10)
+                y = 0
 
+
+            if x == originalX and y == originalY and loopedOnce:
+                logger.info(
+                    "Thread #{} : All pixels correct, trying again in 10 seconds... ",
+                    index,
+                )
+                self.waiting_thread_index = index
+                time.sleep(10)
+                imgOutdated = True
+
+            if imgOutdated:
                 boardimg = self.get_board(self.access_tokens[index])
                 pix2 = boardimg.convert("RGB").load()
-                y = 0
+                imgOutdated = False
 
             logger.debug("{}, {}", x + self.pixel_x_start, y + self.pixel_y_start)
             logger.debug(
@@ -381,6 +414,7 @@ class PlaceClient:
                     target_rgb != (69, 42, 0),
                     pix2[x, y] != new_rgb,
                 )
+
                 if target_rgb != (69, 42, 0):
                     logger.debug(
                         "Thread #{} : Replacing {} pixel at: {},{} with {} color",
@@ -394,6 +428,7 @@ class PlaceClient:
                 else:
                     logger.info("TransparrentPixel")
             x += 1
+            loopedOnce = True
         return x, y, new_rgb
 
     # Draw the input image
@@ -552,7 +587,6 @@ class PlaceClient:
 
                     # get current pixel position from input image and replacement color
                     current_r, current_c, new_rgb = self.get_unset_pixel(
-                        self.get_board(self.access_tokens[index]),
                         current_r,
                         current_c,
                         index,
