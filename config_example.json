@@ -3,6 +3,7 @@
     "image_start_coords": [741, 610],
     "thread_delay": 2,
     "unverified_place_frequency": false,
+    "compact_logging": true,
     "workers": {
         "worker1username": {
             "password": "password",

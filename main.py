@@ -408,7 +408,7 @@ class PlaceClient:
 
                 # log next time until drawing
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
-
+                
                 if time_until_next_draw > 10000:
                     logger.info(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
                     exit(1)
@@ -421,7 +421,7 @@ class PlaceClient:
                     update_str = new_update_str
                 else:
                     update_str = ""
-
+                    
                 if len(update_str) > 0:
                     logger.info("Thread #{} :: {}", index, update_str)
 
