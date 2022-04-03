@@ -66,6 +66,7 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 ### Notes
 
 - Change image.jpg/png to specify what image to draw. One pixel is drawn every 5 minutes. PNG takes priority over JPG.
+- Pixels with color (69, 42, 0) in the image will be skipped over, useful for non-rectangular drawings.
 
 ## Run the Script
 
