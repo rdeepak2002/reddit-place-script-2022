@@ -185,7 +185,7 @@ class PlaceClient:
 
     # Download file from url over http
     def download_resouce(self, url, destination):
-        r = requests.get(url, allow_redirects=False)
+        r = requests.get(url, allow_redirects=True)
         open(destination, 'wb').write(r.content)
 
     # Periodically redownload and reload resources
