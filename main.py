@@ -334,8 +334,6 @@ class PlaceClient:
     def get_unset_pixel(self, boardimg, x, y, index):
         pix2 = boardimg.convert("RGB").load()
         while True:
-            x += 1
-
             if x >= self.image_size[0]:
                 y += 1
                 x = 0
@@ -376,6 +374,7 @@ class PlaceClient:
                     break
                 else:
                     logger.info("TransparrentPixel")
+            x += 1
         return x, y, new_rgb
 
     # Draw the input image
@@ -416,6 +415,10 @@ class PlaceClient:
 
                 # log next time until drawing
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
+                
+                if time_until_next_draw > 10000:
+                    logger.info(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
+                    exit(1)
 
                 new_update_str = (
                     f"{time_until_next_draw} seconds until next pixel is drawn"
@@ -423,8 +426,11 @@ class PlaceClient:
 
                 if update_str != new_update_str and time_until_next_draw % 10 == 0:
                     update_str = new_update_str
-
-                logger.info("Thread #{} :: {}", index, update_str)
+                else:
+                    update_str = ""
+                    
+                if len(update_str) > 0:
+                    logger.info("Thread #{} :: {}", index, update_str)
 
                 # refresh access token if necessary
                 if (
