@@ -218,14 +218,14 @@ class PlaceClient:
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1
+        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1,x_offset,y_offset,
     ):
         logger.info(
             "Thread #{} : Attempting to place {} pixel at {}, {}",
             thread_index,
             ColorMapper.color_id_to_name(color_index_in),
-            x + (1000 * canvas_index),
-            y,
+            x + (x_offset),
+            y + (y_offset),
         )
 
         url = "https://gql-realtime-2.reddit.com/query"
@@ -399,9 +399,7 @@ class PlaceClient:
                                 Image.open(
                                     BytesIO(
                                         requests.get(
-                                            msg["data"]["name"],
-                                            stream=True,
-                                            proxies=self.GetRandomProxy(),
+                                            msg["data"]["name"], stream=True
                                         ).content
                                     )
                                 ),
@@ -702,11 +700,18 @@ class PlaceClient:
                     # draw the pixel onto r/place
                     # There's a better way to do this
                     canvas = 0
+                    x_offset = 0
+                    y_offset = 0
                     pixel_x_start = self.pixel_x_start + current_r
                     pixel_y_start = self.pixel_y_start + current_c
                     while pixel_x_start > 999:
                         pixel_x_start -= 1000
                         canvas += 1
+                        x_offset += 1000
+                    while pixel_y_start > 999:
+                        pixel_y_start -= 1000
+                        canvas = 2
+                        y_offset += 2000
 
                     # draw the pixel onto r/place
                     next_pixel_placement_time = self.set_pixel_and_check_ratelimit(
@@ -716,6 +721,8 @@ class PlaceClient:
                         pixel_color_index,
                         canvas,
                         index,
+                        x_offset,
+                        y_offset,
                     )
 
                     current_r += 1
