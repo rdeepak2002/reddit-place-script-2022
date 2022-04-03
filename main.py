@@ -10,7 +10,6 @@ import json
 import time
 import threading
 import sys
-import random
 from io import BytesIO
 from http import HTTPStatus
 from websocket import create_connection
