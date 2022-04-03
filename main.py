@@ -446,8 +446,9 @@ class PlaceClient:
                     response_data = r.json()
 
                     if "error" in response_data:
-                        logger.info(
-                            "An error occured. Make sure you have the correct credentials. Response data: {}",
+                        logger.critical(
+                            "{}: An error occured. Make sure you have the correct credentials. Response data: {}",
+                            name,
                             response_data,
                         )
                         exit(1)
