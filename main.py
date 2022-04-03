@@ -45,7 +45,7 @@ class PlaceClient:
             )
             self.proxies = (
                 self.GetProxies(self.json_data["proxies"])
-                if "proxies" in self.json_data 
+                if "proxies" in self.json_data
                 else None
             )
         except:
@@ -60,7 +60,6 @@ class PlaceClient:
         # Auth
         self.access_tokens = {}
         self.access_token_expires_at_timestamp = {}
-        
 
         # Image information
         self.pix = None
@@ -454,19 +453,24 @@ class PlaceClient:
                         )
                         exit(1)
 
-                    
                     client = requests.Session()
                     r = client.get("https://www.reddit.com/login")
                     login_get_soup = BeautifulSoup(r.content, "html.parser")
-                    csrf_token = login_get_soup.find("input", {"name": "csrf_token"})["value"]
+                    csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
+                        "value"
+                    ]
                     data = {
                         "username": username,
                         "password": password,
                         "dest": "https://www.reddit.com/",
-                        "csrf_token": csrf_token
+                        "csrf_token": csrf_token,
                     }
 
-                    r = client.post("https://www.reddit.com/login", data=data, proxies=self.GetRandomProxy())
+                    r = client.post(
+                        "https://www.reddit.com/login",
+                        data=data,
+                        proxies=self.GetRandomProxy(),
+                    )
                     if r.status_code != 200:
                         print("Authorization failed!")  # password is probably invalid
                         return
@@ -474,7 +478,11 @@ class PlaceClient:
                         print("Authorization successful!")
                     print("Obtaining access token...")
                     r = client.get("https://www.reddit.com/")
-                    data_str = BeautifulSoup(r.content, features="html.parser").find("script", {"id": "data"}).contents[0][len("window.__r = "):-1]
+                    data_str = (
+                        BeautifulSoup(r.content, features="html.parser")
+                        .find("script", {"id": "data"})
+                        .contents[0][len("window.__r = ") : -1]
+                    )
                     data = json.loads(data_str)
                     response_data = data["user"]["session"]
 
