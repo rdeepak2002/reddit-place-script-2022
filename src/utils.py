@@ -10,9 +10,9 @@ class Proxies:
 
     def _set_proxies(self, proxies: list):
         for i in proxies:
-            self._proxies[len(self._proxies)] = {"https": i}
+            self._proxies[len(proxies)] = {"https": i}
 
-        logger.info("Found {} proxies", len(self._proxies))
+        logger.info("Found {} proxies", len(proxies))
 
     def random(self):
         random_proxy = None
