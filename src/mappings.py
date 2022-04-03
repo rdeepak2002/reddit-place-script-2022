@@ -4,7 +4,7 @@ from PIL import ImageColor
 
 class ColorMapper:
     COLOR_MAP = {
-        "#6D001A": 0,  # Darkest red
+        "#6D001A": 0,  # darkest red
         "#BE0039": 1,  # dark red
         "#FF4500": 2,  # red
         "#FFA800": 3,  # orange
@@ -32,7 +32,7 @@ class ColorMapper:
         "#9C6926": 25,  # brown
         "#FFB470": 26,  # beige
         "#000000": 27,  # black
-        "#515252": 28,  # Dark gray
+        "#515252": 28,  # dark gray
         "#898D90": 29,  # gray
         "#D4D7D9": 30,  # light gray
         "#FFFFFF": 31,  # white
