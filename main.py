@@ -3,6 +3,8 @@
 import os
 import os.path
 import math
+import subprocess
+
 import requests
 import json
 import time
@@ -16,6 +18,9 @@ from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
 from bs4 import BeautifulSoup
+
+from stem import Signal, InvalidArguments, SocketError, ProtocolError
+from stem.control import Controller
 
 
 from src.mappings import ColorMapper
@@ -46,12 +51,70 @@ class PlaceClient:
             if "proxies" in self.json_data and self.json_data["proxies"] is not None
             else None
         )
+        if self.proxies is None and os.path.exists(
+            os.path.join(os.getcwd(), "proxies.txt")
+        ):
+            self.proxies = self.get_proxies_text()
         self.compactlogging = (
             self.json_data["compact_logging"]
             if "compact_logging" in self.json_data
             and self.json_data["compact_logging"] is not None
             else True
         )
+        self.using_tor = (
+            self.json_data["using_tor"]
+            if "using_tor" in self.json_data and self.json_data["using_tor"] is not None
+            else False
+        )
+        self.tor_password = (
+            self.json_data["tor_password"]
+            if "tor_password" in self.json_data
+            and self.json_data["tor_password"] is not None
+            else "Passwort"  # this is intentional, as I don't really want to mess around with the torrc again
+        )
+        self.tor_delay = (
+            self.json_data["tor_delay"]
+            if "tor_delay" in self.json_data and self.json_data["tor_delay"] is not None
+            else 10
+        )
+        self.use_builtin_tor = (
+            self.json_data["use_builtin_tor"]
+            if "use_builtin_tor" in self.json_data
+            and self.json_data["use_builtin_tor"] is not None
+            else True
+        )
+        self.tor_port = (
+            self.json_data["tor_port"]
+            if "tor_port" in self.json_data and self.json_data["tor_port"] is not None
+            else 1881
+        )
+        self.tor_control_port = (
+            self.json_data["tor_control_port"]
+            if "tor_port" in self.json_data
+            and self.json_data["tor_control_port"] is not None
+            else 9051
+        )
+
+        # tor connection
+        if self.using_tor:
+            self.proxies = self.GetProxies(["127.0.0.1:" + str(self.tor_port)])
+            if self.use_builtin_tor:
+                subprocess.call(
+                    "start "
+                    + os.path.join(os.getcwd() + "/tor/Tor/tor.exe")
+                    + " --defaults-torrc "
+                    + os.path.join(os.getcwd() + "/Tor/Tor/torrc")
+                    + " --HTTPTunnelPort "
+                    + str(self.tor_port),
+                    shell=True,
+                )
+            try:
+                self.tor_controller = Controller.from_port(port=self.tor_control_port)
+                self.tor_controller.authenticate(self.tor_password)
+                logger.info("successfully connected to tor!")
+            except (ValueError, SocketError):
+                logger.error("connection to tor failed, disabling tor")
+                self.using_tor = False
 
         # Color palette
         self.rgb_colors_array = ColorMapper.generate_rgb_colors_array()
@@ -75,19 +138,45 @@ class PlaceClient:
 
         self.waiting_thread_index = -1
 
+    """ tor """
+
+    def tor_reconnect(self):
+        if self.using_tor:
+            try:
+                self.tor_controller.signal(Signal.NEWNYM)
+                logger.info("New Tor connection processing")
+                time.sleep(self.tor_delay)
+            except (InvalidArguments, ProtocolError):
+                logger.error("couldn't establish new tor connection, disabling tor")
+                self.using_tor = False
+
     """ Utils """
+
+    def get_proxies_text(self):
+        pathproxies = os.path.join(os.getcwd(), "proxies.txt")
+        f = open(pathproxies)
+        file = f.read()
+        f.close()
+        proxieslist = file.splitlines()
+        self.proxies = []
+        for i in proxieslist:
+            self.proxies.append({"https": i, "http": i})
 
     def GetProxies(self, proxies):
         proxieslist = []
         for i in proxies:
-            proxieslist.append({"https": i})
+            proxieslist.append({"https": i, "http": i})
         return proxieslist
 
     def GetRandomProxy(self):
-        randomproxy = None
-        if self.proxies is not None:
-            randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
-        return randomproxy
+        if not self.using_tor:
+            randomproxy = None
+            if self.proxies is not None:
+                randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
+            return randomproxy
+        else:
+            self.tor_reconnect()
+            return self.proxies[0]
 
     def get_json_data(self, config_path):
         configFilePath = os.path.join(os.getcwd(), config_path)
@@ -499,7 +588,6 @@ class PlaceClient:
                     try:
                         username = name
                         password = worker["password"]
-                        # note: use https://www.reddit.com/prefs/apps
                     except Exception:
                         logger.info(
                             "You need to provide all required fields to worker '{}'",
@@ -523,7 +611,7 @@ class PlaceClient:
                             data = {
                                 "username": username,
                                 "password": password,
-                                "dest": "https://www.reddit.com/",
+                                "dest": "https://new.reddit.com/",
                                 "csrf_token": csrf_token,
                             }
 
@@ -546,7 +634,7 @@ class PlaceClient:
                     else:
                         logger.success("Authorization successful!")
                     logger.info("Obtaining access token...")
-                    r = client.get("https://www.reddit.com/")
+                    r = client.get("https://new.reddit.com/")
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
