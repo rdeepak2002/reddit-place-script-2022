@@ -46,20 +46,22 @@ class PlaceClient:
     """ Utils """
     # load data from .json file
 
-    def load_json(self):
-        self.json_data = self.get_json_data()
+    def load_json(self,config_path):
+        self.json_data = self.get_json_data(config_path)
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data and self.json_data["thread_delay"] is not None
+            if "thread_delay" in self.json_data 
+            and self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
             self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data and self.json_data["unverified_place_frequency"] is not None
+            if "unverified_place_frequency" in self.json_data 
+            and self.json_data["unverified_place_frequency"] is not None
             else False
         )
         self.proxies = (
@@ -78,7 +80,8 @@ class PlaceClient:
         if self.auto_update is not None:
             self.auto_update_enabled = (
                 self.auto_update["is_enabled"]
-                if "is_enabled" in self.auto_update and self.auto_update["is_enabled"] is not None
+                if "is_enabled" in self.auto_update 
+                and self.auto_update["is_enabled"] is not None
                 else False
             )
         if self.auto_update is not None and self.auto_update_enabled:
@@ -94,7 +97,8 @@ class PlaceClient:
             )
             self.delay_between_updates = (
                 self.auto_update["update_delay"]
-                if "update_delay" in self.auto_update and self.auto_update["update_delay"] is not None
+                if "update_delay" in self.auto_update 
+                and self.auto_update["update_delay"] is not None
                 else 600
             )
             print(self.image_source)
