@@ -110,10 +110,10 @@ class PlaceClient:
         try:
             im = Image.open(self.image_path)
         except FileNotFoundError:
-            logger.fatal("Failed to load image")
+            logger.exception("Failed to load image")
             exit()
         except UnidentifiedImageError:
-            logger.fatal("File found, but couldn't identify image format")
+            logger.exception("File found, but couldn't identify image format")
         self.pix = im.load()
         logger.info("Loaded image size: {}", im.size)
         self.image_size = im.size
