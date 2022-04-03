@@ -26,6 +26,27 @@ from mappings import color_map, name_map
 class PlaceClient:
     def __init__(self):
         # Data
+        self.get_json()
+
+        # Color palette
+        self.rgb_colors_array = self.generate_rgb_colors_array()
+
+        # Auth
+        self.access_tokens = {}
+        self.access_token_expires_at_timestamp = {}
+
+        # Image information
+        self.pix = None
+        self.image_size = None
+        self.first_run_counter = 0
+
+        # Initialize-functions
+        self.load_image()
+
+    """ Utils """
+    # retreive data from .json
+
+    def get_json(self):
         self.json_data = self.get_json_data()
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
@@ -47,23 +68,10 @@ class PlaceClient:
             else None
         )
 
-        # Color palette
-        self.rgb_colors_array = self.generate_rgb_colors_array()
-
-        # Auth
-        self.access_tokens = {}
-        self.access_token_expires_at_timestamp = {}
-
         # Image information
-        self.pix = None
-        self.image_size = None
         self.image_path = self.json_data["image_path"]
-        self.first_run_counter = 0
 
-        # Initialize-functions
-        self.load_image()
 
-    """ Utils """
     # Convert rgb tuple to hexadecimal string
 
     def rgb_to_hex(self, rgb):
