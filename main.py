@@ -218,7 +218,7 @@ class PlaceClient:
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1,x_offset,y_offset,
+        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1,x_offset=0,y_offset=0,
     ):
         logger.info(
             "Thread #{} : Attempting to place {} pixel at {}, {}",
