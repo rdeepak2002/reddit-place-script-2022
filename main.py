@@ -711,7 +711,7 @@ class PlaceClient:
                     while pixel_y_start > 999:
                         pixel_y_start -= 1000
                         canvas = 2
-                        y_offset += 2000
+                        y_offset += 1000
 
                     # draw the pixel onto r/place
                     next_pixel_placement_time = self.set_pixel_and_check_ratelimit(
