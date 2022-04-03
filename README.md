@@ -158,6 +158,20 @@ the config values are as follows:
 
 note that when using the included binaries, only the tunnel port is explicitly set while starting tor.
 
+If you want to use your own binaries, follow these steps:
+- get tor standalone for your platform [here](https://www.torproject.org/download/tor/). For Windows just use the expert bundle. For MacOS you'll have to compile the binaries yourself or get them from somewhere else,
+which is both out of the scope of this guide.
+- in your tor folder, create a file named ``torrc``. Copy [this](https://github.com/torproject/tor/blob/main/src/config/torrc.sample.in)
+into it.
+- Search for ``ControlPort`` in your torrc file and uncomment it. change the port number to your desired control port.
+- Decide on the password you want to use. Run ``tor --hash-password PASSWORD`` from a terminal in the folder with your tor executable, with "PASSWORD" being your desired password. copy the resulting hash.
+- search for ``HashedControlPassword`` and uncomment it. paste the hash value you copied after it.
+- decide on a port for your httptunnel. The default for this script is 1881.
+- fill in your password, your httptunnel port and your control port in this script's ``config.json`` and enable tor with ``using_tor = true``.
+- To start tor, run ``tor --defaults-torrc PATHTOTORRC --HttpTunnelPort TUNNELPORT``, with PATHTOTORRC being your path to
+the torrc file you created and TUNNELPORT being your httptunnel port.
+- now run the script and (hopefully) everything should work.
+
 license for the included tor binary:
 > Tor is distributed under the "3-clause BSD" license, a commonly used
 software license that means Tor is both free software and open source:
