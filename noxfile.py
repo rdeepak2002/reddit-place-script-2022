@@ -18,4 +18,10 @@ def lint(session):
     session.run("flake8", *args)
 
 
-nox.options.sessions = ["lint"]
+@nox.session
+def tests(session):
+    session.install("pytest", "Faker", "loguru")
+    session.run("pytest")
+
+
+nox.options.sessions = ["lint", "tests"]
