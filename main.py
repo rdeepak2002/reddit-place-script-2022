@@ -309,7 +309,9 @@ class PlaceClient:
             new_img.paste(img, (dx_offset, 0))
             
         logger.debug("Saving image to disk as board.png")
-        new_img.save("board.png")
+        
+        #Uncomment the line below to save the canvas image to disk
+        #new_img.save("board.png")
         return new_img
 
 
