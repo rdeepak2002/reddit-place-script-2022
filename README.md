@@ -18,6 +18,7 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 - SOCKS proxy support
 - No client id and secret needed
 - Proxies from "proxies.txt" file
+- Tor support
 
 ## Requirements
 
