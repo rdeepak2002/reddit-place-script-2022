@@ -5,7 +5,6 @@ import os.path
 import math
 import requests
 import json
-import logging
 import time
 import threading
 import sys
@@ -32,26 +31,25 @@ class PlaceClient:
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data and
-            self.json_data["thread_delay"] is not None
+            if "thread_delay" in self.json_data
+            and self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
             self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data and
-            self.json_data["unverified_place_frequency"] is not None
+            if "unverified_place_frequency" in self.json_data
+            and self.json_data["unverified_place_frequency"] is not None
             else False
         )
         self.proxies = (
             self.GetProxies(self.json_data["proxies"])
-            if "proxies" in self.json_data and
-            self.json_data["proxies"] is not None
+            if "proxies" in self.json_data and self.json_data["proxies"] is not None
             else None
         )
         self.compactlogging = (
             self.json_data["compact_logging"]
-            if "compact_logging" in self.json_data and
-            self.json_data["compact_logging"] is not None
+            if "compact_logging" in self.json_data
+            and self.json_data["compact_logging"] is not None
             else True
         )
 
@@ -74,6 +72,8 @@ class PlaceClient:
 
         # Initialize-functions
         self.load_image()
+
+        self.waiting_thread_index = -1
 
     """ Utils """
     # Convert rgb tuple to hexadecimal string
@@ -102,13 +102,16 @@ class PlaceClient:
         return randomproxy
 
     def closest_color(self, target_rgb):
-        r, g, b = target_rgb
-        color_diffs = []
-        for color in self.rgb_colors_array:
-            cr, cg, cb = color
-            color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-            color_diffs.append((color_diff, color))
-        return min(color_diffs)[1]
+        r, g, b = target_rgb[:3]
+        if target_rgb[3] != 0:
+            color_diffs = []
+            for color in self.rgb_colors_array:
+                cr, cg, cb = color
+                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
+                color_diffs.append((color_diff, color))
+            return min(color_diffs)[1]
+        else:
+            return (69, 42, 0)
 
     # Define the color palette array
     def generate_rgb_colors_array(self):
@@ -190,6 +193,8 @@ class PlaceClient:
         )
         logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
+        self.waiting_thread_index = -1
+
         # There are 2 different JSON keys for responses to get the next timestamp.
         # If we don't get data, it means we've been rate limited.
         # If we do, a pixel has been successfully placed.
@@ -197,7 +202,9 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logger.error("Thread #{} : Failed placing pixel: rate limited", thread_index)
+            logger.error(
+                "Thread #{} : Failed placing pixel: rate limited", thread_index
+            )
         else:
             waitTime = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
@@ -345,28 +352,55 @@ class PlaceClient:
 
         return new_img
 
-    def get_unset_pixel(self, boardimg, x, y, index):
-        pix2 = boardimg.convert("RGB").load()
+    def get_unset_pixel(self, x, y, index):
+        originalX = x
+        originalY = y
+        loopedOnce = False
+        imgOutdated = True
+        wasWaiting = False
+
         while True:
+            if self.waiting_thread_index != -1 and self.waiting_thread_index != index:
+                x = originalX
+                y = originalY
+                loopedOnce = False
+                imgOutdated = True
+                wasWaiting = True
+                continue
+
+            # Stagger reactivation of threads after wait
+            if wasWaiting:
+                wasWaiting = False
+                time.sleep(index * self.delay_between_launches)
+
             if x >= self.image_size[0]:
                 y += 1
                 x = 0
 
             if y >= self.image_size[1]:
-                logging.info("Thread #{} : All pixels correct, trying again in 10 seconds... ", index)
 
+                y = 0
+
+            if x == originalX and y == originalY and loopedOnce:
+                logger.info(
+                    "Thread #{} : All pixels correct, trying again in 10 seconds... ",
+                    index,
+                )
+                self.waiting_thread_index = index
                 time.sleep(10)
+                imgOutdated = True
 
+            if imgOutdated:
                 boardimg = self.get_board(self.access_tokens[index])
                 pix2 = boardimg.convert("RGB").load()
-                y = 0
+                imgOutdated = False
 
             logger.debug("{}, {}", x + self.pixel_x_start, y + self.pixel_y_start)
             logger.debug(
                 "{}, {}, boardimg, {}, {}", x, y, self.image_size[0], self.image_size[1]
             )
 
-            target_rgb = self.pix[x, y][:3]
+            target_rgb = self.pix[x, y]
 
             new_rgb = self.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
@@ -374,10 +408,11 @@ class PlaceClient:
                     "{}, {}, {}, {}",
                     pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                     new_rgb,
-                    target_rgb != (69, 42, 0),
+                    new_rgb != (69, 42, 0),
                     pix2[x, y] != new_rgb,
                 )
-                if target_rgb != (69, 42, 0):
+
+                if new_rgb != (69, 42, 0):
                     logger.debug(
                         "Thread #{} : Replacing {} pixel at: {},{} with {} color",
                         index,
@@ -390,6 +425,7 @@ class PlaceClient:
                 else:
                     logger.info("TransparrentPixel")
             x += 1
+            loopedOnce = True
         return x, y, new_rgb
 
     # Draw the input image
@@ -450,14 +486,15 @@ class PlaceClient:
 
                 # refresh access token if necessary
                 if (
-                    len(self.access_tokens) == 0 or
-                    len(self.access_token_expires_at_timestamp) == 0 or
+                    len(self.access_tokens) == 0
+                    or len(self.access_token_expires_at_timestamp) == 0
+                    or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp or
-                    (
-                        self.access_token_expires_at_timestamp.get(index) and
-                        current_timestamp >=
+                    index not in self.access_token_expires_at_timestamp
+                    or (
                         self.access_token_expires_at_timestamp.get(index)
+                        and current_timestamp
+                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
                     if not self.compactlogging:
@@ -503,7 +540,7 @@ class PlaceClient:
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
-                        .contents[0][len("window.__r = "): -1]
+                        .contents[0][len("window.__r = ") : -1]
                     )
                     data = json.loads(data_str)
                     response_data = data["user"]["session"]
@@ -534,8 +571,8 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time or
-                    self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time
+                    or self.first_run_counter <= index
                 ):
 
                     # place pixel immediately
@@ -547,7 +584,6 @@ class PlaceClient:
 
                     # get current pixel position from input image and replacement color
                     current_r, current_c, new_rgb = self.get_unset_pixel(
-                        self.get_board(self.access_tokens[index]),
                         current_r,
                         current_c,
                         index,
@@ -575,7 +611,7 @@ class PlaceClient:
                         pixel_y_start,
                         pixel_color_index,
                         canvas,
-                        index
+                        index,
                     )
 
                     current_r += 1

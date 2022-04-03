@@ -145,6 +145,6 @@ You can now run with
 `docker run place-bot`
 
 
-## Developing
+## Contributing
 
-The nox CI job will run flake8 and black on the code. You can also do this locally by pip installing nox on your system and running `nox` in the repository directory.
+See the [Contributing Guide](docs/CONTRIBUTING.md)
