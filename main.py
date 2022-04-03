@@ -306,7 +306,6 @@ class PlaceClient:
     def get_unset_pixel(self, boardimg, x, y, index):
         pix2 = boardimg.convert("RGB").load()
         while True:
-            x += 1
 
             if x >= self.image_size[0]:
                 y += 1
@@ -348,6 +347,7 @@ class PlaceClient:
                     break
                 else:
                     logger.info("TransparrentPixel")
+            x += 1
         return x, y, new_rgb
 
     # Draw the input image
