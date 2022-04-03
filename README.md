@@ -25,6 +25,9 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 ## MacOSX
 If you are using MacOSX and encounter an SSL_CERTIFICATE error. Please apply the fix detailed https://stackoverflow.com/questions/42098126/mac-osx-python-ssl-sslerror-ssl-certificate-verify-failed-certificate-verify  
 
+If you want to use tor on MacOSX. you'll need to provide your own tor binary and start it manually. deactivate the "use_builtin tor"
+option in the config and make sure you configure your tor to use the specified ports and password. 
+<br>*note that socks proxy connection to tor doesn't work for the time being, so the config value is for an httpTunnel port*
 
 ## Get Started
 
@@ -117,7 +120,7 @@ This is useful if you want different threads drawing different parts of the imag
 
 If any JSON decoders errors are found, the `config.json` needs a fix. Make sure to add the below 2 lines in the file.
 
-```text
+```json
 {
     "thread_delay": 2,
     "unverified_place_frequency": false,
@@ -135,6 +138,26 @@ If any JSON decoders errors are found, the `config.json` needs a fix. Make sure 
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
 
 # Tor
+tor is can be used as an alternative to normal proxies. Note that currently, you cannot use normal proxies and tor at the same time.
+
+```json
+"using_tor": false,
+"tor_port": 1881,
+"tor_control_port": 9051,
+"tor_password": "Passwort",
+"tor_delay": 5,
+"use_builtin_tor": true 
+```
+the config values are as follows:
+- deactivates or activates tor
+- sets the httptunnel port that should be used
+- sets the tor control port
+- sets the password (leave it as "Passwort" if you want to use the default binaries
+- the delay that tor should receive to process a new connection
+- whether the included tor binary should be used. It is preconfigured. If you want to use your own binary, make sure you configure it right.
+
+note that when using the included binaries, only the tunnel port is explicitly set while starting tor.
+
 license for the included tor binary:
 > Tor is distributed under the "3-clause BSD" license, a commonly used
 software license that means Tor is both free software and open source:
