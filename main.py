@@ -134,7 +134,7 @@ class PlaceClient:
         logger.info(
             "Thread #{} : Attempting to place {} pixel at {}, {}",
             thread_index,
-            self.color_id_to_name(color_index_in),
+            ColorMapper.color_id_to_name(color_index_in),
             x + (1000 * canvas_index),
             y,
         )
@@ -382,7 +382,7 @@ class PlaceClient:
 
             target_rgb = self.pix[x, y]
 
-            new_rgb = self.closest_color(target_rgb)
+            new_rgb = ColorMapper.closest_color(target_rgb)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
                 logger.debug(
                     "{}, {}, {}, {}",
@@ -575,7 +575,7 @@ class PlaceClient:
                     )
 
                     # get converted color
-                    new_rgb_hex = self.rgb_to_hex(new_rgb)
+                    new_rgb_hex = ColorMapper.rgb_to_hex(new_rgb)
                     pixel_color_index = ColorMapper.COLOR_MAP[new_rgb_hex]
 
                     logger.info("\nAccount Placing: ", name, "\n")
