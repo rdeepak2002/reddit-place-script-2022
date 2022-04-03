@@ -47,7 +47,7 @@ class PlaceClient:
             else None
         )
         if self.proxies is None and os.path.exists(os.path.join(os.getcwd(), "proxies.txt")):
-            self.proxies = self.GetProxiesTXT()
+            self.proxies = self.get_proxies_text()
         self.compactlogging = (
             self.json_data["compact_logging"]
             if "compact_logging" in self.json_data
@@ -79,7 +79,7 @@ class PlaceClient:
 
     """ Utils """
 
-    def GetProxiesTXT(self):
+    def get_proxies_text(self):
         pathproxies = os.path.join(os.getcwd(), "proxies.txt")
         f = open(pathproxies)
         file = f.read()
