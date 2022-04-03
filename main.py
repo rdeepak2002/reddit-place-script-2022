@@ -49,9 +49,9 @@ class PlaceClient:
             else None
         )
         self.compactlogging = (
-            self.json_data["compacy_logging"]
-            if "compacy_logging" in self.json_data and
-            self.json_data["compacy_logging"] is not None
+            self.json_data["compact_logging"]
+            if "compact_logging" in self.json_data and
+            self.json_data["compact_logging"] is not None
             else True
         )
 
