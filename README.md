@@ -79,7 +79,7 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 start.bat or startverbose.bat
 ```
 
-### Other OS
+### Unix-like (Linux, MacOS etc.)
 
 ```shell
 chmod +x start.sh startverbose.sh
