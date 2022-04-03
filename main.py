@@ -109,7 +109,7 @@ class PlaceClient:
         }
 
         response = requests.request(
-            "POST", url, headers=headers, data=payload, proxies=proxy.GetRandomProxy()
+            "POST", url, headers=headers, data=payload, proxies=proxy.get_random_proxy()
         )
         logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
@@ -260,7 +260,7 @@ class PlaceClient:
                                         requests.get(
                                             msg["data"]["name"],
                                             stream=True,
-                                            proxies=proxy.GetRandomProxy(),
+                                            proxies=proxy.get_random_proxy(),
                                         ).content
                                     )
                                 ),
@@ -485,7 +485,7 @@ class PlaceClient:
                             r = client.post(
                                 "https://www.reddit.com/login",
                                 data=data,
-                                proxies=proxy.GetRandomProxy(),
+                                proxies=proxy.get_random_proxy(),
                             )
                             break
                         except Exception:
