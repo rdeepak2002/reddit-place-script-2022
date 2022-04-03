@@ -68,6 +68,32 @@ class PlaceClient:
             else None
         )
 
+        # Auto update settings
+        self.auto_update_enabled = (
+            self.json_data["auto_update"]
+            if "auto_update" in self.json_data and self.json_data["auto_update"] is not None
+            else False
+        )
+        if self.auto_update_enabled:
+            self.config_source = (
+                self.json_data["config_source"]
+                if "config_source" in self.json_data
+                else None
+            )
+            self.image_source = (
+                self.json_data["image_source"]
+                if "image_source" in self.json_data
+                else None
+            )
+            self.delay_between_updates = (
+                self.json_data["update_delay"]
+                if "update_delay" in self.json_data and ["update_delay"] is not None
+                else 600
+            )
+
+        if self.config_source or self.image_source is None:
+            self.auto_update_enabled = False
+
         # Image information
         self.image_path = self.json_data["image_path"]
 
@@ -140,6 +166,22 @@ class PlaceClient:
         self.pix = im.load()
         logger.info("Loaded image size: {}", im.size)
         self.image_size = im.size
+
+    # Download file from url over http
+    def download_resouce(self, url, destination):
+        r = requests.get(url, allow_redirects=False)
+        open(destination, 'wb').write(r.content)
+
+    # Periodically redownload and reload resources
+    def auto_update_resources(self):
+        while self.auto_update_enabled:
+            time.sleep(self.delay_between_updates)
+            self.download_resouce(self.config_source, "config.json")
+            self.download_resouce(self.image_source, self.image_path)
+            time.sleep(5)
+            self.load_json()
+            self.load_image()
+    
 
     """ Main """
     # Draw a pixel at an x, y coordinate in r/place with a specific color
