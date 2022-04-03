@@ -44,7 +44,7 @@ class PlaceClient:
             )
             self.proxies = (
                 self.GetProxies(self.json_data["proxies"])
-                if self.json_data["proxies"] is not None
+                if "proxies" in self.json_data is not None
                 else None
             )
         except:
