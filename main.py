@@ -140,11 +140,19 @@ class PlaceClient:
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1
+        self,
+        access_token_in,
+        x,
+        y,
+        name,
+        color_index_in=18,
+        canvas_index=0,
+        thread_index=-1,
     ):
-        logger.info(
-            "Thread #{} : Attempting to place {} pixel at {}, {}",
+        logger.warning(
+            "Thread #{} - {} : Attempting to place {} pixel at {}, {}",
             thread_index,
+            name,
             ColorMapper.color_id_to_name(color_index_in),
             x + (1000 * canvas_index),
             y,
