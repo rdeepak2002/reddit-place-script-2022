@@ -57,7 +57,7 @@ class PlaceClient:
         # Image information
         self.pix = None
         self.image_size = None
-        self.image_path = self.json_data["image_path"]
+        self.image_path = self.json_data["image_path"] if "image_path" in self.json_data else "image.jpg"
         self.first_run_counter = 0
 
         # Initialize-functions
