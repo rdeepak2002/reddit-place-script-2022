@@ -261,7 +261,7 @@ class PlaceClient:
             )
         )
         ws.recv()
-        
+
         image_sizex = 2
         image_sizey = 1
 
