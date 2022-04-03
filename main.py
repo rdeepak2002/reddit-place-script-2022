@@ -46,7 +46,9 @@ class PlaceClient:
             if "proxies" in self.json_data and self.json_data["proxies"] is not None
             else None
         )
-        if self.proxies is None and os.path.exists(os.path.join(os.getcwd(), "proxies.txt")):
+        if self.proxies is None and os.path.exists(
+            os.path.join(os.getcwd(), "proxies.txt")
+        ):
             self.proxies = self.get_proxies_text()
         self.compactlogging = (
             self.json_data["compact_logging"]
@@ -88,6 +90,7 @@ class PlaceClient:
         self.proxies = []
         for i in proxieslist:
             self.proxies.append({"https": i, "http": i})
+
     def GetProxies(self, proxies):
         proxieslist = []
         for i in proxies:
@@ -340,7 +343,7 @@ class PlaceClient:
         # TODO: Multiply by canvas_details["canvasConfigurations"][i]["dx"] and canvas_details["canvasConfigurations"][i]["dy"] instead of hardcoding it
         new_img_width = int(canvas_details["canvasWidth"]) * 2
         logger.debug("New image width: {}", new_img_width)
-        new_img_height = int(canvas_details["canvasHeight"])
+        new_img_height = int(canvas_details["canvasHeight"]) * 2
         logger.debug("New image height: {}", new_img_height)
 
         new_img = Image.new("RGB", (new_img_width, new_img_height))
