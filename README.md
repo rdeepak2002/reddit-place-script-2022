@@ -17,6 +17,7 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 - Easy(ish) to read output with colors
 - SOCKS proxy support
 - No client id and secret needed
+- Proxies from "proxies.txt" file
 
 ## Requirements
 
@@ -133,6 +134,7 @@ If any JSON decoders errors are found, the `config.json` needs a fix. Make sure 
 
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
+- You can also setup proxies by creating a "proxies" and have a new line for each proxies
 
 ## Docker
 

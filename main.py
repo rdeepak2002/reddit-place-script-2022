@@ -46,6 +46,8 @@ class PlaceClient:
             if "proxies" in self.json_data and self.json_data["proxies"] is not None
             else None
         )
+        if self.proxies is None and os.path.exists(os.path.join(os.getcwd(), "proxies.txt")):
+            self.proxies = self.get_proxies_text()
         self.compactlogging = (
             self.json_data["compact_logging"]
             if "compact_logging" in self.json_data
@@ -77,10 +79,19 @@ class PlaceClient:
 
     """ Utils """
 
+    def get_proxies_text(self):
+        pathproxies = os.path.join(os.getcwd(), "proxies.txt")
+        f = open(pathproxies)
+        file = f.read()
+        f.close()
+        proxieslist = file.splitlines()
+        self.proxies = []
+        for i in proxieslist:
+            self.proxies.append({"https": i, "http": i})
     def GetProxies(self, proxies):
         proxieslist = []
         for i in proxies:
-            proxieslist.append({"https": i})
+            proxieslist.append({"https": i, "http": i})
         return proxieslist
 
     def GetRandomProxy(self):
