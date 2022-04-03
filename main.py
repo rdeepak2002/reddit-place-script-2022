@@ -207,12 +207,12 @@ class PlaceClient:
                     origin="https://hot-potato.reddit.com",
                 )
                 break
-            except:
-                logger.error("Failed to connect to websocket, trying again in 30 seconds...")
+            except Exception:
+                logger.error(
+                    "Failed to connect to websocket, trying again in 30 seconds..."
+                )
                 time.sleep(30)
-        
-        
-        
+
         ws.send(
             json.dumps(
                 {
@@ -511,9 +511,9 @@ class PlaceClient:
                             )
                             r = client.get("https://www.reddit.com/login")
                             login_get_soup = BeautifulSoup(r.content, "html.parser")
-                            csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
-                                "value"
-                            ]
+                            csrf_token = login_get_soup.find(
+                                "input", {"name": "csrf_token"}
+                            )["value"]
                             data = {
                                 "username": username,
                                 "password": password,
@@ -527,10 +527,12 @@ class PlaceClient:
                                 proxies=self.GetRandomProxy(),
                             )
                             break
-                        except:
-                            logger.error("Failed to connect to websocket, trying again in 30 seconds...")
+                        except Exception:
+                            logger.error(
+                                "Failed to connect to websocket, trying again in 30 seconds..."
+                            )
                             time.sleep(30)
-                            
+
                     if r.status_code != HTTPStatus.OK.value:
                         # password is probably invalid
                         logger.exception("Authorization failed!")
