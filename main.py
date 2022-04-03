@@ -364,7 +364,7 @@ class PlaceClient:
                 imgOutdated = True
                 wasWaiting = True
                 continue
-            
+
             # Stagger reactivation of threads after wait
             if wasWaiting:
                 wasWaiting = False
@@ -376,13 +376,7 @@ class PlaceClient:
 
             if y >= self.image_size[1]:
 
-                logging.info(
-                    "Thread #{} : All pixels correct, trying again in 10 seconds... ",
-                    index,
-                )
-
                 y = 0
-
 
             if x == originalX and y == originalY and loopedOnce:
                 logger.info(
