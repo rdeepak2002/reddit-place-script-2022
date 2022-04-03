@@ -494,7 +494,6 @@ class PlaceClient:
                     try:
                         username = name
                         password = worker["password"]
-                        # note: use https://www.reddit.com/prefs/apps
                     except Exception:
                         logger.info(
                             "You need to provide all required fields to worker '{}'",
@@ -510,7 +509,7 @@ class PlaceClient:
                                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
                                 }
                             )
-                            r = client.get("https://www.reddit.com/login")
+                            r = client.get("https://new.reddit.com/login")
                             login_get_soup = BeautifulSoup(r.content, "html.parser")
                             csrf_token = login_get_soup.find(
                                 "input", {"name": "csrf_token"}
@@ -518,12 +517,12 @@ class PlaceClient:
                             data = {
                                 "username": username,
                                 "password": password,
-                                "dest": "https://www.reddit.com/",
+                                "dest": "https://new.reddit.com/",
                                 "csrf_token": csrf_token,
                             }
 
                             r = client.post(
-                                "https://www.reddit.com/login",
+                                "https://new.reddit.com/login",
                                 data=data,
                                 proxies=self.GetRandomProxy(),
                             )
@@ -541,7 +540,7 @@ class PlaceClient:
                     else:
                         logger.success("Authorization successful!")
                     logger.info("Obtaining access token...")
-                    r = client.get("https://www.reddit.com/")
+                    r = client.get("https://new.reddit.com/")
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
