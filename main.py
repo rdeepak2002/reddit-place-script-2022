@@ -223,10 +223,19 @@ class PlaceClient:
 
     def get_board(self, access_token_in):
         logger.debug("Connecting and obtaining board images")
-        ws = create_connection(
-            "wss://gql-realtime-2.reddit.com/query",
-            origin="https://hot-potato.reddit.com",
-        )
+        while True:
+            try:
+                ws = create_connection(
+                    "wss://gql-realtime-2.reddit.com/query",
+                    origin="https://hot-potato.reddit.com",
+                )
+                break
+            except:
+                logger.error("Failed to connect to websocket, trying again in 30 seconds...")
+                time.sleep(30)
+        
+        
+        
         ws.send(
             json.dumps(
                 {
@@ -515,24 +524,31 @@ class PlaceClient:
                         )
                         exit(1)
 
-                    client = requests.Session()
-                    r = client.get("https://www.reddit.com/login")
-                    login_get_soup = BeautifulSoup(r.content, "html.parser")
-                    csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
-                        "value"
-                    ]
-                    data = {
-                        "username": username,
-                        "password": password,
-                        "dest": "https://www.reddit.com/",
-                        "csrf_token": csrf_token,
-                    }
+                    while True:
+                        try:
+                            client = requests.Session()
+                            r = client.get("https://www.reddit.com/login")
+                            login_get_soup = BeautifulSoup(r.content, "html.parser")
+                            csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
+                                "value"
+                            ]
+                            data = {
+                                "username": username,
+                                "password": password,
+                                "dest": "https://www.reddit.com/",
+                                "csrf_token": csrf_token,
+                            }
 
-                    r = client.post(
-                        "https://www.reddit.com/login",
-                        data=data,
-                        proxies=self.GetRandomProxy(),
-                    )
+                            r = client.post(
+                                "https://www.reddit.com/login",
+                                data=data,
+                                proxies=self.GetRandomProxy(),
+                            )
+                            break
+                        except:
+                            logger.error("Failed to connect to Reddit, trying again in 30 seconds...")
+                            time.sleep(30)
+                    
                     if r.status_code != 200:
                         print("Authorization failed!")  # password is probably invalid
                         return
