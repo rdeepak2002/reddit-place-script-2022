@@ -19,7 +19,7 @@ from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
-
+from bs4 import BeautifulSoup
 
 from mappings import color_map, name_map
 
@@ -55,7 +55,7 @@ class PlaceClient:
                 if "compacy_logging" in self.json_data
                 else True
             )
-        except:
+        except Exception:
             logger.error(
                 "Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue"
             )
@@ -576,6 +576,7 @@ class PlaceClient:
                         pixel_y_start,
                         pixel_color_index,
                         canvas,
+                        index,
                     )
 
                     current_r += 1
