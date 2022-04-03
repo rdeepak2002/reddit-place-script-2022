@@ -69,30 +69,37 @@ class PlaceClient:
         )
 
         # Auto update settings
-        self.auto_update_enabled = (
+        self.auto_update = (
             self.json_data["auto_update"]
-            if "auto_update" in self.json_data and self.json_data["auto_update"] is not None
-            else False
+            if "auto_update" in self.json_data
+            else None
         )
-        if self.auto_update_enabled:
+        print(self.auto_update)
+        if self.auto_update is not None:
+            self.auto_update_enabled = (
+                self.auto_update["is_enabled"]
+                if "is_enabled" in self.auto_update and self.auto_update["is_enabled"] is not None
+                else False
+            )
+        if self.auto_update is not None and self.auto_update_enabled:
             self.config_source = (
-                self.json_data["config_source"]
-                if "config_source" in self.json_data
+                self.auto_update["config_source"]
+                if "config_source" in self.auto_update
                 else None
             )
             self.image_source = (
-                self.json_data["image_source"]
-                if "image_source" in self.json_data
+                self.auto_update["image_source"]
+                if "image_source" in self.auto_update
                 else None
             )
             self.delay_between_updates = (
-                self.json_data["update_delay"]
-                if "update_delay" in self.json_data and ["update_delay"] is not None
+                self.auto_update["update_delay"]
+                if "update_delay" in self.auto_update and self.auto_update["update_delay"] is not None
                 else 600
             )
-
-        if self.config_source or self.image_source is None:
-            self.auto_update_enabled = False
+            print(self.image_source)
+            if self.config_source is None or self.image_source is None:
+                self.auto_update_enabled = False
 
         # Image information
         self.image_path = self.json_data["image_path"]
@@ -183,7 +190,7 @@ class PlaceClient:
 
     # Periodically redownload and reload resources
     def auto_update_resources(self):
-        while self.auto_update_enabled:
+        while self.auto_update is not None and self.auto_update_enabled:
             logger.info("Thread #0 ::  auto update thread running")
             self.download_resouce(self.config_source, "config.json")
             self.download_resouce(self.image_source, self.image_path)
@@ -624,11 +631,12 @@ class PlaceClient:
                 break
 
     def start(self):
-        if self.auto_update_enabled:
+        if self.auto_update is not None and self.auto_update_enabled:
             threading.Thread(
                 target=self.auto_update_resources,
                 args=[]
             ).start()
+            time.sleep(self.delay_between_launches)
 
         for index, worker in enumerate(self.json_data["workers"]):
             threading.Thread(

@@ -3,14 +3,12 @@
     "image_start_coords": [741, 610],
     "thread_delay": 2,
     "unverified_place_frequency": false,
-    "workers": {
-        "worker1username": {
-            "password": "password",
-            "start_coords": [0, 0]
-        },
-        "worker2username": {
-            "password": "password",
-            "start_coords": [0, 0]
-        }
+    "proxies": ["1.1.1.1:8080","2.2.2.2:1234"],
+    "compact_logging": true,
+    "auto_update": {
+        "is_enabled": false,
+        "image_source": null,
+        "config_source": null,
+        "update_delay": 600
     }
 }
