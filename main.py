@@ -89,7 +89,7 @@ class PlaceClient:
         ]
 
     def get_json_data(self):
-        configFilePath = os.path.join(os.getcwd(), 'config.json')
+        configFilePath = os.path.join(os.getcwd(), "config.json")
 
         if not os.path.exists(configFilePath):
             exit("No config.json file found. Read the README")
