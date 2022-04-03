@@ -121,13 +121,15 @@ If any JSON decoders errors are found, the `config.json` needs a fix. Make sure 
 {
     "thread_delay": 2,
     "unverified_place_frequency": false,
-    "proxies": ["1.1.1.1:8080","2.2.2.2:1234"]
+    "proxies": ["1.1.1.1:8080","2.2.2.2:1234"],
+    "compact_logging": true
 }
 ```
 
 - thread_delay - Adds a delay between starting a new thread. Can be used to avoid ratelimiting
 - unverified_place_frequency - Sets the pixel place frequency to the unverified account limit
 - proxies - Sets proxies to use for sending requests to reddit. The proxy used is randomly selected for each request. Can be used to avoid ratelimiting
+- compact_logging - Disables timer text until next pixel
 
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image
 - If you'd like, you can enable Verbose Mode by adding --verbose to "python main.py". This will output a lot more information, and not neccessarily in the right order, but it is useful for development and debugging.
@@ -143,6 +145,6 @@ You can now run with
 `docker run place-bot`
 
 
-## Developing
+## Contributing
 
-The nox CI job will run flake8 and black on the code. You can also do this locally by pip installing nox on your system and running `nox` in the repository directory.
+See the [Contributing Guide](docs/CONTRIBUTING.md)
