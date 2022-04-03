@@ -12,7 +12,6 @@ import sys
 import random
 from io import BytesIO
 from websocket import create_connection
-from requests.auth import HTTPBasicAuth
 from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
