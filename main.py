@@ -46,7 +46,9 @@ class PlaceClient:
             if "proxies" in self.json_data and self.json_data["proxies"] is not None
             else None
         )
-        if self.proxies is None and os.path.exists(os.path.join(os.getcwd(), "proxies.txt")):
+        if self.proxies is None and os.path.exists(
+            os.path.join(os.getcwd(), "proxies.txt")
+        ):
             self.proxies = self.get_proxies_text()
         self.compactlogging = (
             self.json_data["compact_logging"]
@@ -88,6 +90,7 @@ class PlaceClient:
         self.proxies = []
         for i in proxieslist:
             self.proxies.append({"https": i, "http": i})
+
     def GetProxies(self, proxies):
         proxieslist = []
         for i in proxies:
@@ -558,7 +561,7 @@ class PlaceClient:
 
                     if r.status_code != HTTPStatus.OK.value:
                         # password is probably invalid
-                        logger.exception("Authorization failed!")
+                        logger.exception("{} - Authorization failed!", username)
                         return
                     else:
                         logger.success("Authorization successful!")
