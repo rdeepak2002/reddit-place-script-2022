@@ -227,6 +227,10 @@ class PlaceClient:
             x + (1000 * canvas_index),
             y,
         )
+        
+        if y >= 1000:
+            y -= 1000
+            canvas_index += 1
 
         url = "https://gql-realtime-2.reddit.com/query"
 
