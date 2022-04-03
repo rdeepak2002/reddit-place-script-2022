@@ -520,7 +520,7 @@ class PlaceClient:
                                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
                                 }
                             )
-                            r = client.get("https://new.reddit.com/login")
+                            r = client.get("https://www.reddit.com/login")
                             login_get_soup = BeautifulSoup(r.content, "html.parser")
                             csrf_token = login_get_soup.find(
                                 "input", {"name": "csrf_token"}
@@ -533,7 +533,7 @@ class PlaceClient:
                             }
 
                             r = client.post(
-                                "https://new.reddit.com/login",
+                                "https://www.reddit.com/login",
                                 data=data,
                                 proxies=self.GetRandomProxy(),
                             )
