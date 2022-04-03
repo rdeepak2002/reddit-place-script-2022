@@ -5,6 +5,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+image.jpg
+image.png
 test.py
 *.old
 config.json
