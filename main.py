@@ -201,7 +201,6 @@ class PlaceClient:
             logger.exception("Failed to load image")
             exit()
         except UnidentifiedImageError:
-            logger.fatal("File found, but couldn't identify image format")
             logger.exception("File found, but couldn't identify image format")
 
         # Convert all images to RGBA - Transparency should only be supported with PNG
@@ -381,16 +380,20 @@ class PlaceClient:
 
         imgs = []
         logger.debug("A total of {} canvas sockets opened", len(canvas_sockets))
+
         while len(canvas_sockets) > 0:
             temp = json.loads(ws.recv())
             logger.debug("Waiting for WebSocket message")
+
             if temp["type"] == "data":
                 logger.debug("Received WebSocket data type message")
                 msg = temp["payload"]["data"]["subscribe"]
+
                 if msg["data"]["__typename"] == "FullFrameMessageData":
                     logger.debug("Received full frame message")
                     img_id = int(temp["id"])
                     logger.debug("Image ID: {}", img_id)
+
                     if img_id in canvas_sockets:
                         logger.debug("Getting image: {}", msg["data"]["name"])
                         imgs.append(
@@ -422,6 +425,7 @@ class PlaceClient:
             + canvas_details["canvasWidth"]
         )
         logger.debug("New image width: {}", new_img_width)
+
         new_img_height = (
             max(map(lambda x: x["dy"], canvas_details["canvasConfigurations"]))
             + canvas_details["canvasHeight"]
@@ -429,6 +433,7 @@ class PlaceClient:
         logger.debug("New image height: {}", new_img_height)
 
         new_img = Image.new("RGB", (new_img_width, new_img_height))
+
         for idx, img in enumerate(sorted(imgs, key=lambda x: x[0])):
             logger.debug("Adding image (ID {}): {}", img[0], img[1])
             dx_offset = int(canvas_details["canvasConfigurations"][idx]["dx"])
@@ -595,7 +600,7 @@ class PlaceClient:
                         username = name
                         password = worker["password"]
                     except Exception:
-                        logger.info(
+                        logger.exception(
                             "You need to provide all required fields to worker '{}'",
                             name,
                         )
@@ -636,6 +641,7 @@ class PlaceClient:
                     if r.status_code != HTTPStatus.OK.value:
                         # password is probably invalid
                         logger.exception("Authorization failed!")
+                        logger.debug("response: {} - {}", r.status_code, r.text)
                         return
                     else:
                         logger.success("Authorization successful!")
