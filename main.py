@@ -228,7 +228,7 @@ class PlaceClient:
             thread_index,
             ColorMapper.color_id_to_name(color_index_in),
             x + (1000 * (canvas_index % 2)),
-            y + (1000 * (canvas_index//2)), # f**k you reddit
+            y + (1000 * (canvas_index // 2)),
         )
 
         url = "https://gql-realtime-2.reddit.com/query"
