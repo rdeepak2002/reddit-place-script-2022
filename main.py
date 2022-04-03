@@ -53,7 +53,7 @@ class PlaceClient:
                 if "compacy_logging" in self.json_data
                 else True
             )
-        except:
+        except Exception:
             logger.error(
                 "Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue"
             )
