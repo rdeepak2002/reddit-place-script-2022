@@ -36,62 +36,58 @@ class PlaceClient:
         # In seconds
         self.delay_between_launches = (
             self.json_data["thread_delay"]
-            if "thread_delay" in self.json_data and
-            self.json_data["thread_delay"] is not None
+            if "thread_delay" in self.json_data
+            and self.json_data["thread_delay"] is not None
             else 3
         )
         self.unverified_place_frequency = (
             self.json_data["unverified_place_frequency"]
-            if "unverified_place_frequency" in self.json_data and
-            self.json_data["unverified_place_frequency"] is not None
+            if "unverified_place_frequency" in self.json_data
+            and self.json_data["unverified_place_frequency"] is not None
             else False
         )
         self.proxies = (
             self.GetProxies(self.json_data["proxies"])
-            if "proxies" in self.json_data and
-            self.json_data["proxies"] is not None
+            if "proxies" in self.json_data and self.json_data["proxies"] is not None
             else None
         )
         self.compactlogging = (
             self.json_data["compact_logging"]
-            if "compact_logging" in self.json_data and
-            self.json_data["compact_logging"] is not None
+            if "compact_logging" in self.json_data
+            and self.json_data["compact_logging"] is not None
             else True
         )
         self.using_tor = (
             self.json_data["using_tor"]
-            if "using_tor" in self.json_data and
-               self.json_data["using_tor"] is not None
+            if "using_tor" in self.json_data and self.json_data["using_tor"] is not None
             else False
         )
         self.tor_password = (
             self.json_data["tor_password"]
-            if "tor_password" in self.json_data and
-               self.json_data["tor_password"] is not None
+            if "tor_password" in self.json_data
+            and self.json_data["tor_password"] is not None
             else "Passwort"  # this is intentional, as I don't really want to mess around with the torrc again
         )
         self.tor_delay = (
             self.json_data["tor_delay"]
-            if "tor_delay" in self.json_data and
-               self.json_data["tor_delay"] is not None
+            if "tor_delay" in self.json_data and self.json_data["tor_delay"] is not None
             else 10
         )
         self.use_builtin_tor = (
             self.json_data["use_builtin_tor"]
-            if "use_builtin_tor" in self.json_data and
-               self.json_data["use_builtin_tor"] is not None
+            if "use_builtin_tor" in self.json_data
+            and self.json_data["use_builtin_tor"] is not None
             else True
         )
         self.tor_port = (
             self.json_data["tor_port"]
-            if "tor_port" in self.json_data and
-               self.json_data["tor_port"] is not None
+            if "tor_port" in self.json_data and self.json_data["tor_port"] is not None
             else 1881
         )
         self.tor_control_port = (
             self.json_data["tor_control_port"]
-            if "tor_port" in self.json_data and
-               self.json_data["tor_control_port"] is not None
+            if "tor_port" in self.json_data
+            and self.json_data["tor_control_port"] is not None
             else 9051
         )
 
@@ -99,8 +95,15 @@ class PlaceClient:
         if self.using_tor:
             self.proxies = self.GetProxies(["127.0.0.1:" + str(self.tor_port)])
             if self.use_builtin_tor:
-                subprocess.call("start " + os.path.join(os.getcwd() + "/tor/Tor/tor.exe") + " --defaults-torrc " +
-                                os.path.join(os.getcwd() + "/Tor/Tor/torrc") + " --HTTPTunnelPort " + str(self.tor_port), shell=True)
+                subprocess.call(
+                    "start "
+                    + os.path.join(os.getcwd() + "/tor/Tor/tor.exe")
+                    + " --defaults-torrc "
+                    + os.path.join(os.getcwd() + "/Tor/Tor/torrc")
+                    + " --HTTPTunnelPort "
+                    + str(self.tor_port),
+                    shell=True,
+                )
             try:
                 self.tor_controller = Controller.from_port(port=self.tor_control_port)
                 self.tor_controller.authenticate(self.tor_password)
@@ -132,6 +135,7 @@ class PlaceClient:
         self.waiting_thread_index = -1
 
     """ tor """
+
     def tor_reconnect(self):
         if self.using_tor:
             try:
@@ -171,7 +175,6 @@ class PlaceClient:
         else:
             self.tor_reconnect()
             return self.proxies[0]
-
 
     def closest_color(self, target_rgb):
         r, g, b = target_rgb
@@ -271,7 +274,9 @@ class PlaceClient:
             waitTime = math.floor(
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
-            logger.error("Thread #{} : Failed placing pixel: rate limited", thread_index)
+            logger.error(
+                "Thread #{} : Failed placing pixel: rate limited", thread_index
+            )
         else:
             waitTime = math.floor(
                 response.json()["data"]["act"]["data"][0]["data"][
@@ -434,7 +439,7 @@ class PlaceClient:
                 imgOutdated = True
                 wasWaiting = True
                 continue
-            
+
             # Stagger reactivation of threads after wait
             if wasWaiting:
                 wasWaiting = False
@@ -552,14 +557,15 @@ class PlaceClient:
 
                 # refresh access token if necessary
                 if (
-                    len(self.access_tokens) == 0 or
-                    len(self.access_token_expires_at_timestamp) == 0 or
+                    len(self.access_tokens) == 0
+                    or len(self.access_token_expires_at_timestamp) == 0
+                    or
                     # index in self.access_tokens
-                    index not in self.access_token_expires_at_timestamp or
-                    (
-                        self.access_token_expires_at_timestamp.get(index) and
-                        current_timestamp >=
+                    index not in self.access_token_expires_at_timestamp
+                    or (
                         self.access_token_expires_at_timestamp.get(index)
+                        and current_timestamp
+                        >= self.access_token_expires_at_timestamp.get(index)
                     )
                 ):
                     if not self.compactlogging:
@@ -605,7 +611,7 @@ class PlaceClient:
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
-                        .contents[0][len("window.__r = "): -1]
+                        .contents[0][len("window.__r = ") : -1]
                     )
                     data = json.loads(data_str)
                     response_data = data["user"]["session"]
@@ -636,8 +642,8 @@ class PlaceClient:
 
                 # draw pixel onto screen
                 if self.access_tokens.get(index) is not None and (
-                    current_timestamp >= next_pixel_placement_time or
-                    self.first_run_counter <= index
+                    current_timestamp >= next_pixel_placement_time
+                    or self.first_run_counter <= index
                 ):
 
                     # place pixel immediately
@@ -676,7 +682,7 @@ class PlaceClient:
                         pixel_y_start,
                         pixel_color_index,
                         canvas,
-                        index
+                        index,
                     )
 
                     current_r += 1
