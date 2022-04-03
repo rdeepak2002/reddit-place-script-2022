@@ -74,7 +74,7 @@ class PlaceClient:
             self.json_data["tor_delay"]
             if "tor_delay" in self.json_data and
                self.json_data["tor_delay"] is not None
-            else 5
+            else 10
         )
         self.use_builtin_tor = (
             self.json_data["use_builtin_tor"]
@@ -86,7 +86,7 @@ class PlaceClient:
             self.json_data["tor_port"]
             if "tor_port" in self.json_data and
                self.json_data["tor_port"] is not None
-            else 9050
+            else 1881
         )
         self.tor_control_port = (
             self.json_data["tor_control_port"]
@@ -97,12 +97,10 @@ class PlaceClient:
 
         # tor connection
         if self.using_tor:
-            if self.proxies is None:
-                self.proxies = self.GetProxies(["127.0.0.1:" + self.tor_port])
+            self.proxies = self.GetProxies(["127.0.0.1:" + str(self.tor_port)])
             if self.use_builtin_tor:
                 subprocess.call("start " + os.path.join(os.getcwd() + "/tor/Tor/tor.exe") + " --defaults-torrc " +
-                                os.path.join(os.getcwd() + "/Tor/Tor/torrc"), shell=True)
-                time.sleep(self.tor_delay)
+                                os.path.join(os.getcwd() + "/Tor/Tor/torrc") + " --HTTPTunnelPort " + str(self.tor_port), shell=True)
             try:
                 self.tor_controller = Controller.from_port(port=self.tor_control_port)
                 self.tor_controller.authenticate(self.tor_password)
@@ -138,7 +136,8 @@ class PlaceClient:
         if self.using_tor:
             try:
                 self.tor_controller.signal(Signal.NEWNYM)
-                logger.info("New Tor connection processed")
+                logger.info("New Tor connection processing")
+                time.sleep(self.tor_delay)
             except (InvalidArguments, ProtocolError):
                 logger.error("couldn't establish new tor connection, disabling tor")
                 self.using_tor = False
@@ -171,7 +170,7 @@ class PlaceClient:
             return randomproxy
         else:
             self.tor_reconnect()
-            return "127.0.0.1:" + str(self.tor_port)
+            return self.proxies[0]
 
 
     def closest_color(self, target_rgb):
