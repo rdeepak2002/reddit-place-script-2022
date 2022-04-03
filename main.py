@@ -99,11 +99,14 @@ class PlaceClient:
         if self.using_tor:
             self.proxies = self.GetProxies(["127.0.0.1:" + str(self.tor_port)])
             if self.use_builtin_tor:
-                subprocess.call(
-                    "start "
-                    + os.path.join(os.getcwd() + "/tor/Tor/tor.exe")
+                subprocess.Popen(
+                    '"'
+                    + os.path.join(os.getcwd(), "./tor/Tor/tor.exe")
+                    + '"'
                     + " --defaults-torrc "
-                    + os.path.join(os.getcwd() + "/Tor/Tor/torrc")
+                    + '"'
+                    + os.path.join(os.getcwd(), "./Tor/Tor/torrc")
+                    + '"'
                     + " --HTTPTunnelPort "
                     + str(self.tor_port),
                     shell=True,
