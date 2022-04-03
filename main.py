@@ -351,10 +351,10 @@ class PlaceClient:
                     "{}, {}, {}, {}",
                     pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                     new_rgb,
-                    target_rgb != (69, 42, 0),
+                    new_rgb != (69, 42, 0),
                     pix2[x, y] != new_rgb,
                 )
-                if target_rgb != (69, 42, 0):
+                if new_rgb != (69, 42, 0):
                     logger.debug(
                         "Thread #{} : Replacing {} pixel at: {},{} with {} color",
                         index,
