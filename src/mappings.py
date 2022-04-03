@@ -60,19 +60,19 @@ class ColorMapper:
 
     @staticmethod
     def rgb_to_hex(rgb: tuple):
-        """ Convert rgb tuple to hexadecimal string. """
+        """Convert rgb tuple to hexadecimal string."""
         return ("#%02x%02x%02x" % rgb).upper()
 
     @staticmethod
     def color_id_to_name(color_id: int):
-        """ More verbose color indicator from a pixel color id. """
+        """More verbose color indicator from a pixel color id."""
         if color_id in ColorMapper.NAME_MAP.keys():
             return "{} ({})".format(ColorMapper.NAME_MAP[color_id], str(color_id))
         return "Invalid Color ({})".format(str(color_id))
 
     @staticmethod
     def closest_color(target_rgb: tuple, rgb_colors_array: list):
-        """ Find the closest rgb color from palette to a target rgb color"""
+        """Find the closest rgb color from palette to a target rgb color"""
         r, g, b = target_rgb[:3]
         if target_rgb[3] != 0:
             color_diffs = []
@@ -86,7 +86,8 @@ class ColorMapper:
 
     @staticmethod
     def generate_rgb_colors_array():
-        """ Generate array of available rgb colors to be used"""
+        """Generate array of available rgb colors to be used"""
         return [
-            ImageColor.getcolor(color_hex, "RGB") for color_hex in list(ColorMapper.COLOR_MAP.keys())
+            ImageColor.getcolor(color_hex, "RGB")
+            for color_hex in list(ColorMapper.COLOR_MAP.keys())
         ]
