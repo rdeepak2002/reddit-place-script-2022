@@ -76,7 +76,7 @@ class ColorMapper:
         r, g, b = target_rgb[:3]
         if target_rgb[3] != 0:
             color_diffs = []
-            for color in self.rgb_colors_array:
+            for color in rgb_colors_array:
                 cr, cg, cb = color
                 color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
                 color_diffs.append((color_diff, color))
