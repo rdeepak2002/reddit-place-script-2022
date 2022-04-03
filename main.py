@@ -1,27 +1,18 @@
-#!/usr/bin/env python3
-
-import os
-import os.path
 import math
-import subprocess
 
 import requests
 import json
 import time
 import threading
 import sys
-import random
 from io import BytesIO
 from http import HTTPStatus
 from websocket import create_connection
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 from loguru import logger
 import click
 from bs4 import BeautifulSoup
-
-from stem import Signal, InvalidArguments, SocketError, ProtocolError
-from stem.control import Controller
 
 
 from src.mappings import ColorMapper

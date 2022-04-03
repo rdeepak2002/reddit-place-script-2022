@@ -1,6 +1,6 @@
 import nox
 
-locations = "main.py", "noxfile.py", "src/mappings.py"
+locations = "main.py", "noxfile.py", "src/mappings.py", "src/proxy.py", "src/utils.py"
 
 
 # This is not run automatically
