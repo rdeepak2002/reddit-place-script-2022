@@ -10,15 +10,15 @@ import threading
 import sys
 import random
 from io import BytesIO
+from http import HTTPStatus
 from websocket import create_connection
-from PIL import ImageColor
 from PIL import Image, UnidentifiedImageError
 from loguru import logger
 import click
 from bs4 import BeautifulSoup
 
 
-from mappings import color_map, name_map
+from src.mappings import ColorMapper
 
 
 class PlaceClient:
@@ -54,7 +54,7 @@ class PlaceClient:
         )
 
         # Color palette
-        self.rgb_colors_array = self.generate_rgb_colors_array()
+        self.rgb_colors_array = ColorMapper.generate_rgb_colors_array()
 
         # Auth
         self.access_tokens = {}
@@ -76,18 +76,6 @@ class PlaceClient:
         self.waiting_thread_index = -1
 
     """ Utils """
-    # Convert rgb tuple to hexadecimal string
-
-    def rgb_to_hex(self, rgb):
-        return ("#%02x%02x%02x" % rgb).upper()
-
-    # More verbose color indicator from a pixel color ID
-    def color_id_to_name(self, color_id):
-        if color_id in name_map.keys():
-            return "{} ({})".format(name_map[color_id], str(color_id))
-        return "Invalid Color ({})".format(str(color_id))
-
-    # Find the closest rgb color from palette to a target rgb color
 
     def GetProxies(self, proxies):
         proxieslist = []
@@ -100,25 +88,6 @@ class PlaceClient:
         if self.proxies is not None:
             randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
         return randomproxy
-
-    def closest_color(self, target_rgb):
-        r, g, b = target_rgb[:3]
-        if target_rgb[3] != 0:
-            color_diffs = []
-            for color in self.rgb_colors_array:
-                cr, cg, cb = color
-                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-                color_diffs.append((color_diff, color))
-            return min(color_diffs)[1]
-        else:
-            return (69, 42, 0)
-
-    # Define the color palette array
-    def generate_rgb_colors_array(self):
-        # Generate array of available rgb colors to be used
-        return [
-            ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in color_map.items()
-        ]
 
     def get_json_data(self, config_path):
         configFilePath = os.path.join(os.getcwd(), config_path)
@@ -140,12 +109,20 @@ class PlaceClient:
         try:
             im = Image.open(self.image_path)
         except FileNotFoundError:
-            logger.fatal("Failed to load image")
+            logger.exception("Failed to load image")
             exit()
         except UnidentifiedImageError:
             logger.fatal("File found, but couldn't identify image format")
+            logger.exception("File found, but couldn't identify image format")
+
+        # Convert all images to RGBA - Transparency should only be supported with PNG
+        if im.mode != "RGBA":
+            im = im.convert("RGBA")
+            logger.info("Converted to rgba")
         self.pix = im.load()
+
         logger.info("Loaded image size: {}", im.size)
+
         self.image_size = im.size
 
     """ Main """
@@ -157,7 +134,7 @@ class PlaceClient:
         logger.info(
             "Thread #{} : Attempting to place {} pixel at {}, {}",
             thread_index,
-            self.color_id_to_name(color_index_in),
+            ColorMapper.color_id_to_name(color_index_in),
             x + (1000 * canvas_index),
             y,
         )
@@ -223,10 +200,19 @@ class PlaceClient:
 
     def get_board(self, access_token_in):
         logger.debug("Connecting and obtaining board images")
-        ws = create_connection(
-            "wss://gql-realtime-2.reddit.com/query",
-            origin="https://hot-potato.reddit.com",
-        )
+        while True:
+            try:
+                ws = create_connection(
+                    "wss://gql-realtime-2.reddit.com/query",
+                    origin="https://hot-potato.reddit.com",
+                )
+                break
+            except Exception:
+                logger.error(
+                    "Failed to connect to websocket, trying again in 30 seconds..."
+                )
+                time.sleep(30)
+
         ws.send(
             json.dumps(
                 {
@@ -319,13 +305,16 @@ class PlaceClient:
                     if img_id in canvas_sockets:
                         logger.debug("Getting image: {}", msg["data"]["name"])
                         imgs.append(
-                            Image.open(
-                                BytesIO(
-                                    requests.get(
-                                        msg["data"]["name"], stream=True
-                                    ).content
-                                )
-                            )
+                            [
+                                img_id,
+                                Image.open(
+                                    BytesIO(
+                                        requests.get(
+                                            msg["data"]["name"], stream=True
+                                        ).content
+                                    )
+                                ),
+                            ]
                         )
                         canvas_sockets.remove(img_id)
                         logger.debug(
@@ -345,10 +334,10 @@ class PlaceClient:
 
         new_img = Image.new("RGB", (new_img_width, new_img_height))
         dx_offset = 0
-        for idx, img in enumerate(imgs):
-            logger.debug("Adding image: {}", img)
+        for idx, img in enumerate(sorted(imgs, key=lambda x: x[0])):
+            logger.debug("Adding image (ID {}): {}", img[0], img[1])
             dx_offset = int(canvas_details["canvasConfigurations"][idx]["dx"])
-            new_img.paste(img, (dx_offset, 0))
+            new_img.paste(img[1], (dx_offset, 0))
 
         return new_img
 
@@ -402,7 +391,7 @@ class PlaceClient:
 
             target_rgb = self.pix[x, y]
 
-            new_rgb = self.closest_color(target_rgb)
+            new_rgb = ColorMapper.closest_color(target_rgb, self.rgb_colors_array)
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
                 logger.debug(
                     "{}, {}, {}, {}",
@@ -512,30 +501,45 @@ class PlaceClient:
                         )
                         exit(1)
 
-                    client = requests.Session()
-                    r = client.get("https://www.reddit.com/login")
-                    login_get_soup = BeautifulSoup(r.content, "html.parser")
-                    csrf_token = login_get_soup.find("input", {"name": "csrf_token"})[
-                        "value"
-                    ]
-                    data = {
-                        "username": username,
-                        "password": password,
-                        "dest": "https://www.reddit.com/",
-                        "csrf_token": csrf_token,
-                    }
+                    while True:
+                        try:
+                            client = requests.Session()
+                            client.headers.update(
+                                {
+                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
+                                }
+                            )
+                            r = client.get("https://www.reddit.com/login")
+                            login_get_soup = BeautifulSoup(r.content, "html.parser")
+                            csrf_token = login_get_soup.find(
+                                "input", {"name": "csrf_token"}
+                            )["value"]
+                            data = {
+                                "username": username,
+                                "password": password,
+                                "dest": "https://www.reddit.com/",
+                                "csrf_token": csrf_token,
+                            }
 
-                    r = client.post(
-                        "https://www.reddit.com/login",
-                        data=data,
-                        proxies=self.GetRandomProxy(),
-                    )
-                    if r.status_code != 200:
-                        print("Authorization failed!")  # password is probably invalid
+                            r = client.post(
+                                "https://www.reddit.com/login",
+                                data=data,
+                                proxies=self.GetRandomProxy(),
+                            )
+                            break
+                        except Exception:
+                            logger.error(
+                                "Failed to connect to websocket, trying again in 30 seconds..."
+                            )
+                            time.sleep(30)
+
+                    if r.status_code != HTTPStatus.OK.value:
+                        # password is probably invalid
+                        logger.exception("Authorization failed!")
                         return
                     else:
-                        print("Authorization successful!")
-                    print("Obtaining access token...")
+                        logger.success("Authorization successful!")
+                    logger.info("Obtaining access token...")
                     r = client.get("https://www.reddit.com/")
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
@@ -590,8 +594,8 @@ class PlaceClient:
                     )
 
                     # get converted color
-                    new_rgb_hex = self.rgb_to_hex(new_rgb)
-                    pixel_color_index = color_map[new_rgb_hex]
+                    new_rgb_hex = ColorMapper.rgb_to_hex(new_rgb)
+                    pixel_color_index = ColorMapper.COLOR_MAP[new_rgb_hex]
 
                     logger.info("\nAccount Placing: ", name, "\n")
 
