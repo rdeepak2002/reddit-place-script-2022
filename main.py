@@ -574,6 +574,7 @@ class PlaceClient:
                         pixel_y_start,
                         pixel_color_index,
                         canvas,
+                        index
                     )
 
                     current_r += 1
