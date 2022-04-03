@@ -207,7 +207,9 @@ class PlaceClient:
                     "nextAvailablePixelTimestamp"
                 ]
             )
-            logger.info("Thread #{} : Succeeded placing pixel", thread_index)
+            logger.success(
+                "Thread #{} - {} : Succeeded placing pixel", thread_index, name
+            )
 
         # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
         # Works perfect with one thread.
