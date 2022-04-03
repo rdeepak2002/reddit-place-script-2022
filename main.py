@@ -412,7 +412,11 @@ class PlaceClient:
                     )
                     break
                 else:
-                    logger.info("Transparent Pixel at {}, {} skipped", x + self.pixel_x_start, y + self.pixel_y_start)
+                    logger.info(
+                        "Transparent Pixel at {}, {} skipped",
+                        x + self.pixel_x_start,
+                        y + self.pixel_y_start,
+                    )
             x += 1
             loopedOnce = True
         return x, y, new_rgb
