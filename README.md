@@ -1,6 +1,6 @@
 # Reddit Place Script 2022
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: black](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDMuMjciIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAyMDMuMjcgMzUiPjxyZWN0IGNsYXNzPSJzdmdfX3JlY3QiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjIuMSIgaGVpZ2h0PSIzNSIgZmlsbD0iIzY0NjQ2NCIvPjxyZWN0IGNsYXNzPSJzdmdfX3JlY3QiIHg9IjEyMC4xIiB5PSIwIiB3aWR0aD0iODMuMTcwMDAwMDAwMDAwMDIiIGhlaWdodD0iMzUiIGZpbGw9IiMwMDAwMDAiLz48cGF0aCBjbGFzcz0ic3ZnX190ZXh0IiBkPSJNMTMuOTUgMTguMTlMMTMuOTUgMTguMTlMMTMuOTUgMTcuMzlRMTMuOTUgMTYuMTkgMTQuMzggMTUuMjdRMTQuODAgMTQuMzUgMTUuNjAgMTMuODVRMTYuNDAgMTMuMzUgMTcuNDUgMTMuMzVMMTcuNDUgMTMuMzVRMTguODYgMTMuMzUgMTkuNzMgMTQuMTJRMjAuNTkgMTQuODkgMjAuNzMgMTYuMjlMMjAuNzMgMTYuMjlMMTkuMjUgMTYuMjlRMTkuMTQgMTUuMzcgMTguNzEgMTQuOTZRMTguMjggMTQuNTUgMTcuNDUgMTQuNTVMMTcuNDUgMTQuNTVRMTYuNDggMTQuNTUgMTUuOTcgMTUuMjZRMTUuNDUgMTUuOTYgMTUuNDQgMTcuMzNMMTUuNDQgMTcuMzNMMTUuNDQgMTguMDlRMTUuNDQgMTkuNDcgMTUuOTMgMjAuMjBRMTYuNDMgMjAuOTIgMTcuMzggMjAuOTJMMTcuMzggMjAuOTJRMTguMjUgMjAuOTIgMTguNjkgMjAuNTNRMTkuMTMgMjAuMTQgMTkuMjUgMTkuMjJMMTkuMjUgMTkuMjJMMjAuNzMgMTkuMjJRMjAuNjAgMjAuNTkgMTkuNzIgMjEuMzVRMTguODQgMjIuMTIgMTcuMzggMjIuMTJMMTcuMzggMjIuMTJRMTYuMzYgMjIuMTIgMTUuNTkgMjEuNjNRMTQuODEgMjEuMTUgMTQuMzkgMjAuMjZRMTMuOTcgMTkuMzcgMTMuOTUgMTguMTlaTTI0Ljc3IDE4LjAwTDI0Ljc3IDE4LjAwTDI0Ljc3IDE3LjUyUTI0Ljc3IDE2LjI4IDI1LjIxIDE1LjMyUTI1LjY1IDE0LjM3IDI2LjQ2IDEzLjg2UTI3LjI3IDEzLjM1IDI4LjMxIDEzLjM1UTI5LjM1IDEzLjM1IDMwLjE2IDEzLjg1UTMwLjk2IDE0LjM1IDMxLjQwIDE1LjI5UTMxLjg0IDE2LjIzIDMxLjg1IDE3LjQ4TDMxLjg1IDE3LjQ4TDMxLjg1IDE3Ljk2UTMxLjg1IDE5LjIxIDMxLjQxIDIwLjE2UTMwLjk4IDIxLjEwIDMwLjE4IDIxLjYxUTI5LjM3IDIyLjEyIDI4LjMyIDIyLjEyTDI4LjMyIDIyLjEyUTI3LjI4IDIyLjEyIDI2LjQ3IDIxLjYxUTI1LjY2IDIxLjEwIDI1LjIyIDIwLjE3UTI0Ljc4IDE5LjIzIDI0Ljc3IDE4LjAwWk0yNi4yNSAxNy40NkwyNi4yNSAxNy45NlEyNi4yNSAxOS4zNiAyNi44MCAyMC4xM1EyNy4zNSAyMC45MCAyOC4zMiAyMC45MEwyOC4zMiAyMC45MFEyOS4zMSAyMC45MCAyOS44NCAyMC4xNVEzMC4zNyAxOS40MCAzMC4zNyAxNy45NkwzMC4zNyAxNy45NkwzMC4zNyAxNy41MVEzMC4zNyAxNi4wOSAyOS44MyAxNS4zNFEyOS4yOSAxNC41OCAyOC4zMSAxNC41OEwyOC4zMSAxNC41OFEyNy4zNSAxNC41OCAyNi44MSAxNS4zM1EyNi4yNiAxNi4wOSAyNi4yNSAxNy40NkwyNi4yNSAxNy40NlpNMzguNzcgMjJMMzYuMzEgMjJMMzYuMzEgMTMuNDdMMzguODMgMTMuNDdRMzkuOTYgMTMuNDcgNDAuODQgMTMuOTdRNDEuNzIgMTQuNDggNDIuMjAgMTUuNDBRNDIuNjggMTYuMzMgNDIuNjggMTcuNTJMNDIuNjggMTcuNTJMNDIuNjggMTcuOTVRNDIuNjggMTkuMTYgNDIuMTkgMjAuMDhRNDEuNzEgMjEuMDAgNDAuODIgMjEuNTBRMzkuOTIgMjIgMzguNzcgMjJMMzguNzcgMjJaTTM3LjgwIDE0LjY2TDM3LjgwIDIwLjgyTDM4Ljc2IDIwLjgyUTM5LjkzIDIwLjgyIDQwLjU1IDIwLjA5UTQxLjE4IDE5LjM2IDQxLjE5IDE3Ljk5TDQxLjE5IDE3Ljk5TDQxLjE5IDE3LjUyUTQxLjE5IDE2LjEzIDQwLjU4IDE1LjQwUTM5Ljk4IDE0LjY2IDM4LjgzIDE0LjY2TDM4LjgzIDE0LjY2TDM3LjgwIDE0LjY2Wk01Mi43MiAyMkw0Ny4xNCAyMkw0Ny4xNCAxMy40N0w1Mi42OCAxMy40N0w1Mi42OCAxNC42Nkw0OC42MiAxNC42Nkw0OC42MiAxNy4wMkw1Mi4xMyAxNy4wMkw1Mi4xMyAxOC4xOUw0OC42MiAxOC4xOUw0OC42MiAyMC44Mkw1Mi43MiAyMC44Mkw1Mi43MiAyMlpNNjIuNDYgMTkuNDJMNjIuNDYgMTkuNDJMNjMuOTQgMTkuNDJRNjMuOTQgMjAuMTUgNjQuNDIgMjAuNTVRNjQuOTAgMjAuOTUgNjUuODAgMjAuOTVMNjUuODAgMjAuOTVRNjYuNTcgMjAuOTUgNjYuOTYgMjAuNjNRNjcuMzUgMjAuMzIgNjcuMzUgMTkuODBMNjcuMzUgMTkuODBRNjcuMzUgMTkuMjQgNjYuOTUgMTguOTRRNjYuNTYgMTguNjMgNjUuNTMgMTguMzJRNjQuNTAgMTguMDEgNjMuODkgMTcuNjNMNjMuODkgMTcuNjNRNjIuNzIgMTYuOTAgNjIuNzIgMTUuNzJMNjIuNzIgMTUuNzJRNjIuNzIgMTQuNjkgNjMuNTYgMTQuMDJRNjQuNDAgMTMuMzUgNjUuNzQgMTMuMzVMNjUuNzQgMTMuMzVRNjYuNjQgMTMuMzUgNjcuMzMgMTMuNjhRNjguMDMgMTQuMDEgNjguNDMgMTQuNjFRNjguODMgMTUuMjIgNjguODMgMTUuOTZMNjguODMgMTUuOTZMNjcuMzUgMTUuOTZRNjcuMzUgMTUuMjkgNjYuOTMgMTQuOTFRNjYuNTEgMTQuNTQgNjUuNzMgMTQuNTRMNjUuNzMgMTQuNTRRNjUuMDEgMTQuNTQgNjQuNjAgMTQuODVRNjQuMjAgMTUuMTYgNjQuMjAgMTUuNzFMNjQuMjAgMTUuNzFRNjQuMjAgMTYuMTggNjQuNjQgMTYuNTBRNjUuMDcgMTYuODEgNjYuMDcgMTcuMTBRNjcuMDYgMTcuNDAgNjcuNjcgMTcuNzhRNjguMjcgMTguMTYgNjguNTUgMTguNjVRNjguODMgMTkuMTMgNjguODMgMTkuNzlMNjguODMgMTkuNzlRNjguODMgMjAuODYgNjguMDIgMjEuNDlRNjcuMjAgMjIuMTIgNjUuODAgMjIuMTJMNjUuODAgMjIuMTJRNjQuODcgMjIuMTIgNjQuMTAgMjEuNzdRNjMuMzIgMjEuNDMgNjIuODkgMjAuODNRNjIuNDYgMjAuMjIgNjIuNDYgMTkuNDJaTTc0LjgwIDE0LjY2TDcyLjE3IDE0LjY2TDcyLjE3IDEzLjQ3TDc4LjkzIDEzLjQ3TDc4LjkzIDE0LjY2TDc2LjI3IDE0LjY2TDc2LjI3IDIyTDc0LjgwIDIyTDc0LjgwIDE0LjY2Wk04NC43MyAxOC44Nkw4MS44NiAxMy40N0w4My41MSAxMy40N0w4NS40NyAxNy41MUw4Ny40NCAxMy40N0w4OS4wOCAxMy40N0w4Ni4yMiAxOC44Nkw4Ni4yMiAyMkw4NC43MyAyMkw4NC43MyAxOC44NlpNOTguMzUgMjJMOTIuOTkgMjJMOTIuOTkgMTMuNDdMOTQuNDcgMTMuNDdMOTQuNDcgMjAuODJMOTguMzUgMjAuODJMOTguMzUgMjJaTTEwOC4wNSAyMkwxMDIuNDcgMjJMMTAyLjQ3IDEzLjQ3TDEwOC4wMSAxMy40N0wxMDguMDEgMTQuNjZMMTAzLjk1IDE0LjY2TDEwMy45NSAxNy4wMkwxMDcuNDYgMTcuMDJMMTA3LjQ2IDE4LjE5TDEwMy45NSAxOC4xOUwxMDMuOTUgMjAuODJMMTA4LjA1IDIwLjgyTDEwOC4wNSAyMloiIGZpbGw9IiNGRkZGRkYiLz48cGF0aCBjbGFzcz0ic3ZnX190ZXh0IiBkPSJNMTM4LjgzIDIyTDEzNC4yOSAyMkwxMzQuMjkgMTMuNjBMMTM4LjU5IDEzLjYwUTE0MC4xOSAxMy42MCAxNDEuMDMgMTQuMTlRMTQxLjg4IDE0Ljc5IDE0MS44OCAxNS43OUwxNDEuODggMTUuNzlRMTQxLjg4IDE2LjM5IDE0MS41OCAxNi44N1ExNDEuMjggMTcuMzQgMTQwLjc0IDE3LjYyTDE0MC43NCAxNy42MlExNDEuNDcgMTcuODcgMTQxLjg3IDE4LjQxUTE0Mi4yOCAxOC45NCAxNDIuMjggMTkuNzBMMTQyLjI4IDE5LjcwUTE0Mi4yOCAyMC44MCAxNDEuMzkgMjEuNDBRMTQwLjUwIDIyIDEzOC44MyAyMkwxMzguODMgMjJaTTEzNi42NCAxOC41OEwxMzYuNjQgMjAuMjhMMTM4LjY0IDIwLjI4UTEzOS44OCAyMC4yOCAxMzkuODggMTkuNDNMMTM5Ljg4IDE5LjQzUTEzOS44OCAxOC41OCAxMzguNjQgMTguNThMMTM4LjY0IDE4LjU4TDEzNi42NCAxOC41OFpNMTM2LjY0IDE1LjMxTDEzNi42NCAxNi45NEwxMzguMjcgMTYuOTRRMTM5LjQ3IDE2Ljk0IDEzOS40NyAxNi4xMkwxMzkuNDcgMTYuMTJRMTM5LjQ3IDE1LjMxIDEzOC4yNyAxNS4zMUwxMzguMjcgMTUuMzFMMTM2LjY0IDE1LjMxWk0xNTMuMzggMjJMMTQ3LjAwIDIyTDE0Ny4wMCAxMy42MEwxNDkuMzggMTMuNjBMMTQ5LjM4IDIwLjExTDE1My4zOCAyMC4xMUwxNTMuMzggMjJaTTE1OS4yMiAyMkwxNTYuNzkgMjJMMTYwLjUwIDEzLjYwTDE2Mi44NSAxMy42MEwxNjYuNTYgMjJMMTY0LjA5IDIyTDE2My40MyAyMC4zN0wxNTkuODggMjAuMzdMMTU5LjIyIDIyWk0xNjEuNjYgMTUuOTNMMTYwLjU3IDE4LjYxTDE2Mi43NCAxOC42MUwxNjEuNjYgMTUuOTNaTTE3MC4yOSAxNy44MEwxNzAuMjkgMTcuODBRMTcwLjI5IDE2LjU0IDE3MC44OSAxNS41NFExNzEuNDggMTQuNTUgMTcyLjUzIDEzLjk5UTE3My41OSAxMy40MyAxNzQuOTEgMTMuNDNMMTc0LjkxIDEzLjQzUTE3Ni4wNiAxMy40MyAxNzYuOTggMTMuODRRMTc3LjkxIDE0LjI1IDE3OC41MiAxNS4wMkwxNzguNTIgMTUuMDJMMTc3LjAxIDE2LjM5UTE3Ni4xOSAxNS40MCAxNzUuMDMgMTUuNDBMMTc1LjAzIDE1LjQwUTE3NC4zNCAxNS40MCAxNzMuODEgMTUuNzBRMTczLjI4IDE2IDE3Mi45OCAxNi41NFExNzIuNjggMTcuMDkgMTcyLjY4IDE3LjgwTDE3Mi42OCAxNy44MFExNzIuNjggMTguNTEgMTcyLjk4IDE5LjA1UTE3My4yOCAxOS42MCAxNzMuODEgMTkuOTBRMTc0LjM0IDIwLjIwIDE3NS4wMyAyMC4yMEwxNzUuMDMgMjAuMjBRMTc2LjE5IDIwLjIwIDE3Ny4wMSAxOS4yMkwxNzcuMDEgMTkuMjJMMTc4LjUyIDIwLjU4UTE3Ny45MSAyMS4zNSAxNzYuOTkgMjEuNzZRMTc2LjA2IDIyLjE3IDE3NC45MSAyMi4xN0wxNzQuOTEgMjIuMTdRMTczLjU5IDIyLjE3IDE3Mi41MyAyMS42MVExNzEuNDggMjEuMDUgMTcwLjg5IDIwLjA1UTE3MC4yOSAxOS4wNiAxNzAuMjkgMTcuODBaTTE4NS40MSAyMkwxODMuMDYgMjJMMTgzLjA2IDEzLjYwTDE4NS40MSAxMy42MEwxODUuNDEgMTcuMDlMMTg4LjY2IDEzLjYwTDE5MS4yOCAxMy42MEwxODcuODUgMTcuMzJMMTkxLjQ2IDIyTDE4OC43MCAyMkwxODYuMzAgMTguOTVMMTg1LjQxIDE5LjkwTDE4NS40MSAyMloiIGZpbGw9IiNGRkZGRkYiIHg9IjEzMy4xIi8+PC9zdmc+)](https://github.com/psf/black)
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/60-percent-of-the-time-works-every-time.svg)](https://forthebadge.com)
 
@@ -22,10 +22,9 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 
 ## Requirements
 
-- [Latest Version of Python 3](https://www.python.org/downloads/)
+-   [Latest Version of Python 3](https://www.python.org/downloads/)
 
 ## MacOSX
-If you are using MacOSX and encounter an SSL_CERTIFICATE error. Please apply the fix detailed https://stackoverflow.com/questions/42098126/mac-osx-python-ssl-sslerror-ssl-certificate-verify-failed-certificate-verify  
 
 If you want to use tor on MacOSX. you'll need to provide your own tor binary and start it manually. deactivate the "use_builtin tor"
 option in the config and make sure you configure your tor to use the specified ports and password. 
@@ -42,36 +41,37 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 
 ```json
 {
-  //Where the image's path is
-  "image_path":"image.png",
-  // [x,y] where you want the top left pixel of the local image to be drawn on canvas
-  "image_start_coords": [741, 610],
-  // delay between starting threads (can be 0)
-  "thread_delay": 2,
-  // array of accounts to use
-  "workers": {
-    // username of account 1
-    "worker1username": {
-      // password of account 1
-      "password": "password",
-      // which pixel of the image to draw first
-      "start_coords": [0, 0]
-    },
-    // username of account 2
-    "worker1username": {
-      // password of account 2
-      "password": "password",
-      // which pixel of the image to draw first
-      "start_coords": [0, 0]
-    }
-    // etc... add as many accounts as you want (but reddit may detect you the more you add)
-  }
+	//Where the image's path is
+	"image_path": "image.png",
+	// [x,y] where you want the top left pixel of the local image to be drawn on canvas
+	"image_start_coords": [741, 610],
+	// delay between starting threads (can be 0)
+	"thread_delay": 2,
+	// array of accounts to use
+	"workers": {
+		// username of account 1
+		"worker1username": {
+			// password of account 1
+			"password": "password",
+			// which pixel of the image to draw first
+			"start_coords": [0, 0]
+		},
+		// username of account 2
+		"worker1username": {
+			// password of account 2
+			"password": "password",
+			// which pixel of the image to draw first
+			"start_coords": [0, 0]
+		}
+		// etc... add as many accounts as you want (but reddit may detect you the more you add)
+	}
 }
 ```
 
 ### Notes
-- Use .png if you wish to make use of transparency or non rectangular images
-- If you use 2 factor authentication (2FA) in your account, then change "password" to "password:XXXXXX" where XXXXXX is your 2FA code.
+
+-   Use `.png` if you wish to make use of transparency or non rectangular images
+-   If you use 2 factor authentication (2FA) in your account, then change `password` to `password:XXXXXX` where `XXXXXX` is your 2FA code.
 
 ## Run the Script
 
@@ -97,20 +97,20 @@ Just create multiple child arrays to "workers" in the .json file:
 
 ```json
 {
-  "image_path":"image.png",
-  "image_start_coords": [741, 610],
-  "thread_delay": 2,
+	"image_path": "image.png",
+	"image_start_coords": [741, 610],
+	"thread_delay": 2,
 
-  "workers": {
-    "worker1username": {
-      "password": "password",
-      "start_coords": [0, 0]
-    },
-    "worker2username": {
-      "password": "password",
-      "start_coords": [0, 50]
-    }
-  }
+	"workers": {
+		"worker1username": {
+			"password": "password",
+			"start_coords": [0, 0]
+		},
+		"worker2username": {
+			"password": "password",
+			"start_coords": [0, 50]
+		}
+	}
 }
 ```
 
@@ -124,10 +124,10 @@ If any JSON decoders errors are found, the `config.json` needs to be fixed. Make
 
 ```json
 {
-    "thread_delay": 2,
-    "unverified_place_frequency": false,
-    "proxies": ["1.1.1.1:8080","2.2.2.2:1234"],
-    "compact_logging": true
+	"thread_delay": 2,
+	"unverified_place_frequency": false,
+	"proxies": ["1.1.1.1:8080", "2.2.2.2:1234"],
+	"compact_logging": true
 }
 ```
 
@@ -148,7 +148,7 @@ Tor can be used as an alternative to normal proxies. Note that currently, you ca
 "tor_control_port": 9051,
 "tor_password": "Passwort",
 "tor_delay": 5,
-"use_builtin_tor": true 
+"use_builtin_tor": true
 ```
 
 The config values are as follows:
@@ -212,7 +212,6 @@ A dockerfile is provided. Instructions on installing docker are outside the scop
 To build: After editing the `config.json` file, run `docker build . -t place-bot`. and wait for the image to build.
 
 You can now run it with `docker run place-bot`
-
 
 ## Contributing
 
