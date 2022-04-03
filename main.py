@@ -23,9 +23,9 @@ from mappings import color_map, name_map
 
 
 class PlaceClient:
-    def __init__(self):
+    def __init__(self, config_path):
         # Data
-        self.json_data = self.get_json_data()
+        self.json_data = self.get_json_data(config_path)
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
@@ -110,8 +110,8 @@ class PlaceClient:
             ImageColor.getcolor(color_hex, "RGB") for color_hex, _i in color_map.items()
         ]
 
-    def get_json_data(self):
-        configFilePath = os.path.join(os.getcwd(), "config.json")
+    def get_json_data(self, config_path):
+        configFilePath = os.path.join(os.getcwd(), config_path)
 
         if not os.path.exists(configFilePath):
             exit("No config.json file found. Read the README")
@@ -599,14 +599,20 @@ class PlaceClient:
     is_flag=True,
     help="Enable debug mode. Prints debug messages to the console.",
 )
-def main(debug: bool):
+@click.option(
+    "-c",
+    "--config",
+    default="config.json",
+    help="Location of config.json",
+)
+def main(debug: bool, config: str):
 
     if not debug:
         # default loguru level is DEBUG
         logger.remove()
         logger.add(sys.stderr, level="INFO")
 
-    client = PlaceClient()
+    client = PlaceClient(config_path=config)
     # Start everything
     client.start()
 
