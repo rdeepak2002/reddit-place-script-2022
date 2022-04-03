@@ -36,7 +36,7 @@ class PlaceClient:
                 if self.json_data["thread_delay"] is not None
                 else 3
             )
-        
+
             self.unverified_place_frequency = (
                 self.json_data["unverified_place_frequency"]
                 if self.json_data["unverified_place_frequency"] is not None
@@ -48,7 +48,9 @@ class PlaceClient:
                 else None
             )
         except:
-            logger.error("Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue")
+            logger.error(
+                "Failed setting options from json. Please read README and check if you have everything in correctly. If issues are still happening then create a issue"
+            )
             exit()
 
         # Color palette
@@ -86,11 +88,11 @@ class PlaceClient:
         for i in proxies:
             proxieslist[len(proxieslist)] = {"https": i}
         return proxieslist
-    
+
     def GetRandomProxy(self):
         randomproxy = None
         if self.proxies is not None:
-            randomproxy = self.proxies[random.randint(0,len(self.proxies) - 1)]
+            randomproxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
         return randomproxy
 
     def closest_color(self, target_rgb):
@@ -175,8 +177,10 @@ class PlaceClient:
             "Authorization": "Bearer " + access_token_in,
             "Content-Type": "application/json",
         }
-        
-        response = requests.request("POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy())
+
+        response = requests.request(
+            "POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy()
+        )
         logger.debug("Received response: {}", response.text)
 
         # There are 2 different JSON keys for responses to get the next timestamp.
@@ -302,7 +306,9 @@ class PlaceClient:
                                 Image.open(
                                     BytesIO(
                                         requests.get(
-                                            msg["data"]["name"], stream=True, proxies=self.GetRandomProxy()
+                                            msg["data"]["name"],
+                                            stream=True,
+                                            proxies=self.GetRandomProxy(),
                                         ).content
                                     )
                                 )
@@ -458,7 +464,7 @@ class PlaceClient:
                         data=data,
                         auth=HTTPBasicAuth(app_client_id, secret_key),
                         headers={"User-agent": f"placebot{random.randint(1, 100000)}"},
-                        proxies=self.GetRandomProxy()
+                        proxies=self.GetRandomProxy(),
                     )
 
                     logger.debug("Received response: {}", r.text)
