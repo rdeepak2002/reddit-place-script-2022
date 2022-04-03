@@ -103,7 +103,7 @@ class PlaceClient:
 
     def closest_color(self, target_rgb):
         r, g, b = target_rgb[:3]
-        print(f"target_rgb length: {len(target_rgb)}")
+        #print(f"target_rgb length: {len(target_rgb)}")
         if target_rgb[2] != 0:
             color_diffs = []
             for color in self.rgb_colors_array:
