@@ -10,3 +10,5 @@ click==8.1.2
 loguru==0.6.0
 beautifulsoup4~=4.10.0
 stem~=1.8.0
+pytest==7.1.1
+Faker==13.3.4

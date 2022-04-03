@@ -23,7 +23,7 @@ from stem.control import Controller
 
 
 from src.mappings import ColorMapper
-from src.utils import Proxies
+from src.utils import ProxyManager
 
 
 class PlaceClient:
@@ -46,7 +46,7 @@ class PlaceClient:
             self.json_data["unverified_place_frequency"] is not None
             else False
         )
-        self.proxies = Proxies(self.json_data.get("proxies", []))
+        self.proxies = ProxyManager(self.json_data.get("proxies", []))
         if self.proxies is None and os.path.exists(
             os.path.join(os.getcwd(), "proxies.txt")
         ):
