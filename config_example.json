@@ -4,6 +4,7 @@
     "legacy_transparency": true,
     "thread_delay": 2,
     "unverified_place_frequency": false,
+    "column_wise": false,
     "compact_logging": true,
     "using_tor": false,
     "tor_ip": "127.0.0.1",

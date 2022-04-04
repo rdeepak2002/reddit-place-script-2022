@@ -128,6 +128,7 @@ If any JSON decoders errors are found, the `config.json` needs to be fixed. Make
 {
 	"thread_delay": 2,
 	"unverified_place_frequency": false,
+	"column_wise": false,
 	"proxies": ["1.1.1.1:8080", "2.2.2.2:1234"],
 	"compact_logging": true
 }
@@ -135,6 +136,7 @@ If any JSON decoders errors are found, the `config.json` needs to be fixed. Make
 
 - thread_delay - Adds a delay between starting a new thread. Can be used to avoid ratelimiting.
 - unverified_place_frequency - Sets the pixel place frequency to the unverified account limit.
+- column_wise - If true, sets pixels column by column instead of row by row.
 - proxies - Sets proxies to use for sending requests to reddit. The proxy used is randomly selected for each request. Can be used to avoid ratelimiting.
 - compact_logging - Disables timer text until next pixel.
 - Transparency can be achieved by using the RGB value (69, 42, 0) in any part of your image.

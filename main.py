@@ -49,6 +49,12 @@ class PlaceClient:
             and self.json_data["legacy_transparency"] is not None
             else True
         )
+        self.column_wise = (
+            self.json_data["column_wise"]
+            if "column_wise" in self.json_data
+            and self.json_data["column_wise"] is not None
+            else False
+        )
         proxy.Init(self)
 
         # Color palette
@@ -350,13 +356,22 @@ class PlaceClient:
                 wasWaiting = False
                 time.sleep(index * self.delay_between_launches)
 
-            if x >= self.image_size[0]:
-                y += 1
-                x = 0
+            if self.column_wise:
+                if y >= self.image_size[1]:
+                    x += 1
+                    y = 0
 
-            if y >= self.image_size[1]:
+                if x >= self.image_size[0]:
 
-                y = 0
+                    x = 0
+            else:
+                if x >= self.image_size[0]:
+                    y += 1
+                    x = 0
+
+                if y >= self.image_size[1]:
+
+                    y = 0
 
             if x == originalX and y == originalY and loopedOnce:
                 logger.info(
@@ -408,7 +423,10 @@ class PlaceClient:
                         x + self.pixel_x_start,
                         y + self.pixel_y_start,
                     )
-            x += 1
+            if self.column_wise:
+                y += 1
+            else:
+                x += 1
             loopedOnce = True
         return x, y, new_rgb
 
