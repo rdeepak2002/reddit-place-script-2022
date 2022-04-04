@@ -115,7 +115,7 @@ def get_random_proxy(self, name=None):
     if not self.using_tor:
         random_proxy = None
         if name is not None:
-            if self.json_data["workers"][name]["personal_proxy"] is not None:
+            if "personal_proxy" in self.json_data["workers"][name] and self.json_data["workers"][name]["personal_proxy"] is not None:
                 proxy = self.json_data["workers"][name]["personal_proxy"]
                 return {"https": proxy, "http": proxy}
         if self.proxies is not None:
