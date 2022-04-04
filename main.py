@@ -1,5 +1,4 @@
 import math
-from unicodedata import name
 
 import requests
 import json
@@ -24,8 +23,8 @@ import src.utils as utils
 class PlaceClient:
     def __init__(self, config_path):
         self.logger = logger
+
         # Data
-        
         self.json_data = utils.get_json_data(self, config_path)
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
@@ -388,7 +387,6 @@ class PlaceClient:
     def task(self, index, name, worker):
         # Whether image should keep drawing itself
         repeat_forever = True
-        proxy.check_and_set_personal_proxy()
         while True:
             # last_time_placed_pixel = math.floor(time.time())
 
@@ -514,7 +512,8 @@ class PlaceClient:
                         logger.success("Authorization successful!")
                     logger.info("Obtaining access token...")
                     r = client.get(
-                        "https://new.reddit.com/", proxies=proxy.get_random_proxy(self, name)
+                        "https://new.reddit.com/",
+                        proxies=proxy.get_random_proxy(self, name),
                     )
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
