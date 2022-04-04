@@ -480,7 +480,6 @@ class PlaceClient:
                 x = 0
 
             if y >= self.image_size[1]:
-
                 y = 0
 
             if x == originalX and y == originalY and loopedOnce:
@@ -493,7 +492,16 @@ class PlaceClient:
                 imgOutdated = True
 
             if imgOutdated:
-                boardimg = self.get_board(self.access_tokens[index])
+                while True:
+                    try:
+                        boardimg = self.get_board(self.access_tokens[index])
+                        break
+                    except Exception as e:
+                        logger.info(
+                            "Thread #{} : Get board image failed, trying again in 10 seconds...  ",
+                            index,
+                        )
+                        time.sleep(10)
                 pix2 = boardimg.convert("RGB").load()
                 imgOutdated = False
 
@@ -530,6 +538,7 @@ class PlaceClient:
                         x + self.pixel_x_start,
                         y + self.pixel_y_start,
                     )
+
             x += 1
             loopedOnce = True
         return x, y, new_rgb
