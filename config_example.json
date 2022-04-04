@@ -1,6 +1,7 @@
 {
     "image_path": "image.jpg",
     "image_start_coords": [741, 610],
+    "legacy_transparency": true,
     "thread_delay": 2,
     "unverified_place_frequency": false,
     "compact_logging": true,

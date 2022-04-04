@@ -40,6 +40,7 @@ class ColorMapper:
 
     # map of pixel color ids to verbose name (for debugging)
     NAME_MAP = {
+        0: "Darkest Red",
         1: "Dark Red",
         2: "Bright Red",
         3: "Orange",
@@ -86,18 +87,25 @@ class ColorMapper:
         return "Invalid Color ({})".format(str(color_id))
 
     @staticmethod
-    def closest_color(target_rgb: tuple, rgb_colors_array: list):
-        """Find the closest rgb color from palette to a target rgb color"""
-        r, g, b = target_rgb[:3]
-        if target_rgb[3] != 0:
-            color_diffs = []
-            for color in rgb_colors_array:
-                cr, cg, cb = color
-                color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
-                color_diffs.append((color_diff, color))
-            return min(color_diffs)[1]
-        else:
+    def closest_color(
+        target_rgb: tuple, rgb_colors_array: list, legacy_transparency: bool
+    ):
+        """Find the closest rgb color from palette to a target rgb color, as well as handling transparency"""
+
+        # first check is for the alpha channel transparency in ex. png
+        if target_rgb[3] == 0:
             return (69, 42, 0)
+        # second check is for the legacy method of transparency using hex #452A00.
+        if target_rgb[:3] == (69, 42, 0) and legacy_transparency:
+            return (69, 42, 0)
+
+        r, g, b = target_rgb[:3]
+        color_diffs = []
+        for color in rgb_colors_array:
+            cr, cg, cb = color
+            color_diff = math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2)
+            color_diffs.append((color_diff, color))
+        return min(color_diffs)[1]
 
     @staticmethod
     def generate_rgb_colors_array():
