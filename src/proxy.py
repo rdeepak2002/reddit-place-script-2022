@@ -111,7 +111,7 @@ def get_proxies(self, proxies):
     return proxies_list
 
 #name is the username of the worker and is used for personal proxies
-def get_random_proxy(self, name):
+def get_random_proxy(self, name=None):
     if not self.using_tor:
         random_proxy = None
         if name is not None:
