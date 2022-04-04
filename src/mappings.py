@@ -89,7 +89,7 @@ class ColorMapper:
     @staticmethod
     def closest_color(target_rgb: tuple, rgb_colors_array: list, legacy_transparency: bool):
         """Find the closest rgb color from palette to a target rgb color, as well as handling transparency"""
- 
+        
         # first check is for the alpha channel transparency in ex. png
         if target_rgb[3] == 0:
             return (69, 42, 0)
