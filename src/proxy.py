@@ -8,14 +8,14 @@ from stem.control import Controller
 
 def Init(self):
     self.proxies = (
-        get_proxies(self.json_data["proxies"])
+        get_proxies(self, self.json_data["proxies"])
         if "proxies" in self.json_data and self.json_data["proxies"] is not None
         else None
     )
     if self.proxies is None and os.path.exists(
         os.path.join(os.getcwd(), "proxies.txt")
     ):
-        self.proxies = get_proxies_text()
+        self.proxies = get_proxies_text(self)
     self.compactlogging = (
         self.json_data["compact_logging"]
         if "compact_logging" in self.json_data
