@@ -57,8 +57,7 @@ def Init(self):
     )
     self.tor_ip = (
         self.json_data["tor_ip"]
-        if "tor_ip" in self.json_data
-        and self.json_data["tor_ip"] is not None
+        if "tor_ip" in self.json_data and self.json_data["tor_ip"] is not None
         else "127.0.0.1"
     )
 
@@ -110,12 +109,16 @@ def get_proxies(self, proxies):
         return proxies_list
     return proxies_list
 
-#name is the username of the worker and is used for personal proxies
+
+# name is the username of the worker and is used for personal proxies
 def get_random_proxy(self, name=None):
     if not self.using_tor:
         random_proxy = None
         if name is not None:
-            if "personal_proxy" in self.json_data["workers"][name] and self.json_data["workers"][name]["personal_proxy"] is not None:
+            if (
+                "personal_proxy" in self.json_data["workers"][name]
+                and self.json_data["workers"][name]["personal_proxy"] is not None
+            ):
                 proxy = self.json_data["workers"][name]["personal_proxy"]
                 return {"https": proxy, "http": proxy}
         if self.proxies is not None:
