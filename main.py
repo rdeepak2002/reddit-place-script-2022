@@ -109,7 +109,11 @@ class PlaceClient:
         }
 
         response = requests.request(
-            "POST", url, headers=headers, data=payload, proxies=proxy.get_random_proxy()
+            "POST",
+            url,
+            headers=headers,
+            data=payload,
+            proxies=proxy.get_random_proxy(self),
         )
         logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
@@ -260,7 +264,7 @@ class PlaceClient:
                                         requests.get(
                                             msg["data"]["name"],
                                             stream=True,
-                                            proxies=proxy.get_random_proxy(),
+                                            proxies=proxy.get_random_proxy(self),
                                         ).content
                                     )
                                 ),
@@ -465,12 +469,17 @@ class PlaceClient:
                     while True:
                         try:
                             client = requests.Session()
+                            client.proxies = proxy.get_random_proxy(self)
                             client.headers.update(
                                 {
                                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
                                 }
                             )
-                            r = client.get("https://www.reddit.com/login")
+
+                            r = client.get(
+                                "https://www.reddit.com/login",
+                                proxies=proxy.get_random_proxy(self),
+                            )
                             login_get_soup = BeautifulSoup(r.content, "html.parser")
                             csrf_token = login_get_soup.find(
                                 "input", {"name": "csrf_token"}
@@ -485,7 +494,7 @@ class PlaceClient:
                             r = client.post(
                                 "https://www.reddit.com/login",
                                 data=data,
-                                proxies=proxy.get_random_proxy(),
+                                proxies=proxy.get_random_proxy(self),
                             )
                             break
                         except Exception:
@@ -502,7 +511,9 @@ class PlaceClient:
                     else:
                         logger.success("Authorization successful!")
                     logger.info("Obtaining access token...")
-                    r = client.get("https://new.reddit.com/")
+                    r = client.get(
+                        "https://new.reddit.com/", proxies=proxy.get_random_proxy(self)
+                    )
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")
                         .find("script", {"id": "data"})
