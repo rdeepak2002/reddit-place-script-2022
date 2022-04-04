@@ -24,6 +24,7 @@ import src.utils as utils
 class PlaceClient:
     def __init__(self, config_path):
         self.logger = logger
+
         # Data
         self.json_data = utils.get_json_data(self, config_path)
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
@@ -129,7 +130,7 @@ class PlaceClient:
             url,
             headers=headers,
             data=payload,
-            proxies=proxy.get_random_proxy(self),
+            proxies=proxy.get_random_proxy(self, name=None),
         )
         logger.debug(
             "Thread #{} - {}: Received response: {}", thread_index, name, response.text
@@ -290,7 +291,7 @@ class PlaceClient:
                                         requests.get(
                                             msg["data"]["name"],
                                             stream=True,
-                                            proxies=proxy.get_random_proxy(self),
+                                            proxies=proxy.get_random_proxy(self, name=None),
                                         ).content
                                     )
                                 ),
@@ -416,7 +417,6 @@ class PlaceClient:
     def task(self, index, name, worker):
         # Whether image should keep drawing itself
         repeat_forever = True
-
         while True:
             # last_time_placed_pixel = math.floor(time.time())
 
@@ -503,7 +503,7 @@ class PlaceClient:
                     while True:
                         try:
                             client = requests.Session()
-                            client.proxies = proxy.get_random_proxy(self)
+                            client.proxies = proxy.get_random_proxy(self, name)
                             client.headers.update(
                                 {
                                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
@@ -512,7 +512,7 @@ class PlaceClient:
 
                             r = client.get(
                                 "https://www.reddit.com/login",
-                                proxies=proxy.get_random_proxy(self),
+                                proxies=proxy.get_random_proxy(self, name),
                             )
                             login_get_soup = BeautifulSoup(r.content, "html.parser")
                             csrf_token = login_get_soup.find(
@@ -528,7 +528,7 @@ class PlaceClient:
                             r = client.post(
                                 "https://www.reddit.com/login",
                                 data=data,
-                                proxies=proxy.get_random_proxy(self),
+                                proxies=proxy.get_random_proxy(self, name),
                             )
                             break
                         except Exception:
@@ -546,7 +546,8 @@ class PlaceClient:
                         logger.success("{} - Authorization successful!", username)
                     logger.info("Obtaining access token...")
                     r = client.get(
-                        "https://new.reddit.com/", proxies=proxy.get_random_proxy(self)
+                        "https://new.reddit.com/",
+                        proxies=proxy.get_random_proxy(self, name),
                     )
                     data_str = (
                         BeautifulSoup(r.content, features="html.parser")

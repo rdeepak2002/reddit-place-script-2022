@@ -8,14 +8,14 @@ from stem.control import Controller
 
 def Init(self):
     self.proxies = (
-        get_proxies(self.json_data["proxies"])
+        get_proxies(self, self.json_data["proxies"])
         if "proxies" in self.json_data and self.json_data["proxies"] is not None
         else None
     )
     if self.proxies is None and os.path.exists(
         os.path.join(os.getcwd(), "proxies.txt")
     ):
-        self.proxies = get_proxies_text()
+        self.proxies = get_proxies_text(self)
     self.compactlogging = (
         self.json_data["compact_logging"]
         if "compact_logging" in self.json_data
@@ -110,14 +110,19 @@ def get_proxies(self, proxies):
         return proxies_list
     return proxies_list
 
-
-def get_random_proxy(self):
+#name is the username of the worker and is used for personal proxies
+def get_random_proxy(self, name=None):
     if not self.using_tor:
         random_proxy = None
+        if name is not None:
+            if self.json_data["workers"][name]["personal_proxy"] is not None:
+                proxy = self.json_data["workers"][name]["personal_proxy"]
+                return {"https": proxy, "http": proxy}
         if self.proxies is not None:
             random_proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
             self.logger.debug("Using proxy: {}", str(random_proxy))
             return random_proxy
+
         return random_proxy
     else:
         tor_reconnect(self)
