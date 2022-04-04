@@ -40,6 +40,7 @@ class ColorMapper:
 
     # map of pixel color ids to verbose name (for debugging)
     NAME_MAP = {
+        0: "Darkest Red",
         1: "Dark Red",
         2: "Bright Red",
         3: "Orange",
