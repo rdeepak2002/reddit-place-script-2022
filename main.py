@@ -46,6 +46,12 @@ class PlaceClient:
             and self.json_data["unverified_place_frequency"] is not None
             else False
         )
+        self.legacy_transparency = (
+            self.json_data["legacy_transparency"]
+            if "legacy_transparency" in self.json_data
+            and self.json_data["legacy_transparency"] is not None
+            else False
+        )
         self.proxies = (
             self.GetProxies(self.json_data["proxies"])
             if "proxies" in self.json_data and self.json_data["proxies"] is not None
@@ -510,11 +516,12 @@ class PlaceClient:
                     "{}, {}, {}, {}",
                     pix2[x + self.pixel_x_start, y + self.pixel_y_start],
                     new_rgb,
-                    target_rgb[:3] != (69, 42, 0) and new_rgb != (69, 42, 0),
+                    new_rgb != (69, 42, 0),
                     pix2[x, y] != new_rgb,
                 )
 
-                if target_rgb[:3] != (69, 42, 0) and new_rgb != (69, 42, 0):
+                #(69, 42, 0) is a special color reserved for transparency.
+                if new_rgb != (69, 42, 0):
                     logger.debug(
                         "Thread #{} : Replacing {} pixel at: {},{} with {} color",
                         index,
