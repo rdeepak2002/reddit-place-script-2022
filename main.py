@@ -69,7 +69,14 @@ class PlaceClient:
     # Draw a pixel at an x, y coordinate in r/place with a specific color
 
     def set_pixel_and_check_ratelimit(
-        self, access_token_in, x, y, color_index_in=18, canvas_index=0, thread_index=-1
+        self,
+        access_token_in,
+        x,
+        y,
+        name,
+        color_index_in=18,
+        canvas_index=0,
+        thread_index=-1,
     ):
         # canvas structure:
         # 0 | 1
@@ -115,7 +122,9 @@ class PlaceClient:
             data=payload,
             proxies=proxy.get_random_proxy(self),
         )
-        logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
+        logger.debug(
+            "Thread #{} - {}: Received response: {}", thread_index, name, response.text
+        )
 
         self.waiting_thread_index = -1
 
@@ -128,7 +137,9 @@ class PlaceClient:
                 response.json()["errors"][0]["extensions"]["nextAvailablePixelTs"]
             )
             logger.error(
-                "Thread #{} : Failed placing pixel: rate limited", thread_index
+                "Thread #{} - {}: Failed placing pixel: rate limited",
+                thread_index,
+                name,
             )
         else:
             waitTime = math.floor(
@@ -422,7 +433,9 @@ class PlaceClient:
                 time_until_next_draw = next_pixel_placement_time - current_timestamp
 
                 if time_until_next_draw > 10000:
-                    logger.warning(f"Thread #{index} :: CANCELLED :: Rate-Limit Banned")
+                    logger.warning(
+                        "Thread #{} - {} :: CANCELLED :: Rate-Limit Banned", index, name
+                    )
                     repeat_forever = False
                     break
 
@@ -437,7 +450,7 @@ class PlaceClient:
 
                 if len(update_str) > 0:
                     if not self.compactlogging:
-                        logger.info("Thread #{} :: {}", index, update_str)
+                        logger.info("Thread #{} - {}: {}", index, name, update_str)
 
                 # refresh access token if necessary
                 if (
@@ -453,7 +466,9 @@ class PlaceClient:
                     )
                 ):
                     if not self.compactlogging:
-                        logger.info("Thread #{} :: Refreshing access token", index)
+                        logger.info(
+                            "Thread #{} - {}: Refreshing access token", index, name
+                        )
 
                     # developer's reddit username and password
                     try:
@@ -589,6 +604,7 @@ class PlaceClient:
                         self.access_tokens[index],
                         pixel_x_start,
                         pixel_y_start,
+                        name,
                         pixel_color_index,
                         canvas,
                         index,
