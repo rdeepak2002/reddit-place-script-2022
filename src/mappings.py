@@ -15,7 +15,7 @@ class ColorMapper:
         "#7EED56": 8,  # light green
         "#00756F": 9,  # dark teal
         "#009EAA": 10,  # teal
-        "#00CC00": 11,  # light teal
+        "#00CCC0": 11,  # light teal
         "#2450A4": 12,  # dark blue
         "#3690EA": 13,  # blue
         "#51E9F4": 14,  # light blue
