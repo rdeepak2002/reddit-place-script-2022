@@ -24,16 +24,18 @@ This is a script to draw an image onto r/place (<https://www.reddit.com/r/place/
 
 -   [Latest Version of Python 3](https://www.python.org/downloads/)
 
-## MacOSX
+## macOS
 
-If you want to use tor on MacOSX. you'll need to provide your own tor binary and start it manually. deactivate the "use_builtin tor"
-option in the config and make sure you configure your tor to use the specified ports and password. 
+If you want to use tor on macOS. you'll need to provide your own tor binary or install it via [Homebrew](https://brew.sh) using ``brew install tor``, and start it manually.
+
+Make sure to deactivate the "use_builtin tor"
+option in the config and configure your tor to use the correct ports and password. 
 
 *Please note that socks proxy connection to tor doesn't work for the time being, so the config value is for an httpTunnel port*
 
 ## Get Started
 
-Move the file 'config_example.json' to config.json
+Move the file 'config_example.json' to 'config.json'
 
 Edit the values to replace with actual credentials and values
 
@@ -61,9 +63,7 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 			// password of account 2
 			"password": "password",
 			// which pixel of the image to draw first
-			"start_coords": [0, 0],
-			// A proxy for this worker only
-			"personal_proxy": "1.2.3.4:4321"
+			"start_coords": [0, 0]
 		}
 		// etc... add as many accounts as you want (but reddit may detect you the more you add)
 	}
@@ -74,7 +74,6 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 
 -   Use `.png` if you wish to make use of transparency or non rectangular images
 -   If you use 2 factor authentication (2FA) in your account, then change `password` to `password:XXXXXX` where `XXXXXX` is your 2FA code.
--   If you do use a personal proxy (A proxy for that worker only), you need put some proxies for random selection else things that are not worker related will be set to have no proxy at all
 
 ## Run the Script
 
@@ -84,7 +83,7 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 start.bat or startverbose.bat
 ```
 
-### Unix-like (Linux, MacOS etc.)
+### Unix-like (Linux, macOS etc.)
 
 ```shell
 chmod +x start.sh startverbose.sh
@@ -107,8 +106,7 @@ Just create multiple child arrays to "workers" in the .json file:
 	"workers": {
 		"worker1username": {
 			"password": "password",
-			"start_coords": [0, 0],
-			"personal_proxy": "1.2.3.4:4321"
+			"start_coords": [0, 0]
 		},
 		"worker2username": {
 			"password": "password",
@@ -131,7 +129,7 @@ If any JSON decoders errors are found, the `config.json` needs to be fixed. Make
 	"thread_delay": 2,
 	"unverified_place_frequency": false,
 	"proxies": ["1.1.1.1:8080", "2.2.2.2:1234"],
-	"compact_logging": true,
+	"compact_logging": true
 }
 ```
 
@@ -148,6 +146,7 @@ Tor can be used as an alternative to normal proxies. Note that currently, you ca
 
 ```json
 "using_tor": false,
+"tor_ip": "127.0.0.1",
 "tor_port": 1881,
 "tor_control_port": 9051,
 "tor_password": "Passwort",
@@ -157,6 +156,7 @@ Tor can be used as an alternative to normal proxies. Note that currently, you ca
 
 The config values are as follows:
 - Deactivates or activates tor.
+- Sets the ip/hostname of the tor proxy to use
 - Sets the httptunnel port that should be used.
 - Sets the tor control port.
 - Sets the password (leave it as "Passwort" if you want to use the default binaries.
@@ -167,7 +167,7 @@ Note that when using the included binaries, only the tunnel port is explicitly s
 
 <h3>If you want to use your own binaries, follow these steps:</h3>
 
-- Get tor standalone for your platform [here](https://www.torproject.org/download/tor/). For Windows just use the expert bundle. For MacOS you'll have to compile the binaries yourself or get them from somewhere else, which is both out of the scope of this guide.
+- Get tor standalone for your platform [here](https://www.torproject.org/download/tor/). For Windows just use the expert bundle. For macOS, you can use [Homebrew](https://brew.sh) to install tor: ``brew install tor``.
 - In your tor folder, create a file named ``torrc``. Copy [this](https://github.com/torproject/tor/blob/main/src/config/torrc.sample.in) into it.
 - Search for ``ControlPort`` in your torrc file and uncomment it. Change the port number to your desired control port.
 - Decide on the password you want to use. Run ``tor --hash-password PASSWORD`` from a terminal in the folder with your tor executable, with "PASSWORD" being your desired password. Copy the resulting hash.

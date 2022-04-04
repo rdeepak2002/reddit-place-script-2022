@@ -1,10 +1,12 @@
 {
     "image_path": "image.jpg",
     "image_start_coords": [741, 610],
+    "legacy_transparency": true,
     "thread_delay": 2,
     "unverified_place_frequency": false,
     "compact_logging": true,
     "using_tor": false,
+    "tor_ip": "127.0.0.1",
     "tor_port": 1881,
     "tor_control_port": 9051,
     "tor_password": "Passwort",
