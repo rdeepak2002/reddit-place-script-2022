@@ -8,6 +8,7 @@ import sys
 from io import BytesIO
 from http import HTTPStatus
 from websocket import create_connection
+from websocket._exceptions import WebSocketConnectionClosedException
 from PIL import Image
 
 from loguru import logger
@@ -191,7 +192,11 @@ class PlaceClient:
             )
         )
         while True:
-            msg = ws.recv()
+            try:
+                msg = ws.recv()
+            except WebSocketConnectionClosedException as e:
+                logger.error(e)
+                continue
             if msg is None:
                 logger.error("Reddit failed to acknowledge connection_init")
                 exit()
