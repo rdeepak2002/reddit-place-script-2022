@@ -55,10 +55,18 @@ def Init(self):
         and self.json_data["tor_control_port"] is not None
         else 9051
     )
+    self.tor_ip = (
+        self.json_data["tor_ip"]
+        if "tor_ip" in self.json_data
+        and self.json_data["tor_ip"] is not None
+        else "127.0.0.1"
+    )
+
+    print(self.tor_ip)
 
     # tor connection
     if self.using_tor:
-        self.proxies = get_proxies(self, ["127.0.0.1:" + str(self.tor_port)])
+        self.proxies = get_proxies(self, [self.tor_ip + ":" + str(self.tor_port)])
         if self.use_builtin_tor:
             subprocess.Popen(
                 '"'

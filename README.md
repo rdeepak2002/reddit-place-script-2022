@@ -146,6 +146,7 @@ Tor can be used as an alternative to normal proxies. Note that currently, you ca
 
 ```json
 "using_tor": false,
+"tor_ip": "127.0.0.1",
 "tor_port": 1881,
 "tor_control_port": 9051,
 "tor_password": "Passwort",
@@ -155,6 +156,7 @@ Tor can be used as an alternative to normal proxies. Note that currently, you ca
 
 The config values are as follows:
 - Deactivates or activates tor.
+- Sets the ip/hostname of the tor proxy to use
 - Sets the httptunnel port that should be used.
 - Sets the tor control port.
 - Sets the password (leave it as "Passwort" if you want to use the default binaries.
