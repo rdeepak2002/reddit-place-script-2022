@@ -114,7 +114,7 @@ class PlaceClient:
             url,
             headers=headers,
             data=payload,
-            proxies=proxy.get_random_proxy(self, None),
+            proxies=proxy.get_random_proxy(self, name=None),
         )
         logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
@@ -265,7 +265,7 @@ class PlaceClient:
                                         requests.get(
                                             msg["data"]["name"],
                                             stream=True,
-                                            proxies=proxy.get_random_proxy(self, None),
+                                            proxies=proxy.get_random_proxy(self, name=None),
                                         ).content
                                     )
                                 ),
