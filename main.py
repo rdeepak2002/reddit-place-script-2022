@@ -1,35 +1,30 @@
-#!/usr/bin/env python3
-
-import os
-import os.path
 import math
-import subprocess
 
 import requests
 import json
 import time
 import threading
 import sys
-import random
 from io import BytesIO
 from http import HTTPStatus
 from websocket import create_connection
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
+
 from loguru import logger
 import click
 from bs4 import BeautifulSoup
 
-from stem import Signal, InvalidArguments, SocketError, ProtocolError
-from stem.control import Controller
-
 
 from src.mappings import ColorMapper
+import src.proxy as proxy
+import src.utils as utils
 
 
 class PlaceClient:
     def __init__(self, config_path):
+        self.logger = logger
         # Data
-        self.json_data = self.get_json_data(config_path)
+        self.json_data = utils.get_json_data(self, config_path)
         self.pixel_x_start: int = self.json_data["image_start_coords"][0]
         self.pixel_y_start: int = self.json_data["image_start_coords"][1]
 
@@ -46,78 +41,7 @@ class PlaceClient:
             and self.json_data["unverified_place_frequency"] is not None
             else False
         )
-        self.proxies = (
-            self.GetProxies(self.json_data["proxies"])
-            if "proxies" in self.json_data and self.json_data["proxies"] is not None
-            else None
-        )
-        if self.proxies is None and os.path.exists(
-            os.path.join(os.getcwd(), "proxies.txt")
-        ):
-            self.proxies = self.get_proxies_text()
-        self.compactlogging = (
-            self.json_data["compact_logging"]
-            if "compact_logging" in self.json_data
-            and self.json_data["compact_logging"] is not None
-            else True
-        )
-        self.using_tor = (
-            self.json_data["using_tor"]
-            if "using_tor" in self.json_data and self.json_data["using_tor"] is not None
-            else False
-        )
-        self.tor_password = (
-            self.json_data["tor_password"]
-            if "tor_password" in self.json_data
-            and self.json_data["tor_password"] is not None
-            else "Passwort"  # this is intentional, as I don't really want to mess around with the torrc again
-        )
-        self.tor_delay = (
-            self.json_data["tor_delay"]
-            if "tor_delay" in self.json_data and self.json_data["tor_delay"] is not None
-            else 10
-        )
-        self.use_builtin_tor = (
-            self.json_data["use_builtin_tor"]
-            if "use_builtin_tor" in self.json_data
-            and self.json_data["use_builtin_tor"] is not None
-            else True
-        )
-        self.tor_port = (
-            self.json_data["tor_port"]
-            if "tor_port" in self.json_data and self.json_data["tor_port"] is not None
-            else 1881
-        )
-        self.tor_control_port = (
-            self.json_data["tor_control_port"]
-            if "tor_port" in self.json_data
-            and self.json_data["tor_control_port"] is not None
-            else 9051
-        )
-
-        # tor connection
-        if self.using_tor:
-            self.proxies = self.GetProxies(["127.0.0.1:" + str(self.tor_port)])
-            if self.use_builtin_tor:
-                subprocess.Popen(
-                    '"'
-                    + os.path.join(os.getcwd(), "./tor/Tor/tor.exe")
-                    + '"'
-                    + " --defaults-torrc "
-                    + '"'
-                    + os.path.join(os.getcwd(), "./Tor/Tor/torrc")
-                    + '"'
-                    + " --HTTPTunnelPort "
-                    + str(self.tor_port),
-                    shell=True,
-                )
-            try:
-                self.tor_controller = Controller.from_port(port=self.tor_control_port)
-                self.tor_controller.authenticate(self.tor_password)
-                logger.info("successfully connected to tor!")
-            except (ValueError, SocketError):
-                logger.error("connection to tor failed, disabling tor")
-                self.using_tor = False
+        proxy.Init(self)
 
         # Color palette
         self.rgb_colors_array = ColorMapper.generate_rgb_colors_array()
@@ -137,89 +61,9 @@ class PlaceClient:
         self.first_run_counter = 0
 
         # Initialize-functions
-        self.load_image()
+        utils.load_image(self)
 
         self.waiting_thread_index = -1
-
-    """ tor """
-
-    def tor_reconnect(self):
-        if self.using_tor:
-            try:
-                self.tor_controller.signal(Signal.NEWNYM)
-                logger.info("New Tor connection processing")
-                time.sleep(self.tor_delay)
-            except (InvalidArguments, ProtocolError):
-                logger.error("couldn't establish new tor connection, disabling tor")
-                self.using_tor = False
-
-    """ Utils """
-
-    def get_proxies_text(self):
-        path_proxies = os.path.join(os.getcwd(), "proxies.txt")
-        f = open(path_proxies)
-        file = f.read()
-        f.close()
-        proxies_list = file.splitlines()
-        self.proxies = []
-        for i in proxies_list:
-            self.proxies.append({"https": i, "http": i})
-            logger.debug("loaded proxies {} from file {}", i, path_proxies)
-
-    def GetProxies(self, proxies):
-        proxies_list = []
-        for i in proxies:
-            proxies_list.append({"https": i, "http": i})
-
-        logger.debug("Loaded proxies: {}", str(proxies_list))
-        return proxies_list
-
-    def GetRandomProxy(self):
-        if not self.using_tor:
-            random_proxy = None
-            if self.proxies is not None:
-                random_proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
-            logger.debug("Using proxy: {}", str(random_proxy))
-            return random_proxy
-        else:
-            self.tor_reconnect()
-            logger.debug("Using Tor. Selecting first proxy: {}.", str(self.proxies[0]))
-            return self.proxies[0]
-
-    def get_json_data(self, config_path):
-        configFilePath = os.path.join(os.getcwd(), config_path)
-
-        if not os.path.exists(configFilePath):
-            exit("No config.json file found. Read the README")
-
-        # To not keep file open whole execution time
-        f = open(configFilePath)
-        json_data = json.load(f)
-        f.close()
-
-        return json_data
-
-    # Read the input image.jpg file
-
-    def load_image(self):
-        # Read and load the image to draw and get its dimensions
-        try:
-            im = Image.open(self.image_path)
-        except FileNotFoundError:
-            logger.exception("Failed to load image")
-            exit()
-        except UnidentifiedImageError:
-            logger.exception("File found, but couldn't identify image format")
-
-        # Convert all images to RGBA - Transparency should only be supported with PNG
-        if im.mode != "RGBA":
-            im = im.convert("RGBA")
-            logger.info("Converted to rgba")
-        self.pix = im.load()
-
-        logger.info("Loaded image size: {}", im.size)
-
-        self.image_size = im.size
 
     """ Main """
     # Draw a pixel at an x, y coordinate in r/place with a specific color
@@ -265,7 +109,7 @@ class PlaceClient:
         }
 
         response = requests.request(
-            "POST", url, headers=headers, data=payload, proxies=self.GetRandomProxy()
+            "POST", url, headers=headers, data=payload, proxies=proxy.get_random_proxy()
         )
         logger.debug("Thread #{} : Received response: {}", thread_index, response.text)
 
@@ -416,7 +260,7 @@ class PlaceClient:
                                         requests.get(
                                             msg["data"]["name"],
                                             stream=True,
-                                            proxies=self.GetRandomProxy(),
+                                            proxies=proxy.get_random_proxy(),
                                         ).content
                                     )
                                 ),
@@ -641,7 +485,7 @@ class PlaceClient:
                             r = client.post(
                                 "https://www.reddit.com/login",
                                 data=data,
-                                proxies=self.GetRandomProxy(),
+                                proxies=proxy.get_random_proxy(),
                             )
                             break
                         except Exception:
