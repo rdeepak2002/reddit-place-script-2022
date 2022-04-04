@@ -61,7 +61,9 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 			// password of account 2
 			"password": "password",
 			// which pixel of the image to draw first
-			"start_coords": [0, 0]
+			"start_coords": [0, 0],
+			// A proxy for this worker only
+			"personal_proxy": "1.2.3.4:4321"
 		}
 		// etc... add as many accounts as you want (but reddit may detect you the more you add)
 	}
@@ -72,6 +74,7 @@ Note: Please use https://jsonlint.com/ to check that your JSON file is correctly
 
 -   Use `.png` if you wish to make use of transparency or non rectangular images
 -   If you use 2 factor authentication (2FA) in your account, then change `password` to `password:XXXXXX` where `XXXXXX` is your 2FA code.
+-   If you do use a personal proxy (A proxy for that worker only), you need put some proxies for random selection else things that are not worker related will be set to have no proxy at all
 
 ## Run the Script
 
@@ -104,7 +107,8 @@ Just create multiple child arrays to "workers" in the .json file:
 	"workers": {
 		"worker1username": {
 			"password": "password",
-			"start_coords": [0, 0]
+			"start_coords": [0, 0],
+			"personal_proxy": "1.2.3.4:4321"
 		},
 		"worker2username": {
 			"password": "password",
@@ -127,7 +131,7 @@ If any JSON decoders errors are found, the `config.json` needs to be fixed. Make
 	"thread_delay": 2,
 	"unverified_place_frequency": false,
 	"proxies": ["1.1.1.1:8080", "2.2.2.2:1234"],
-	"compact_logging": true
+	"compact_logging": true,
 }
 ```
 
