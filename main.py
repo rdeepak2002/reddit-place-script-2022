@@ -81,9 +81,10 @@ class PlaceClient:
         # canvas structure:
         # 0 | 1
         # 2 | 3
-        logger.info(
-            "Thread #{} : Attempting to place {} pixel at {}, {}",
+        logger.warning(
+            "Thread #{} - {}: Attempting to place {} pixel at {}, {}",
             thread_index,
+            name,
             ColorMapper.color_id_to_name(color_index_in),
             x + (1000 * (canvas_index % 2)),
             y + (1000 * (canvas_index // 2)),
@@ -147,7 +148,9 @@ class PlaceClient:
                     "nextAvailablePixelTimestamp"
                 ]
             )
-            logger.info("Thread #{} : Succeeded placing pixel", thread_index)
+            logger.success(
+                "Thread #{} - {}: Succeeded placing pixel", thread_index, name
+            )
 
         # THIS COMMENTED CODE LETS YOU DEBUG THREADS FOR TESTING
         # Works perfect with one thread.
