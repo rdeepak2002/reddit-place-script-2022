@@ -291,7 +291,9 @@ class PlaceClient:
                                         requests.get(
                                             msg["data"]["name"],
                                             stream=True,
-                                            proxies=proxy.get_random_proxy(self, name=None),
+                                            proxies=proxy.get_random_proxy(
+                                                self, name=None
+                                            ),
                                         ).content
                                     )
                                 ),
