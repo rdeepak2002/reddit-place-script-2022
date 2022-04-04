@@ -534,11 +534,11 @@ class PlaceClient:
 
                     if r.status_code != HTTPStatus.OK.value:
                         # password is probably invalid
-                        logger.exception("Authorization failed!")
+                        logger.exception("{} - Authorization failed!", username)
                         logger.debug("response: {} - {}", r.status_code, r.text)
                         return
                     else:
-                        logger.success("Authorization successful!")
+                        logger.success("{} - Authorization successful!", username)
                     logger.info("Obtaining access token...")
                     r = client.get(
                         "https://new.reddit.com/", proxies=proxy.get_random_proxy(self)
