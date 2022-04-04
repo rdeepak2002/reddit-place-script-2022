@@ -102,6 +102,7 @@ def get_proxies(self, proxies):
         return proxies_list
     return proxies_list
 
+
 def get_random_proxy(self, name):
     if not self.using_tor:
         random_proxy = None
@@ -113,7 +114,7 @@ def get_random_proxy(self, name):
             random_proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
             self.logger.debug("Using proxy: {}", str(random_proxy))
             return random_proxy
-        
+
         return random_proxy
     else:
         tor_reconnect(self)
