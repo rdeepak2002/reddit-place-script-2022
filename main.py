@@ -46,7 +46,7 @@ class PlaceClient:
             self.json_data["legacy_transparency"]
             if "legacy_transparency" in self.json_data
             and self.json_data["legacy_transparency"] is not None
-            else False
+            else True
         )
         proxy.Init(self)
 
