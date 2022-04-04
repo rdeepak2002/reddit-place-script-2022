@@ -494,7 +494,7 @@ class PlaceClient:
                             r = client.post(
                                 "https://www.reddit.com/login",
                                 data=data,
-                                proxies=proxy.get_random_proxy(self, name),
+                                proxies=proxy.get_random_proxy(self, name)
                             )
                             break
                         except Exception:
