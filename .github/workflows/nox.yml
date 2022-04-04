@@ -11,5 +11,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:    
     - uses: actions/checkout@v2
-    - uses: henryiii/setup-nox@main
+    - uses: henryiii/setup-nox@patch-3
     - run: nox
