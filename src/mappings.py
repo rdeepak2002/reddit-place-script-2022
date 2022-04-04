@@ -87,7 +87,9 @@ class ColorMapper:
         return "Invalid Color ({})".format(str(color_id))
 
     @staticmethod
-    def closest_color(target_rgb: tuple, rgb_colors_array: list, legacy_transparency: bool):
+    def closest_color(
+        target_rgb: tuple, rgb_colors_array: list, legacy_transparency: bool
+    ):
         """Find the closest rgb color from palette to a target rgb color, as well as handling transparency"""
 
         # first check is for the alpha channel transparency in ex. png

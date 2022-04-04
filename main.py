@@ -355,7 +355,9 @@ class PlaceClient:
 
             target_rgb = self.pix[x, y]
 
-            new_rgb = ColorMapper.closest_color(target_rgb, self.rgb_colors_array, self.legacy_transparency)
+            new_rgb = ColorMapper.closest_color(
+                target_rgb, self.rgb_colors_array, self.legacy_transparency
+            )
             if pix2[x + self.pixel_x_start, y + self.pixel_y_start] != new_rgb:
                 logger.debug(
                     "{}, {}, {}, {}",
