@@ -324,6 +324,7 @@ class PlaceClient:
         wasWaiting = False
 
         while True:
+            time.sleep(0.05)
             if self.waiting_thread_index != -1 and self.waiting_thread_index != index:
                 x = originalX
                 y = originalY
