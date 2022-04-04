@@ -112,7 +112,7 @@ def get_random_proxy(self):
             return random_proxy
         return random_proxy
     else:
-        tor_reconnect()
+        tor_reconnect(self)
         self.logger.debug("Using Tor. Selecting first proxy: {}.", str(self.proxies[0]))
         return self.proxies[0]
 
