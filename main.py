@@ -520,7 +520,7 @@ class PlaceClient:
                     pix2[x, y] != new_rgb,
                 )
 
-                #(69, 42, 0) is a special color reserved for transparency.
+                # (69, 42, 0) is a special color reserved for transparency.
                 if new_rgb != (69, 42, 0):
                     logger.debug(
                         "Thread #{} : Replacing {} pixel at: {},{} with {} color",

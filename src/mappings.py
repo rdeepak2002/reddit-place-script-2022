@@ -89,11 +89,11 @@ class ColorMapper:
     @staticmethod
     def closest_color(target_rgb: tuple, rgb_colors_array: list, legacy_transparency: bool):
         """Find the closest rgb color from palette to a target rgb color, as well as handling transparency"""
-        
-        #first check is for the alpha channel transparency in ex. png
+ 
+        # first check is for the alpha channel transparency in ex. png
         if target_rgb[3] == 0:
             return (69, 42, 0)
-        #second check is for the legacy method of transparency using hex #452A00.
+        # second check is for the legacy method of transparency using hex #452A00.
         if target_rgb[:3] == (69, 42, 0) and legacy_transparency:
             return (69, 42, 0)
 
