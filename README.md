@@ -4,7 +4,7 @@
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/60-percent-of-the-time-works-every-time.svg)](https://forthebadge.com)
 
-# Thanks to everyone who contributed! r/place is now over! Thanks to all our contributors
+# Thanks to everyone who contributed! r/place is now over!
 <a href="https://github.com/rdeepak2002/reddit-place-script-2022/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rdeepak2002/reddit-place-script-2022" />
 </a>
